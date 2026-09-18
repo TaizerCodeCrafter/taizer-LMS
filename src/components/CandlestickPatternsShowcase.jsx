@@ -338,7 +338,7 @@ export const PATTERNS_DATA = {
 // VECTOR CANDLE GRAPHIC RENDERER
 // =========================================================================
 
-function PatternGraphic({ type }) {
+export function PatternGraphic({ type }) {
   const gGreen = "#10b981";
   const gGreenGrad = "url(#pattGreenGrad)";
   const gRed = "#f43f5e";

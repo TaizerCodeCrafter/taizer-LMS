@@ -7,6 +7,8 @@ import AssignmentView from "../components/AssignmentView";
 import { evaluateWebCode } from "../utils/codeEvaluator";
 import DiscussionsView from "../components/DiscussionsView";
 import GradeGroupChatView from "../components/GradeGroupChatView";
+import TradingChartWhiteboard from "../components/TradingChartWhiteboard";
+import { PatternGraphic } from "../components/CandlestickPatternsShowcase";
 import {
   User,
   Mail,
@@ -2207,131 +2209,177 @@ const LMSDashboard = () => {
                                        
                                        return (
                                           <div className="space-y-8 animate-fade-in">
-                                             <div className="flex justify-start mb-10">
-                                                <span className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border ${slide.type === 'video' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' : slide.type === 'quiz' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'}`}>
-                                                   {slide.type}
-                                                </span>
-                                             </div>
-                                             
-                                             <h3 className="text-2xl sm:text-4xl font-black text-white leading-tight">{slide.title || slide.question || "Untitled Slide"}</h3>
-                                             {(slide.titleSi || slide.questionSi) && <p className="text-slate-400 font-bold text-sm tracking-wide">{slide.titleSi || slide.questionSi}</p>}
-                                             
-                                             {slide.type === 'note' && (
-                                                <div className="text-slate-300 text-lg leading-relaxed prose prose-invert max-w-none mt-8 space-y-6">
-                                                   <div>{renderContent(slide.content || slide.body || slide.desc || "")}</div>
-                                                   {slide.contentSi && <div className="text-slate-400 text-base">{renderContent(slide.contentSi)}</div>}
-                                                </div>
-                                             )}
+                                              <div className="flex justify-start mb-10">
+                                                 <span className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border ${
+                                                    slide.type === 'video' 
+                                                       ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' 
+                                                       : slide.type === 'quiz' 
+                                                       ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' 
+                                                       : slide.type === 'chart'
+                                                       ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                                       : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                                                 }`}>
+                                                    {slide.type === 'chart' ? '📈 Live Market Chart & Whiteboard' : slide.type}
+                                                 </span>
+                                              </div>
+                                              
+                                              <h3 className="text-2xl sm:text-4xl font-black text-white leading-tight">{slide.title || slide.question || "Untitled Slide"}</h3>
+                                              {(slide.titleSi || slide.questionSi) && <p className="text-slate-400 font-bold text-sm tracking-wide">{slide.titleSi || slide.questionSi}</p>}
+                                              
+                                              {slide.type === 'note' && (
+                                                 <div className="text-slate-300 text-lg leading-relaxed prose prose-invert max-w-none mt-8 space-y-6">
+                                                    <div>{renderContent(slide.content || slide.body || slide.desc || "")}</div>
+                                                    {slide.contentSi && <div className="text-slate-400 text-base">{renderContent(slide.contentSi)}</div>}
+                                                 </div>
+                                              )}
 
-                                             {slide.type === 'file' && (slide.fileData || slide.url || slide.videoUrl) && (() => {
-                                                 const fileSrc = slide.fileData || slide.url || slide.videoUrl;
-                                                 const isImg = slide.fileType?.includes('image') || fileSrc.match(/\.(png|jpe?g|webp|gif|svg)($|\?)/i);
-                                                 const isVid = slide.fileType?.includes('video') || fileSrc.match(/\.(mp4|webm|mov)($|\?)/i);
-                                                 const isPdf = slide.fileType?.includes('pdf') || fileSrc.toLowerCase().includes('.pdf');
+                                              {slide.type === 'chart' && (
+                                                 <div className="mt-8 space-y-6">
+                                                    <TradingChartWhiteboard
+                                                       chartConfig={slide.chartConfig || { mode: "live", symbol: "BINANCE:BTCUSDT", timeframe: "15" }}
+                                                       drawings={slide.drawings || []}
+                                                       readOnly={false}
+                                                       height="580px"
+                                                    />
 
-                                                 return (
-                                                    <div className="mt-8 rounded-[2rem] overflow-hidden border border-slate-800 bg-[#0f172a] shadow-2xl p-4 sm:p-6">
-                                                       {isImg ? (
-                                                          <img src={fileSrc} alt={slide.fileName || "Resource Image"} className="w-full h-auto max-h-[70vh] object-contain rounded-xl" />
-                                                       ) : isVid ? (
-                                                          <video src={fileSrc} controls className="w-full max-h-[70vh] rounded-xl bg-black" />
-                                                       ) : isPdf ? (
-                                                          <div className="space-y-4">
-                                                             <embed src={fileSrc} type="application/pdf" className="w-full h-[70vh] rounded-xl" />
-                                                             <div className="text-center pt-2">
-                                                                <a
-                                                                   href={fileSrc}
-                                                                   target="_blank"
-                                                                   rel="noreferrer"
-                                                                   download={slide.fileName || "document.pdf"}
-                                                                   className="inline-flex items-center gap-2 px-6 py-3 bg-[#2dd4bf] text-black font-black uppercase tracking-widest text-xs rounded-xl hover:bg-[#14b8a6] shadow-lg shadow-teal-500/20 transition-all"
-                                                                >
-                                                                   📄 Open / Download PDF
-                                                                </a>
+                                                    {(slide.content || slide.body || slide.desc) && (
+                                                       <div className="bg-[#0f172a] border border-slate-800 rounded-3xl p-6 text-slate-300 text-base leading-relaxed space-y-4">
+                                                          <h4 className="text-xs font-black uppercase tracking-widest text-emerald-400 flex items-center gap-2">
+                                                             <span>Teacher's Market Analysis Guide</span>
+                                                          </h4>
+                                                          <div>{renderContent(slide.content || slide.body || slide.desc || "")}</div>
+                                                          {slide.contentSi && (
+                                                             <div className="text-slate-400 text-sm border-t border-slate-800 pt-3">
+                                                                {renderContent(slide.contentSi)}
                                                              </div>
+                                                          )}
+                                                       </div>
+                                                    )}
+                                                 </div>
+                                              )}
+
+                                              {slide.type === 'file' && (slide.fileData || slide.url || slide.videoUrl) && (() => {
+                                                  const fileSrc = slide.fileData || slide.url || slide.videoUrl;
+                                                  const isImg = slide.fileType?.includes('image') || fileSrc.match(/\.(png|jpe?g|webp|gif|svg)($|\?)/i);
+                                                  const isVid = slide.fileType?.includes('video') || fileSrc.match(/\.(mp4|webm|mov)($|\?)/i);
+                                                  const isPdf = slide.fileType?.includes('pdf') || fileSrc.toLowerCase().includes('.pdf');
+
+                                                  return (
+                                                     <div className="mt-8 rounded-[2rem] overflow-hidden border border-slate-800 bg-[#0f172a] shadow-2xl p-4 sm:p-6">
+                                                        {isImg ? (
+                                                           <img src={fileSrc} alt={slide.fileName || "Resource Image"} className="w-full h-auto max-h-[70vh] object-contain rounded-xl" />
+                                                        ) : isVid ? (
+                                                           <video src={fileSrc} controls className="w-full max-h-[70vh] rounded-xl bg-black" />
+                                                        ) : isPdf ? (
+                                                           <div className="space-y-4">
+                                                              <embed src={fileSrc} type="application/pdf" className="w-full h-[70vh] rounded-xl" />
+                                                              <div className="text-center pt-2">
+                                                                 <a
+                                                                    href={fileSrc}
+                                                                    target="_blank"
+                                                                    rel="noreferrer"
+                                                                    download={slide.fileName || "document.pdf"}
+                                                                    className="inline-flex items-center gap-2 px-6 py-3 bg-[#2dd4bf] text-black font-black uppercase tracking-widest text-xs rounded-xl hover:bg-[#14b8a6] shadow-lg shadow-teal-500/20 transition-all"
+                                                                 >
+                                                                    📄 Open / Download PDF
+                                                                 </a>
+                                                              </div>
+                                                           </div>
+                                                        ) : (
+                                                           <div className="p-8 sm:p-12 text-center space-y-4">
+                                                              <div className="text-6xl">📄</div>
+                                                              <p className="text-white font-bold text-base">{slide.fileName || "Resource Attachment"}</p>
+                                                              <a
+                                                                 href={fileSrc}
+                                                                 target="_blank"
+                                                                 rel="noreferrer"
+                                                                 download={slide.fileName || "download"}
+                                                                 className="inline-flex items-center gap-2 px-6 py-3 bg-[#2dd4bf] text-black font-black uppercase tracking-widest text-xs rounded-xl hover:bg-[#14b8a6] shadow-lg shadow-teal-500/20 transition-all"
+                                                              >
+                                                                 Download File
+                                                              </a>
+                                                           </div>
+                                                        )}
+                                                        {slide.fileName && !isPdf && (
+                                                           <p className="text-center text-slate-500 font-bold mt-4 text-xs">{slide.fileName}</p>
+                                                        )}
+                                                     </div>
+                                                  );
+                                               })()}
+
+                                              {slide.type === 'video' && (
+                                                 <div className="w-full aspect-video rounded-[2rem] overflow-hidden border border-slate-800 shadow-2xl bg-black mt-8">
+                                                    {isDirectVideo(slide.url || slide.videoUrl) ? (
+                                                       <video
+                                                          key={slide.url || slide.videoUrl}
+                                                          src={slide.url || slide.videoUrl}
+                                                          controls
+                                                          playsInline
+                                                          className="w-full h-full object-contain"
+                                                          controlsList="nodownload"
+                                                       />
+                                                    ) : (
+                                                       <iframe
+                                                          src={formatVideoUrl(slide.url || slide.videoUrl)}
+                                                          className="w-full h-full"
+                                                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                          allowFullScreen
+                                                       />
+                                                    )}
+                                                 </div>
+                                              )}
+
+                                              {slide.type === 'quiz' && (
+                                                 <div className="space-y-6 mt-12">
+                                                    {slide.candlestickType && (
+                                                       <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 flex flex-col items-center justify-center space-y-3 shadow-xl">
+                                                          <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
+                                                             Candlestick Pattern Diagram
+                                                          </span>
+                                                          <div className="w-40 h-24 flex items-center justify-center p-2 bg-slate-950/80 rounded-2xl border border-slate-800/80 shadow-inner">
+                                                             <PatternGraphic type={slide.candlestickType} />
                                                           </div>
-                                                       ) : (
-                                                          <div className="p-8 sm:p-12 text-center space-y-4">
-                                                             <div className="text-6xl">📄</div>
-                                                             <p className="text-white font-bold text-base">{slide.fileName || "Resource Attachment"}</p>
-                                                             <a
-                                                                href={fileSrc}
-                                                                target="_blank"
-                                                                rel="noreferrer"
-                                                                download={slide.fileName || "download"}
-                                                                className="inline-flex items-center gap-2 px-6 py-3 bg-[#2dd4bf] text-black font-black uppercase tracking-widest text-xs rounded-xl hover:bg-[#14b8a6] shadow-lg shadow-teal-500/20 transition-all"
+                                                          <p className="text-xs text-slate-400 font-semibold">Examine the candle body, shadows, and wicks above</p>
+                                                       </div>
+                                                    )}
+
+                                                    <div className="space-y-4">
+                                                       {(slide.options || []).map((opt, oIdx) => {
+                                                          const isAnswered = answeredSlides[currentSlideIndex];
+                                                          const correctTarget = slide.correctIndex !== undefined ? slide.correctIndex : slide.correctAnswer;
+                                                          const isCorrectOption = oIdx === correctTarget;
+                                                          const isSelected = answeredSlides[currentSlideIndex]?.selected === oIdx;
+                                                          let btnClass = "bg-[#0f172a] border-slate-700 text-slate-300 hover:bg-slate-800";
+                                                          
+                                                          if (isAnswered) {
+                                                             if (isCorrectOption) btnClass = "bg-[#064e3b]/40 border-emerald-500/50 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.1)]";
+                                                             else if (isSelected) btnClass = "bg-rose-900/20 border-rose-500/50 text-rose-400";
+                                                             else btnClass = "bg-[#0f172a]/50 border-slate-800 text-slate-600 opacity-50";
+                                                          }
+
+                                                          return (
+                                                             <button 
+                                                                key={oIdx}
+                                                                disabled={isAnswered}
+                                                                onClick={() => setAnsweredSlides(prev => ({ ...prev, [currentSlideIndex]: { selected: oIdx, correct: isCorrectOption } }))}
+                                                                className={`w-full p-6 text-left rounded-2xl border transition-all duration-300 ${btnClass} font-medium text-lg`}
                                                              >
-                                                                Download File
-                                                             </a>
-                                                          </div>
-                                                       )}
-                                                       {slide.fileName && !isPdf && (
-                                                          <p className="text-center text-slate-500 font-bold mt-4 text-xs">{slide.fileName}</p>
-                                                       )}
+                                                                {opt}
+                                                             </button>
+                                                          );
+                                                       })}
                                                     </div>
-                                                 );
-                                              })()}
-
-                                             {slide.type === 'video' && (
-                                                <div className="w-full aspect-video rounded-[2rem] overflow-hidden border border-slate-800 shadow-2xl bg-black mt-8">
-                                                   {isDirectVideo(slide.url || slide.videoUrl) ? (
-                                                      <video
-                                                         key={slide.url || slide.videoUrl}
-                                                         src={slide.url || slide.videoUrl}
-                                                         controls
-                                                         playsInline
-                                                         className="w-full h-full object-contain"
-                                                         controlsList="nodownload"
-                                                      />
-                                                   ) : (
-                                                      <iframe
-                                                         src={formatVideoUrl(slide.url || slide.videoUrl)}
-                                                         className="w-full h-full"
-                                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                                         allowFullScreen
-                                                      />
-                                                   )}
-                                                </div>
-                                             )}
-
-                                             {slide.type === 'quiz' && (
-                                                <div className="space-y-6 mt-12">
-                                                   <div className="space-y-4">
-                                                      {(slide.options || []).map((opt, oIdx) => {
-                                                         const isAnswered = answeredSlides[currentSlideIndex];
-                                                         const isCorrectOption = oIdx === slide.correctAnswer;
-                                                         const isSelected = answeredSlides[currentSlideIndex]?.selected === oIdx;
-                                                         let btnClass = "bg-[#0f172a] border-slate-700 text-slate-300 hover:bg-slate-800";
-                                                         
-                                                         if (isAnswered) {
-                                                            if (isCorrectOption) btnClass = "bg-[#064e3b]/40 border-emerald-500/50 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.1)]";
-                                                            else if (isSelected) btnClass = "bg-rose-900/20 border-rose-500/50 text-rose-400";
-                                                            else btnClass = "bg-[#0f172a]/50 border-slate-800 text-slate-600 opacity-50";
-                                                         }
-
-                                                         return (
-                                                            <button 
-                                                               key={oIdx}
-                                                               disabled={isAnswered}
-                                                               onClick={() => setAnsweredSlides(prev => ({ ...prev, [currentSlideIndex]: { selected: oIdx, correct: isCorrectOption } }))}
-                                                               className={`w-full p-6 text-left rounded-2xl border transition-all duration-300 ${btnClass} font-medium text-lg`}
-                                                            >
-                                                               {opt}
-                                                            </button>
-                                                         );
-                                                      })}
-                                                   </div>
-                                                   {answeredSlides[currentSlideIndex] && (
-                                                      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`p-8 mt-8 rounded-2xl border ${answeredSlides[currentSlideIndex].correct ? 'bg-[#064e3b]/20 border-emerald-500/30' : 'bg-rose-900/20 border-rose-500/30'}`}>
-                                                         <p className={`font-black text-sm tracking-widest uppercase ${answeredSlides[currentSlideIndex].correct ? 'text-emerald-400' : 'text-rose-400'}`}>
-                                                            {answeredSlides[currentSlideIndex].correct ? "✓ Correct!" : "✗ Incorrect"}
-                                                         </p>
-                                                         {slide.explanation && <div className="mt-6 border-t border-slate-700/50 pt-6 text-sm">{renderContent(slide.explanation)}</div>}
-                                                         {slide.explanationSi && <div className="mt-4 border-t border-slate-700/50 pt-4 text-xs">{renderContent(slide.explanationSi)}</div>}
-                                                      </motion.div>
-                                                   )}
-                                                </div>
-                                             )}
+                                                    {answeredSlides[currentSlideIndex] && (
+                                                       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`p-8 mt-8 rounded-2xl border ${answeredSlides[currentSlideIndex].correct ? 'bg-[#064e3b]/20 border-emerald-500/30' : 'bg-rose-900/20 border-rose-500/30'}`}>
+                                                          <p className={`font-black text-sm tracking-widest uppercase ${answeredSlides[currentSlideIndex].correct ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                                             {answeredSlides[currentSlideIndex].correct ? "✓ Correct!" : "✗ Incorrect"}
+                                                          </p>
+                                                          {slide.explanation && <div className="mt-6 border-t border-slate-700/50 pt-6 text-sm">{renderContent(slide.explanation)}</div>}
+                                                          {slide.explanationSi && <div className="mt-4 border-t border-slate-700/50 pt-4 text-xs">{renderContent(slide.explanationSi)}</div>}
+                                                       </motion.div>
+                                                    )}
+                                                 </div>
+                                              )}
                                           </div>
                                        );
                                     })()}

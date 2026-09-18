@@ -15,9 +15,13 @@ import {
   Sparkles,
   UploadCloud,
   Globe,
-  Loader2
+  Loader2,
+  TrendingUp
 } from "lucide-react";
 import { showAppToast } from "../GlobalAlert";
+import TradingChartWhiteboard from "../TradingChartWhiteboard";
+import CandlestickQuestionModal from "./CandlestickQuestionModal";
+import { PatternGraphic } from "../CandlestickPatternsShowcase";
 
 const formatVideoUrl = (rawUrl) => {
   if (!rawUrl) return "";
@@ -78,6 +82,7 @@ const SlideDesignerModal = ({
   const [resourceSourceMode, setResourceSourceMode] = useState("url");
   const [isUploadingResource, setIsUploadingResource] = useState(false);
   const [resourceUploadStatus, setResourceUploadStatus] = useState("");
+  const [isCandleModalOpen, setIsCandleModalOpen] = useState(false);
 
   const activeSlide = slides[activeIndex] || {
     type: "video",
@@ -89,7 +94,10 @@ const SlideDesignerModal = ({
     question: "",
     options: ["", "", "", ""],
     correctIndex: 0,
-    explanation: ""
+    explanation: "",
+    chartConfig: { mode: "live", symbol: "BINANCE:BTCUSDT", timeframe: "15" },
+    drawings: [],
+    candlestickType: ""
   };
 
   const updateActiveSlide = (field, value) => {
@@ -365,6 +373,7 @@ const SlideDesignerModal = ({
               const typeIcons = {
                 video: Video,
                 note: FileText,
+                chart: TrendingUp,
                 quiz: HelpCircle,
                 file: Paperclip
               };
@@ -432,6 +441,7 @@ const SlideDesignerModal = ({
               {[
                 { type: "video", label: "Video Lesson", icon: Video },
                 { type: "note", label: "Interactive Note", icon: FileText },
+                { type: "chart", label: "Live Chart & Whiteboard", icon: TrendingUp },
                 { type: "quiz", label: "MCQ Checkpoint", icon: HelpCircle },
                 { type: "file", label: "Resource File", icon: Paperclip }
               ].map((item) => {
@@ -465,7 +475,7 @@ const SlideDesignerModal = ({
                     type="text"
                     value={activeSlide.title || ""}
                     onChange={(e) => updateActiveSlide("title", e.target.value)}
-                    placeholder="e.g. Part 1: Elasticity Concept"
+                    placeholder="e.g. Candlestick Anatomy & Liquidity Zones"
                     className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs font-semibold text-white outline-none focus:border-indigo-500"
                   />
                 </div>
@@ -477,7 +487,7 @@ const SlideDesignerModal = ({
                     type="text"
                     value={activeSlide.titleSi || ""}
                     onChange={(e) => updateActiveSlide("titleSi", e.target.value)}
-                    placeholder="e.g. නම්‍යතාවය පිළිබඳ මූලික සිද්ධාන්ත"
+                    placeholder="e.g. Candlestick රටා සහ Market Structure"
                     className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs font-semibold text-white outline-none focus:border-indigo-500"
                   />
                 </div>
@@ -727,19 +737,135 @@ const SlideDesignerModal = ({
               </div>
             )}
 
-            {/* QUIZ TYPE EDITOR */}
-            {activeSlide.type === "quiz" && (
-              <div className="bg-[#0e1424] border border-slate-800 rounded-3xl p-6 space-y-4">
-                <div>
-                  <label className="text-xs font-bold text-slate-400 block mb-1">
-                    MCQ Question Prompt
+            {/* CHART & WHITEBOARD TYPE EDITOR */}
+            {activeSlide.type === "chart" && (
+              <div className="bg-[#0e1424] border border-slate-800 rounded-3xl p-6 space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+                  <div>
+                    <h4 className="text-sm font-black text-white flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4 text-emerald-400" />
+                      <span>Interactive Trading Chart & Whiteboard Studio</span>
+                    </h4>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Select live market asset or upload a chart. Use whiteboard tools to draw trendlines, price levels, highlight candle wicks, and place order block tags.
+                    </p>
+                  </div>
+                  <span className="px-3 py-1 rounded-xl bg-emerald-500/10 text-emerald-400 text-xs font-bold border border-emerald-500/20 shrink-0">
+                    Live Market + Whiteboard
+                  </span>
+                </div>
+
+                {/* Whiteboard Component */}
+                <TradingChartWhiteboard
+                  chartConfig={activeSlide.chartConfig || { mode: "live", symbol: "BINANCE:BTCUSDT", timeframe: "15" }}
+                  drawings={activeSlide.drawings || []}
+                  onChangeConfig={(cfg) => updateActiveSlide("chartConfig", cfg)}
+                  onChangeDrawings={(drw) => updateActiveSlide("drawings", drw)}
+                  isAdmin={true}
+                  height="540px"
+                />
+
+                {/* Teacher Lesson Notes / Text Explanation below chart */}
+                <div className="space-y-2 pt-2 border-t border-slate-800">
+                  <label className="text-xs font-bold text-slate-400 block">
+                    Teacher's Chart Explanation / Lesson Guide (Optional)
                   </label>
                   <textarea
                     rows={3}
+                    value={activeSlide.content || ""}
+                    onChange={(e) => updateActiveSlide("content", e.target.value)}
+                    placeholder="Explain the market structure, entry triggers, candlestick wicks, or trading strategy to students..."
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-xs font-medium text-white outline-none focus:border-indigo-500 resize-none"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* QUIZ TYPE EDITOR */}
+            {activeSlide.type === "quiz" && (
+              <div className="bg-[#0e1424] border border-slate-800 rounded-3xl p-6 space-y-5">
+                {/* CANDLESTICK GENERATOR BANNER */}
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-indigo-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center shrink-0 border border-amber-500/40">
+                      <Sparkles className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-white flex items-center gap-2">
+                        <span>Candlestick Pattern Question Generator</span>
+                        <span className="px-2 py-0.2 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                          37 Patterns
+                        </span>
+                      </h4>
+                      <p className="text-[11px] text-slate-400">
+                        1-Click generator: Insert Bullish, Bearish, or Indecision candlestick with SVG vector diagram, realistic distractors, and explanation.
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsCandleModalOpen(true)}
+                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 flex items-center gap-2 shrink-0 transition-all active:scale-95 cursor-pointer"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>Pick from 37 Candle Patterns</span>
+                  </button>
+                </div>
+
+                {/* CANDLESTICK GRAPHIC PREVIEW IF SET */}
+                {activeSlide.candlestickType && (
+                  <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-20 h-16 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-center p-1 shrink-0">
+                        <PatternGraphic type={activeSlide.candlestickType} />
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                          Attached Vector Candlestick Diagram
+                        </span>
+                        <p className="text-xs font-black text-white">
+                          Pattern Type: {activeSlide.candlestickType}
+                        </p>
+                        <p className="text-[11px] text-slate-400">
+                          Students will see this exact vector candlestick diagram above the question choices.
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => updateActiveSlide("candlestickType", "")}
+                      className="px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-bold transition-colors shrink-0"
+                    >
+                      Remove Diagram
+                    </button>
+                  </div>
+                )}
+
+                <div>
+                  <label className="text-xs font-bold text-slate-400 block mb-1">
+                    MCQ Question Prompt (English)
+                  </label>
+                  <textarea
+                    rows={2}
                     value={activeSlide.question || ""}
                     onChange={(e) => updateActiveSlide("question", e.target.value)}
                     placeholder="Enter the question for this checkpoint..."
                     className="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-xs font-semibold text-white outline-none focus:border-indigo-500 resize-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-400 block mb-1">
+                    MCQ Question Prompt (Sinhala - Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={activeSlide.questionSi || ""}
+                    onChange={(e) => updateActiveSlide("questionSi", e.target.value)}
+                    placeholder="e.g. පහත දැක්වෙන Candlestick රටාව (Pattern) කුමක්ද?"
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs font-semibold text-white outline-none focus:border-indigo-500"
                   />
                 </div>
 
@@ -760,7 +886,10 @@ const SlideDesignerModal = ({
                         type="radio"
                         name="correctAnswerOption"
                         checked={activeSlide.correctIndex === oIdx}
-                        onChange={() => updateActiveSlide("correctIndex", oIdx)}
+                        onChange={() => {
+                          updateActiveSlide("correctIndex", oIdx);
+                          updateActiveSlide("correctAnswer", oIdx);
+                        }}
                         className="w-4 h-4 text-emerald-500 bg-slate-800 border-slate-700"
                       />
                       <input
@@ -988,6 +1117,27 @@ const SlideDesignerModal = ({
           </div>
         </main>
       </div>
+
+      {/* CANDLESTICK QUESTION GENERATOR MODAL */}
+      <CandlestickQuestionModal
+        isOpen={isCandleModalOpen}
+        onClose={() => setIsCandleModalOpen(false)}
+        onSelectPatternQuestion={(questionData) => {
+          updateActiveSlide("question", questionData.question);
+          if (questionData.questionSi) {
+            updateActiveSlide("questionSi", questionData.questionSi);
+          }
+          updateActiveSlide("options", questionData.options);
+          updateActiveSlide("correctIndex", questionData.correctIndex);
+          updateActiveSlide("correctAnswer", questionData.correctIndex);
+          updateActiveSlide("explanation", questionData.explanation);
+          if (questionData.explanationSi) {
+            updateActiveSlide("explanationSi", questionData.explanationSi);
+          }
+          updateActiveSlide("candlestickType", questionData.candlestickType);
+          showAppToast("Candlestick Pattern Added", `Generated question for ${questionData.candlestickType}.`, "success");
+        }}
+      />
     </div>
   );
 };

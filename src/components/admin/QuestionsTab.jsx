@@ -6,8 +6,11 @@ import {
   CheckCircle2,
   Search,
   Filter,
-  AlertCircle
+  AlertCircle,
+  Sparkles
 } from "lucide-react";
+import CandlestickQuestionModal from "./CandlestickQuestionModal";
+import { PatternGraphic } from "../CandlestickPatternsShowcase";
 
 const QuestionsTab = ({
   questions = {},
@@ -18,6 +21,7 @@ const QuestionsTab = ({
   onDeleteQuestion
 }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isCandleModalOpen, setIsCandleModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [newQuestion, setNewQuestion] = useState({
     text: "",
@@ -83,6 +87,15 @@ const QuestionsTab = ({
           </div>
 
           <button
+            type="button"
+            onClick={() => setIsCandleModalOpen(true)}
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 flex items-center gap-2 transition-all active:scale-95 cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Candle Question Library (37)</span>
+          </button>
+
+          <button
             onClick={() => setIsAddModalOpen(true)}
             className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-purple-600/20 flex items-center gap-2 transition-all active:scale-95"
           >
@@ -128,6 +141,11 @@ const QuestionsTab = ({
                   <h4 className="text-sm font-bold text-white leading-relaxed">
                     {q.text}
                   </h4>
+                  {q.candlestickType && (
+                    <div className="w-24 h-16 bg-slate-950/80 rounded-xl border border-slate-800 p-1 flex items-center justify-center mt-2">
+                      <PatternGraphic type={q.candlestickType} />
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -286,6 +304,21 @@ const QuestionsTab = ({
           </div>
         </div>
       )}
+      {/* CANDLESTICK QUESTION GENERATOR MODAL */}
+      <CandlestickQuestionModal
+        isOpen={isCandleModalOpen}
+        onClose={() => setIsCandleModalOpen(false)}
+        onSelectPatternQuestion={(questionData) => {
+          onAddQuestion({
+            text: questionData.question,
+            options: questionData.options,
+            correctIndex: questionData.correctIndex,
+            category: "Candlestick Patterns",
+            candlestickType: questionData.candlestickType,
+            explanation: questionData.explanation
+          });
+        }}
+      />
     </div>
   );
 };
