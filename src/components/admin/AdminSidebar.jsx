@@ -199,7 +199,7 @@ const AdminSidebar = ({
                 {adminProfile?.name || "Administrator"}
               </p>
               <p className="text-[10px] text-slate-500 truncate">
-                {adminProfile?.email || "admin@taizer.lk"}
+                {adminProfile?.email || "supundilshan358@gmail.com"}
               </p>
             </div>
           </div>

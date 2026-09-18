@@ -149,7 +149,7 @@ const SettingsTab = ({
                 {adminProfile.name || "Administrator"}
               </p>
               <p className="text-xs text-indigo-400 mt-0.5">
-                {adminProfile.email || "admin@taizer.lk"}
+                {adminProfile.email || "supundilshan358@gmail.com"}
               </p>
               <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mt-2">
                 Super Admin Access

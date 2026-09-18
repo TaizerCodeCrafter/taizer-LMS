@@ -499,9 +499,14 @@ const LMSDashboard = () => {
             }
          } catch (err) {}
 
-         if (!foundUser) {
-            return;
-         }
+          if (!foundUser) {
+             try {
+                localStorage.removeItem("currentUser");
+                localStorage.removeItem("activeStudent");
+             } catch (e) {}
+             navigate("/login");
+             return;
+          }
 
          setUser(foundUser);
          if (foundUser.profilePic) setProfilePic(foundUser.profilePic);

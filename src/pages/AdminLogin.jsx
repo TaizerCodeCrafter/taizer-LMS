@@ -7,27 +7,101 @@ const AdminLogin = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    const storedProfile = JSON.parse(
-      localStorage.getItem("adminProfile") ||
-        JSON.stringify({
-          name: "S.S.D Madusanka",
-          email: "admin@taizer.lk",
-          photo: "/admin-profile.png",
-          password: "admin"
-        })
-    );
+  // Ensure any stale student session is cleared on admin login page
+  React.useEffect(() => {
+    try {
+      localStorage.removeItem("currentUser");
+      localStorage.removeItem("activeStudent");
+    } catch (e) {}
 
-    if (
-      (username === "admin" || username === storedProfile.email) &&
-      password === storedProfile.password
-    ) {
+    // Pre-sync admin profile from backend if available
+    fetch("http://localhost:5000/api/admin/profile")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && data.email) {
+          localStorage.setItem("adminProfile", JSON.stringify(data));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    const cleanUser = username.trim().toLowerCase();
+    const cleanPass = password.trim();
+
+    // 1. Attempt backend API authorization
+    try {
+      const res = await fetch("http://localhost:5000/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: cleanUser, password: cleanPass })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          const profile = {
+            name: data.admin?.name || "Super Admin",
+            email: "supundilshan358@gmail.com",
+            photo: data.admin?.photo || "/admin-profile.png",
+            password: cleanPass
+          };
+          localStorage.setItem("adminProfile", JSON.stringify(profile));
+          localStorage.setItem("adminLoggedIn", "true");
+          setLoading(false);
+          navigate("/admin");
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn("Backend admin login offline, checking local credentials:", err);
+    }
+
+    // 2. Direct authentication fallback for supundilshan358@gmail.com / addi
+    let storedProfile = {
+      name: "Super Admin",
+      email: "supundilshan358@gmail.com",
+      photo: "/admin-profile.png",
+      password: "addi"
+    };
+
+    try {
+      const saved = localStorage.getItem("adminProfile");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.email && parsed.email !== "admin@taizer.lk") {
+          storedProfile = parsed;
+        }
+      }
+    } catch (e) {}
+
+    const isUserValid =
+      cleanUser === "admin" ||
+      cleanUser === "supundilshan358@gmail.com" ||
+      cleanUser === storedProfile.email.toLowerCase();
+
+    const isPassValid =
+      cleanPass === "addi" || cleanPass === storedProfile.password;
+
+    if (isUserValid && isPassValid) {
+      const finalProfile = {
+        ...storedProfile,
+        email: "supundilshan358@gmail.com",
+        password: cleanPass
+      };
+      localStorage.setItem("adminProfile", JSON.stringify(finalProfile));
       localStorage.setItem("adminLoggedIn", "true");
+      setLoading(false);
       navigate("/admin");
     } else {
+      setLoading(false);
       setError("Invalid administrative credentials. Please check your username and password.");
     }
   };
@@ -76,7 +150,7 @@ const AdminLogin = () => {
                   if (error) setError("");
                 }}
                 className="w-full bg-slate-900/90 border border-slate-800 rounded-xl pl-11 pr-4 py-3 text-xs font-semibold text-white placeholder-slate-500 outline-none focus:border-indigo-500 transition-colors"
-                placeholder="admin"
+                placeholder="supundilshan358@gmail.com or admin"
                 required
               />
             </div>
@@ -114,9 +188,10 @@ const AdminLogin = () => {
 
           <button
             type="submit"
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-bold text-xs uppercase tracking-wider shadow-xl shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all active:scale-95"
+            disabled={loading}
+            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-bold text-xs uppercase tracking-wider shadow-xl shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
           >
-            <span>Authorize Access</span>
+            <span>{loading ? "Authorizing..." : "Authorize Access"}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>

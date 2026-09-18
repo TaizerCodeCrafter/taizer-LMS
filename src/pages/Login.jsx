@@ -17,6 +17,11 @@ const Login = () => {
       const res = await fetch("http://localhost:5000/api/students");
       if (res.ok) {
         students = await res.json();
+        if (Array.isArray(students)) {
+          try {
+            localStorage.setItem("studentRequests", JSON.stringify(students));
+          } catch (e) {}
+        }
       } else {
         students = JSON.parse(localStorage.getItem("studentRequests") || "[]");
       }
@@ -24,11 +29,20 @@ const Login = () => {
       students = JSON.parse(localStorage.getItem("studentRequests") || "[]");
     }
 
+    if (!students || students.length === 0) {
+      try {
+        localStorage.removeItem("currentUser");
+        localStorage.removeItem("activeStudent");
+      } catch (e) {}
+      setError("No registered student account found. Please register first.");
+      return;
+    }
+
     const student = students.find(
       (s) =>
-        (s.email?.toLowerCase() === userId.toLowerCase() ||
-          s.studentId?.toLowerCase() === userId.toLowerCase()) &&
-        s.password === password
+        (s.email?.toLowerCase() === userId.toLowerCase().trim() ||
+          s.studentId?.toLowerCase() === userId.toLowerCase().trim()) &&
+        s.password === password.trim()
     );
 
     if (student) {

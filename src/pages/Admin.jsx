@@ -139,17 +139,27 @@ const Admin = () => {
     onConfirm: () => {}
   });
 
-  const [adminProfile, setAdminProfile] = useState(
-    JSON.parse(
-      localStorage.getItem("adminProfile") ||
-        JSON.stringify({
-          name: "S.S.D Madusanka",
-          email: "admin@taizer.lk",
-          photo: "/admin-profile.png",
-          password: "admin"
-        })
-    )
-  );
+  const [adminProfile, setAdminProfile] = useState(() => {
+    try {
+      const saved = localStorage.getItem("adminProfile");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.email && parsed.email !== "admin@taizer.lk") {
+          return parsed;
+        }
+      }
+    } catch (e) {}
+    const defaultProf = {
+      name: "Super Admin",
+      email: "supundilshan358@gmail.com",
+      photo: "/admin-profile.png",
+      password: "addi"
+    };
+    try {
+      localStorage.setItem("adminProfile", JSON.stringify(defaultProf));
+    } catch (e) {}
+    return defaultProf;
+  });
 
   // SESSIONS (CURRICULUM)
   const [sessions, setSessions] = useState(
@@ -614,12 +624,10 @@ const Admin = () => {
         const fetched = await studentsRes.json();
         if (Array.isArray(fetched)) {
           setStudents(fetched);
-          if (fetched.length > 0) {
-            try {
-              localStorage.setItem("studentRequests", JSON.stringify(fetched));
-            } catch (storageErr) {
-              console.warn("Storage quota on studentRequests:", storageErr);
-            }
+          try {
+            localStorage.setItem("studentRequests", JSON.stringify(fetched));
+          } catch (storageErr) {
+            console.warn("Storage quota on studentRequests:", storageErr);
           }
         }
       }
@@ -674,6 +682,10 @@ const Admin = () => {
         if (settingsRes.ok) {
           const settingsData = await settingsRes.json();
           settingsData.forEach((setting) => {
+            if (setting.type === "adminProfile" && setting.data) {
+              setAdminProfile(setting.data);
+              try { localStorage.setItem("adminProfile", JSON.stringify(setting.data)); } catch (e) {}
+            }
             if (setting.type === "courseSettings" && setting.data) {
               setCourseSettings(setting.data);
               try { localStorage.setItem("courseSettings", JSON.stringify(setting.data)); } catch (e) {}

@@ -33,7 +33,11 @@ console.log('🎬 Starting Econo Academy Backend...');
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI)
-    .then(() => { console.log('✅ Connected to MongoDB Atlas!'); if (typeof seedInitialDiscussions === 'function') seedInitialDiscussions(); })
+    .then(() => { 
+        console.log('✅ Connected to MongoDB Atlas!'); 
+        if (typeof seedInitialDiscussions === 'function') seedInitialDiscussions(); 
+        if (typeof seedAdminProfile === 'function') seedAdminProfile();
+    })
     .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
 // Message Schema (WhatsApp AI)
@@ -249,6 +253,32 @@ const seedInitialDiscussions = async () => {
         console.error("Discussion seed error:", e.message);
     }
 };
+ 
+// Helper to seed or ensure admin profile credentials
+const seedAdminProfile = async () => {
+    try {
+        let adminSetting = await Settings.findOne({ type: 'adminProfile' });
+        if (!adminSetting || !adminSetting.data || !adminSetting.data.email || adminSetting.data.email === 'admin@taizer.lk') {
+            await Settings.findOneAndUpdate(
+                { type: 'adminProfile' },
+                {
+                    type: 'adminProfile',
+                    data: {
+                        name: 'Super Admin',
+                        email: 'supundilshan358@gmail.com',
+                        password: 'addi',
+                        photo: '/admin-profile.png',
+                        updatedAt: new Date().toISOString()
+                    }
+                },
+                { upsert: true, new: true }
+            );
+            console.log('👑 Admin Profile seeded: supundilshan358@gmail.com');
+        }
+    } catch (e) {
+        console.error('Admin profile seed error:', e.message);
+    }
+};
 
 // Website Inquiry Schema (Contact Form)
 const Inquiry = mongoose.model('Inquiry', new mongoose.Schema({
@@ -402,7 +432,89 @@ app.put('/api/portal/messages/read-admin/:email', async (req, res) => {
     }
 });
 
+// --- ADMIN AUTH & PROFILE ROUTES ---
+app.post('/api/admin/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const cleanUser = (username || '').trim().toLowerCase();
+
+        let adminSetting = await Settings.findOne({ type: 'adminProfile' });
+        let adminData = adminSetting?.data || {
+            name: 'Super Admin',
+            email: 'supundilshan358@gmail.com',
+            password: 'addi',
+            photo: '/admin-profile.png'
+        };
+
+        const targetEmail = (adminData.email || 'supundilshan358@gmail.com').toLowerCase();
+        const targetPass = adminData.password || 'addi';
+
+        if ((cleanUser === 'admin' || cleanUser === targetEmail) && password === targetPass) {
+            return res.json({
+                success: true,
+                admin: {
+                    name: adminData.name || 'Super Admin',
+                    email: targetEmail,
+                    photo: adminData.photo || '/admin-profile.png'
+                }
+            });
+        } else {
+            return res.status(401).json({
+                success: false,
+                error: 'Invalid administrative credentials. Please check your username and password.'
+            });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/admin/profile', async (req, res) => {
+    try {
+        let adminSetting = await Settings.findOne({ type: 'adminProfile' });
+        if (!adminSetting || !adminSetting.data) {
+            const defaultAdmin = {
+                name: 'Super Admin',
+                email: 'supundilshan358@gmail.com',
+                password: 'addi',
+                photo: '/admin-profile.png'
+            };
+            adminSetting = await Settings.findOneAndUpdate(
+                { type: 'adminProfile' },
+                { type: 'adminProfile', data: defaultAdmin },
+                { upsert: true, new: true }
+            );
+        }
+        res.json(adminSetting.data);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/admin/profile', async (req, res) => {
+    try {
+        const updatedData = req.body;
+        const adminSetting = await Settings.findOneAndUpdate(
+            { type: 'adminProfile' },
+            { type: 'adminProfile', data: updatedData },
+            { upsert: true, new: true }
+        );
+        res.json(adminSetting.data);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // --- STUDENTS API ROUTES ---
+
+app.delete('/api/students', async (req, res) => {
+    try {
+        const result = await Student.deleteMany({});
+        res.json({ success: true, deletedCount: result.deletedCount });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 app.get('/api/students', async (req, res) => {
     try {
