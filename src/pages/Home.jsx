@@ -32,8 +32,8 @@ const Home = () => {
         JSON.stringify([
           {
             id: 1,
-            title: "Sinhala Grade 6-9",
-            desc: "Foundation Sinhala Language & Grammar",
+            title: "Crypto Basic Masterclass",
+            desc: "Foundation Blockchain, Wallets & Market Execution",
             color: "from-blue-600/20",
             border: "border-blue-500/30",
             text: "text-blue-400",
@@ -41,58 +41,47 @@ const Home = () => {
             btn: "bg-blue-600",
             details: {
               overview: [
-                "Sinhala language fundamentals",
-                "Grammar basics (විභක්ති, ක්‍රියා, නාම)",
-                "Reading & comprehension skills",
-                "Writing skills development"
+                "Blockchain fundamentals & wallet security",
+                "Centralized & Decentralized exchanges setup",
+                "Spot & Futures market mechanics",
+                "Basic Technical Analysis & chart patterns"
               ],
               learn: [
-                "නිවැරදි වාක්‍ය රචනා",
-                "කතා කියවීම හා තේරුම් ගැනීම",
-                "රචනා ලිවීම (Essays, Letters)",
-                "Basic literature analysis"
+                "Candlestick patterns & trendlines",
+                "Risk management & position sizing",
+                "Support, Resistance & Breakouts",
+                "Live market analysis sessions"
               ],
-              duration: "6 – 12 months (weekly classes)",
-              target: "Grade 6–9 students (Strong foundation for O/L)",
-              includes: ["PDF notes", "Worksheets", "Monthly tests"]
+              duration: "1 – 2 months (weekly live sessions)",
+              target: "Beginner & intermediate crypto traders",
+              includes: ["PDF cheat sheets", "Chart setups", "LMS video recordings"]
             }
           },
           {
             id: 2,
-            title: "Sinhala O/L",
-            desc: "Grade 10-11 Exam-Focused Masterclass",
+            title: "Order Flow & Institutional Volume",
+            desc: "Footprint Charts, Delta & Market Microstructure",
             color: "from-purple-600/20",
             border: "border-purple-500/30",
             text: "text-purple-400",
             iconBg: "bg-purple-500/20",
             btn: "bg-purple-600",
             details: {
-              overview: ["Advanced Grammar", "Exam Techniques", "Literature Analysis"],
-              learn: ["Past Papers", "Model Essays", "Poetry Analysis"],
-              duration: "1 Year",
-              target: "Grade 10-11 students",
-              includes: ["Past Paper Booklets", "Model Papers", "Audio Lessons"]
-            }
-          },
-          {
-            id: 3,
-            title: "Economics A/L",
-            desc: "Grade 12-13 Full Theory & Paper Class",
-            color: "from-emerald-600/20",
-            border: "border-emerald-500/30",
-            text: "text-emerald-400",
-            iconBg: "bg-emerald-500/20",
-            btn: "bg-emerald-600",
-            details: {
               overview: [
-                "Microeconomics Theory",
-                "Macroeconomics Policies",
-                "International Trade & Finance"
+                "Footprint charts (Bid/Ask volume imbalances)",
+                "Cumulative Volume Delta (CVD) divergence",
+                "DOM & liquidity absorption zones",
+                "Auction Market Theory & Value Areas"
               ],
-              learn: ["Mathematical Economics", "Data Analysis", "Economic Modelling"],
-              duration: "2 Years",
-              target: "A/L Commerce Students",
-              includes: ["Full Theory Tutes", "Unit Revision Papers", "Online LMS Access"]
+              learn: [
+                "Identifying institutional absorption & trapped traders",
+                "High-probability scalp & intraday setups",
+                "Advanced order flow execution frameworks",
+                "Daily pre-market preparation"
+              ],
+              duration: "3 months (intensive live masterclass)",
+              target: "Experienced traders seeking edge & prop firm funding",
+              includes: ["Order Flow indicators", "Private VIP community", "Daily trade breakdowns"]
             }
           }
         ])
@@ -101,27 +90,27 @@ const Home = () => {
 
 const DEFAULT_HOME_SETTINGS = {
   hero: {
-    badge: "Premier Sinhala & Economics Academy LK",
-    title: "Master Economics (A/L) & Sinhala (Grade 6–11)",
+    badge: "Premier Crypto & Trading Academy LK",
+    title: "Master Crypto Basic & Order Flow Trading",
     subtitle:
-      "සරලව සහ නිවැරදිව විෂය කරුණු ඉගෙන ගෙන විශිෂ්ඨ සාමාර්ථයක් කරා යමු. Interactive online LMS, revision papers, model answers, and weekly live sessions.",
+      "සරලව සහ නිවැරදිව Technical Analysis හා Order Flow ඉගෙන ගෙන සාර්ථක Trader කෙනෙක් වෙමු. Interactive online LMS, risk management rules, and weekly live trading sessions.",
     enrollBtnText: "Enroll for Classes",
     enrollBtnLink: "/register",
-    whatsappBtnText: "Free WhatsApp Class",
+    whatsappBtnText: "Free WhatsApp Community",
     whatsappUrl: "https://wa.me/",
     heroImage: "/hero-image.png",
-    floatingBadge1Title: "98% A/L Pass Rate",
-    floatingBadge1Subtitle: "Consistent Island Results",
+    floatingBadge1Title: "Institutional Setups",
+    floatingBadge1Subtitle: "High-Probability Execution",
     floatingBadge2Title: "24/7 LMS Portal",
     floatingBadge2Subtitle: "Full Video & Note Archive",
-    socialProofText: "Over 5,000+ Students Guided to Distinctions"
+    socialProofText: "Over 5,000+ Students Guided to Success"
   },
   instructorSpotlight: {
-    badge: "Lead Lecturer & Academic Director",
-    name: "Ishara Madhushani",
-    role: "Economics & Management Lecturer",
+    badge: "Lead Mentor & Market Specialist",
+    name: "Taizer Lead Trader",
+    role: "Crypto & Order Flow Specialist",
     quote:
-      "Motivated Economics graduate with a passion for analytical thinking and global business development, dedicated to empowering students through clear communication and expert knowledge.",
+      "Empowering traders with institutional execution strategies, order flow footprint analysis, and disciplined risk management to achieve consistent profitability.",
     image: "/teacher.jpg",
     btn1Text: "View Full Credentials & Bio",
     btn1Link: "/instructor-profile",
@@ -132,29 +121,29 @@ const DEFAULT_HOME_SETTINGS = {
     badge: "Structured Curriculum",
     title: "Specialized Course Programs",
     subtitle:
-      "Select your grade level below to inspect weekly modules, downloadable tutes, and video lessons."
+      "Select your trading level below to inspect weekly modules, downloadable tutes, and video lessons."
   },
   "Watch a Sample Lesson": {
     badge: "Virtual Classroom",
     title: "Experience Our Teaching Style",
-    subtitle: "Watch a sample online session on A/L Economics Theory.",
+    subtitle: "Watch a sample online session on Market Structure & Order Flow.",
     videoUrl: "https://www.youtube-nocookie.com/embed/ERb6D8MW-u0",
     isLocal: false
   },
   "Our Success Stories": {
     badge: "Proven Track Record",
-    title: "Proven Academic Excellence",
+    title: "Proven Trading Excellence",
     subtitle:
-      "Consistently producing Island rankers and top district results year after year."
+      "Consistently producing funded traders and profitable independent market participants."
   },
   "What Students Say": {
-    badge: "Student Feedback",
+    badge: "Trader Feedback",
     title: "What Students Say",
     subtitle:
-      "Hear directly from our past students who attained top ranks and distinctions."
+      "Hear directly from our members who mastered the markets and achieved financial freedom."
   },
   cta: {
-    title: "Ready To Accelerate Your Exam Results?",
+    title: "Ready To Accelerate Your Trading Results?",
     subtitle:
       "Join the next live interactive lecture and unlock all revision materials on the LMS portal.",
     primaryBtnText: "Start Student Registration",
@@ -180,10 +169,10 @@ const DEFAULT_HOME_SETTINGS = {
     JSON.parse(
       localStorage.getItem("webStats") ||
         JSON.stringify([
-          { label: "A* Distinctions", value: "200+", color: "text-rose-400" },
-          { label: "Island Rankers", value: "5", color: "text-amber-400" },
-          { label: "Passed Students", value: "5000+", color: "text-emerald-400" },
-          { label: "Student Rating", value: "100%", color: "text-indigo-400" }
+          { label: "Funded Traders", value: "250+", color: "text-rose-400" },
+          { label: "Active Members", value: "3500+", color: "text-amber-400" },
+          { label: "Win Rate", value: "78%", color: "text-emerald-400" },
+          { label: "Trader Rating", value: "100%", color: "text-indigo-400" }
         ])
     )
   );
@@ -194,20 +183,20 @@ const DEFAULT_HOME_SETTINGS = {
         JSON.stringify([
           {
             text:
-              "The way teacher explains is so simple and easy to remember. I got an A for my A/L Economics thanks to these structured sessions and online LMS recordings!",
+              "The way market structure and candlestick patterns are explained is crystal clear. I finally passed my funded challenge thanks to these structured sessions and online LMS recordings!",
             author: "Kasun Jayawardena",
-            location: "Colombo District (Rank 14)"
+            location: "Colombo"
           },
           {
             text:
-              "Highly recommended for A/L Economics. The best theory notes, unit revisions, and past paper discussions. Cleared all my doubts effortlessly.",
+              "Highly recommended for Order Flow and Volume analysis. The best live trading sessions, footprint charts, and risk rules. Cleared all my doubts effortlessly.",
             author: "Sachini Perera",
             location: "Kandy"
           },
           {
             text:
-              "Sinhala lessons are engaging and easy to grasp. My grammar and essay writing improved dramatically before the O/L exams.",
-            author: "Nimali Silva",
+              "Crypto Basic course changed my mindset completely. Proper risk management and disciplined execution instead of gambling.",
+            author: "Nimal Silva",
             location: "Galle"
           }
         ])
@@ -346,11 +335,11 @@ const DEFAULT_HOME_SETTINGS = {
               {/* HEADLINE */}
               <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.18] font-display">
                 {(() => {
-                  const title = currentSettings.hero.title || "Master Economics (A/L) & Sinhala (Grade 6–11)";
-                  const parts = title.split(/(Economics|Sinhala)/gi);
+                  const title = currentSettings.hero.title || "Master Crypto Basic & Order Flow Trading";
+                  const parts = title.split(/(Crypto\s*Basic|Order\s*Flow|Trading|Crypto)/gi);
                   return parts.map((part, index) => {
                     const lower = part.toLowerCase();
-                    if (lower === "economics") {
+                    if (lower.includes("crypto")) {
                       return (
                         <span
                           key={index}
@@ -360,11 +349,11 @@ const DEFAULT_HOME_SETTINGS = {
                         </span>
                       );
                     }
-                    if (lower === "sinhala") {
+                    if (lower.includes("order flow")) {
                       return (
                         <span
                           key={index}
-                          className="bg-gradient-to-r from-teal-300 via-emerald-300 to-teal-400 bg-clip-text text-transparent"
+                          className="bg-gradient-to-r from-emerald-400 via-teal-300 to-teal-400 bg-clip-text text-transparent"
                         >
                           {part}
                         </span>
@@ -383,7 +372,7 @@ const DEFAULT_HOME_SETTINGS = {
                       <span className="text-amber-400 font-bold">❝</span>
                       <span>
                         {currentSettings.hero.subtitle.split("\n")[0] ||
-                          "සරලව සහ නිවැරදිව විෂය කරුණු ඉගෙන ගෙන විශිෂ්ඨ සාමාර්ථයක් කරා යමු."}
+                          "සරලව සහ නිවැරදිව Technical Analysis හා Order Flow ඉගෙන ගෙන සාර්ථක Trader කෙනෙක් වෙමු."}
                       </span>
                       <span className="text-amber-400 font-bold">❞</span>
                     </div>
@@ -391,6 +380,7 @@ const DEFAULT_HOME_SETTINGS = {
                       {currentSettings.hero.subtitle.includes("\n")
                         ? currentSettings.hero.subtitle.split("\n").slice(1).join(" ")
                         : currentSettings.hero.subtitle
+                            .replace("සරලව සහ නිවැරදිව Technical Analysis හා Order Flow ඉගෙන ගෙන සාර්ථක Trader කෙනෙක් වෙමු.", "")
                             .replace("සරලව සහ නිවැරදිව විෂය කරුණු ඉගෙන ගෙන විශිෂ්ඨ සාමාර්ථයක් කරා යමු.", "")
                             .trim()}
                     </p>

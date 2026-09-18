@@ -48,27 +48,27 @@ import DualImageInput from "./DualImageInput";
 
 const DEFAULT_HOME_SETTINGS = {
   hero: {
-    badge: "Premier Sinhala & Economics Academy LK",
-    title: "Master Economics (A/L) & Sinhala (Grade 6–11)",
+    badge: "Elite Crypto & Financial Trading Academy",
+    title: "Master Institutional Crypto & Order Flow Trading",
     subtitle:
-      "සරලව සහ නිවැරදිව විෂය කරුණු ඉගෙන ගෙන විශිෂ්ඨ සාමාර්ථයක් කරා යමු. Interactive online LMS, revision papers, model answers, and weekly live sessions.",
-    enrollBtnText: "Enroll for Classes",
+      "Master crypto basics, order flow, liquidity dynamics, and institutional trading strategies with high-probability setups and live trading sessions.",
+    enrollBtnText: "Enroll for Masterclass",
     enrollBtnLink: "/register",
-    whatsappBtnText: "Free WhatsApp Class",
+    whatsappBtnText: "Free Community",
     whatsappUrl: "https://wa.me/",
     heroImage: "/hero-image.png",
-    floatingBadge1Title: "98% A/L Pass Rate",
-    floatingBadge1Subtitle: "Consistent Island Results",
-    floatingBadge2Title: "24/7 LMS Portal",
-    floatingBadge2Subtitle: "Full Video & Note Archive",
-    socialProofText: "Over 5,000+ Students Guided to Distinctions"
+    floatingBadge1Title: "Institutional Setups",
+    floatingBadge1Subtitle: "High-Probability Execution",
+    floatingBadge2Title: "24/7 Trading Portal",
+    floatingBadge2Subtitle: "Live Sessions & Materials",
+    socialProofText: "Empowering Over 5,000+ Active Traders"
   },
   instructorSpotlight: {
-    badge: "Lead Lecturer & Academic Director",
-    name: "Ishara Madhushani",
-    role: "Economics & Management Lecturer",
+    badge: "Lead Mentor & Market Specialist",
+    name: "Taizer Lead Trader",
+    role: "Crypto & Order Flow Specialist",
     quote:
-      "Motivated Economics graduate with a passion for analytical thinking and global business development, dedicated to empowering students through clear communication and expert knowledge.",
+      "Empowering traders with institutional execution strategies, order flow footprint analysis, and disciplined risk management to achieve consistent profitability.",
     image: "/teacher.jpg",
     btn1Text: "View Full Credentials & Bio",
     btn1Link: "/instructor-profile",
@@ -79,29 +79,29 @@ const DEFAULT_HOME_SETTINGS = {
     badge: "Structured Curriculum",
     title: "Specialized Course Programs",
     subtitle:
-      "Select your grade level below to inspect weekly modules, downloadable tutes, and video lessons."
+      "Select your trading level below to inspect weekly modules, downloadable tutes, and video lessons."
   },
   "Watch a Sample Lesson": {
     badge: "Virtual Classroom",
     title: "Experience Our Teaching Style",
-    subtitle: "Watch a sample online session on A/L Economics Theory.",
+    subtitle: "Watch a sample online session on Market Structure & Order Flow.",
     videoUrl: "https://www.youtube-nocookie.com/embed/ERb6D8MW-u0",
     isLocal: false
   },
   "Our Success Stories": {
     badge: "Proven Track Record",
-    title: "Proven Academic Excellence",
+    title: "Proven Trading Excellence",
     subtitle:
-      "Consistently producing Island rankers and top district results year after year."
+      "Consistently producing funded traders and profitable independent market participants."
   },
   "What Students Say": {
-    badge: "Student Feedback",
+    badge: "Trader Feedback",
     title: "What Students Say",
     subtitle:
-      "Hear directly from our past students who attained top ranks and distinctions."
+      "Hear directly from our members who mastered the markets and achieved financial freedom."
   },
   cta: {
-    title: "Ready To Accelerate Your Exam Results?",
+    title: "Ready To Accelerate Your Trading Results?",
     subtitle:
       "Join the next live interactive lecture and unlock all revision materials on the LMS portal.",
     primaryBtnText: "Start Student Registration",
@@ -117,88 +117,39 @@ const DEFAULT_HOME_SETTINGS = {
 };
 
 const DEFAULT_ABOUT_SETTINGS = {
-  badge: "Academic Background",
-  title: "About the Lecturer",
-  desc: "Dedicated to excellence and holistic student development in Economics and Sinhala.",
+  badge: "Trading Mentor & Director",
+  title: "About the Lead Mentor",
+  desc: "Dedicated to building professional, disciplined, and profitable traders in Cryptocurrency and Global Financial Markets.",
   image: "/teacher.jpg",
-  teacherName: "Ishara Madhushani",
-  teacherRole: "Economics & Sinhala Language Specialist",
+  teacherName: "Taizer Lead Trader",
+  teacherRole: "Crypto & Order Flow Specialist",
   quals:
-    "B.A. (Hons) in Economics - University of Sri Jayewardenepura\nDiploma in English - Lakshman Yapa Foundation\nAdvanced Level Distinction Achiever",
-  exp: "Extensive teaching experience preparing candidates for national O/L and A/L examinations, with proven island ranks.",
-  phil: "Economics is not merely a subject to memorize; it is a lens to understand human decision making and market realities.",
+    "Certified Financial Technical Analyst\n8+ Years Crypto & Futures Trading Experience\nOrder Flow & Volume Profile Specialist",
+  exp: "Extensive experience mentoring traders from beginner to professional prop firm funded levels with live execution strategies.",
+  phil: "Trading is not gambling or guessing; it is probability, strict risk management, and understanding institutional order flow.",
   btnText: "Read Full Professional Biography",
   btnLink: "/instructor-profile"
 };
 
 const DEFAULT_COURSES_SETTINGS = {
-  badge: "Official Academic Syllabus",
+  badge: "Professional Trading Syllabus",
   title: "Comprehensive Curriculum & Programs",
-  desc: "Specialized Sinhala Language and Economics programs structured to guarantee distinctions in National O/L and A/L examinations.",
+  desc: "Specialized Crypto and Financial Market trading programs structured to build consistent, profitable independent traders.",
   ctaText: "Enroll Today",
   ctaLink: "/register"
 };
 
 const DEFAULT_RESOURCES_SETTINGS = {
-  badge: "Open Academic Library",
-  title: "Free Educational Resources",
-  desc: "Download model papers, formula summary sheets, and past paper discussions to boost your examination revision.",
+  badge: "Open Knowledge Library",
+  title: "Free Trading Resources",
+  desc: "Download trading cheat sheets, market structure guides, and risk management calculators to boost your trading journey.",
   searchPlaceholder: "Search study materials, papers, or guides..."
 };
 
-const DEFAULT_RESOURCES = [
-  {
-    id: 1,
-    title: "Crypto Market Terminology & Beginner Handbook",
-    category: "Crypto Basic",
-    type: "PDF Document",
-    size: "2.4 MB",
-    badge: "Essential",
-    url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-    downloadCount: "1,420",
-    description: "Complete guide to blockchain mechanics, wallets, order types, exchanges, and crypto risk rules.",
-    isHidden: false
-  },
-  {
-    id: 2,
-    title: "Price Action Candlestick Patterns CheatSheet",
-    category: "Price Action",
-    type: "PDF CheatSheet",
-    size: "1.1 MB",
-    badge: "Quick Revision",
-    url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-    downloadCount: "2,890",
-    description: "High-probability bullish, bearish, and neutral candlestick patterns with entry/exit triggers.",
-    isHidden: false
-  },
-  {
-    id: 3,
-    title: "Technical Analysis & Chart Indicators Master Guide",
-    category: "Technical Analysis",
-    type: "PDF Document",
-    size: "1.8 MB",
-    badge: "Pro Trader",
-    url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-    downloadCount: "3,150",
-    description: "In-depth breakdown of RSI, MACD, Moving Averages, Support/Resistance zones, and Trendlines.",
-    isHidden: false
-  },
-  {
-    id: 4,
-    title: "Forex & Futures Position Sizing and Risk Model",
-    category: "Forex & Futures",
-    type: "PDF Document",
-    size: "1.5 MB",
-    badge: "Risk Control",
-    url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-    downloadCount: "980",
-    description: "Calculations for 1% risk rule, risk-to-reward ratio formulas, and margin leverage safety guidelines.",
-    isHidden: false
-  }
-];
+const DEFAULT_RESOURCES = [];
 
 const DEFAULT_GENERAL_SETTINGS = {
-  supportEmail: "support@econoacademy.lk",
+  supportEmail: "support@taizeracademy.com",
   supportPhone: "+94 77 123 4567",
   whatsappNumber: "94771234567",
   address: "Colombo, Sri Lanka",
@@ -210,21 +161,19 @@ const DEFAULT_GENERAL_SETTINGS = {
     whatsappGroup: "https://chat.whatsapp.com",
     instagram: "https://instagram.com"
   },
-  subjects: ["Crypto Basic", "Price Action", "Sinhala", "Economics"],
+  subjects: ["Crypto Basic", "Order Flow"],
   grades: {
     "Crypto Basic": [],
-    "Price Action": [],
-    Sinhala: ["Grade 6", "Grade 7", "Grade 8", "Grade 9", "Grade 10", "Grade 11"],
-    Economics: ["Grade 12", "Grade 13"]
+    "Order Flow": []
   },
   academicYear: "2026 / 2027",
   announcementBar: {
     enabled: true,
-    text: "📢 2026 A/L Economics New Theory Batch registrations are now open! Limited seats available.",
+    text: "📢 New Crypto Basic & Order Flow Masterclass batches are now open! Limited seats available.",
     link: "/register",
     linkText: "Register Now"
   },
-  footerNotice: "© 2026 EconoAcademy LK. Empowering the next generation of scholars."
+  footerNotice: "© 2026 Taizer LMS. Empowering high-probability market execution."
 };
 
 const WebSettingsTab = ({
@@ -722,7 +671,7 @@ const WebSettingsTab = ({
                       type="text"
                       value={currentHome.hero.badge}
                       onChange={(e) => updateHomeNested("hero", "badge", e.target.value)}
-                      placeholder="Premier Sinhala & Economics Academy LK"
+                      placeholder="Premier Crypto & Trading Academy LK"
                       className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-4 py-2.5 text-xs text-white outline-none"
                     />
                   </div>
@@ -735,7 +684,7 @@ const WebSettingsTab = ({
                       type="text"
                       value={currentHome.hero.title}
                       onChange={(e) => updateHomeNested("hero", "title", e.target.value)}
-                      placeholder="Master Economics (A/L) & Sinhala (Grade 6–11)"
+                      placeholder="Master Institutional Crypto & Order Flow Trading"
                       className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-4 py-2.5 text-xs text-white font-bold outline-none"
                     />
                   </div>
@@ -968,7 +917,7 @@ const WebSettingsTab = ({
                         onChange={(e) =>
                           updateHomeNested("instructorSpotlight", "name", e.target.value)
                         }
-                        placeholder="Ishara Madhushani"
+                        placeholder="Taizer Lead Trader"
                         className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-4 py-2.5 text-xs text-white font-bold outline-none"
                       />
                     </div>
@@ -982,7 +931,7 @@ const WebSettingsTab = ({
                         onChange={(e) =>
                           updateHomeNested("instructorSpotlight", "role", e.target.value)
                         }
-                        placeholder="Economics & Management Lecturer"
+                        placeholder="Crypto & Order Flow Specialist"
                         className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-4 py-2.5 text-xs text-white outline-none"
                       />
                     </div>
@@ -998,7 +947,7 @@ const WebSettingsTab = ({
                       onChange={(e) =>
                         updateHomeNested("instructorSpotlight", "quote", e.target.value)
                       }
-                      placeholder="Motivated Economics graduate with a passion for analytical thinking..."
+                      placeholder="Empowering traders with institutional execution strategies, order flow footprint analysis..."
                       className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl p-3.5 text-xs text-slate-200 outline-none resize-none leading-relaxed"
                     />
                   </div>
@@ -1282,7 +1231,7 @@ const WebSettingsTab = ({
                       onChange={(e) =>
                         updateHomeNested("Watch a Sample Lesson", "subtitle", e.target.value)
                       }
-                      placeholder="Watch a sample online session on A/L Economics Theory."
+                      placeholder="Watch a sample online session on Market Structure & Order Flow."
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white"
                     />
                   </div>
@@ -1780,7 +1729,7 @@ const WebSettingsTab = ({
                       type="text"
                       value={currentHome.branding.siteName}
                       onChange={(e) => updateHomeNested("branding", "siteName", e.target.value)}
-                      placeholder="EconoAcademy"
+                      placeholder="Taizer LMS"
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white font-bold"
                     />
                   </div>
@@ -1794,7 +1743,7 @@ const WebSettingsTab = ({
                       onChange={(e) =>
                         updateHomeNested("branding", "siteTagline", e.target.value)
                       }
-                      placeholder="Economics & Sinhala LMS"
+                      placeholder="Crypto & Forex Trading LMS"
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white"
                     />
                   </div>
@@ -1916,7 +1865,7 @@ const WebSettingsTab = ({
                       type="text"
                       value={currentAbout.teacherName}
                       onChange={(e) => updateAboutField("teacherName", e.target.value)}
-                      placeholder="e.g. Ishara Madhushani"
+                      placeholder="e.g. Taizer Lead Trader"
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
                     />
                   </div>
@@ -1928,7 +1877,7 @@ const WebSettingsTab = ({
                       type="text"
                       value={currentAbout.teacherRole}
                       onChange={(e) => updateAboutField("teacherRole", e.target.value)}
-                      placeholder="e.g. Economics & Sinhala Language Specialist"
+                      placeholder="e.g. Crypto & Order Flow Specialist"
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
                     />
                   </div>
@@ -1966,7 +1915,7 @@ const WebSettingsTab = ({
                     rows={4}
                     value={currentAbout.quals}
                     onChange={(e) => updateAboutField("quals", e.target.value)}
-                    placeholder="B.A. (Hons) in Economics - University of Sri Jayewardenepura&#10;Diploma in English - Lakshman Yapa Foundation&#10;Advanced Level Distinction Achiever"
+                    placeholder="Certified Financial Technical Analyst (CFTe)&#10;8+ Years Crypto & Futures Trading Experience&#10;Order Flow & Volume Profile Specialist"
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 resize-none font-mono leading-relaxed"
                   />
                   <p className="text-[11px] text-slate-500 mt-1">
@@ -1992,7 +1941,7 @@ const WebSettingsTab = ({
                     rows={3}
                     value={currentAbout.exp}
                     onChange={(e) => updateAboutField("exp", e.target.value)}
-                    placeholder="Extensive teaching experience preparing candidates for national O/L and A/L examinations, with proven island ranks..."
+                    placeholder="Extensive experience mentoring traders from beginner to professional prop firm funded levels with live execution strategies..."
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 resize-none leading-relaxed"
                   />
                 </div>
@@ -2005,7 +1954,7 @@ const WebSettingsTab = ({
                     rows={3}
                     value={currentAbout.phil}
                     onChange={(e) => updateAboutField("phil", e.target.value)}
-                    placeholder="Economics is not merely a subject to memorize; it is a lens to understand human decision making..."
+                    placeholder="Trading is not gambling or guessing; it is probability, strict risk management, and understanding institutional order flow..."
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 resize-none leading-relaxed italic"
                   />
                 </div>
@@ -2093,10 +2042,10 @@ const WebSettingsTab = ({
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-3">
                       <div>
                         <p className="text-sm font-bold text-white">
-                          {currentAbout.teacherName || "Ishara Madhushani"}
+                          {currentAbout.teacherName || "Taizer Lead Trader"}
                         </p>
                         <p className="text-[10px] text-indigo-300">
-                          {currentAbout.teacherRole || "Economics & Sinhala Specialist"}
+                          {currentAbout.teacherRole || "Crypto & Order Flow Specialist"}
                         </p>
                       </div>
                     </div>
@@ -3009,7 +2958,7 @@ const WebSettingsTab = ({
                       type="email"
                       value={currentGeneralSettings.supportEmail || ""}
                       onChange={(e) => updateGeneralField("supportEmail", e.target.value)}
-                      placeholder="support@econoacademy.lk"
+                      placeholder="support@taizer.lk"
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
                     />
                   </div>
@@ -3093,7 +3042,7 @@ const WebSettingsTab = ({
                       type="url"
                       value={currentGeneralSettings.socials?.facebook || ""}
                       onChange={(e) => updateGeneralNested("socials", "facebook", e.target.value)}
-                      placeholder="https://facebook.com/econoacademy"
+                      placeholder="https://facebook.com/taizeracademy"
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
                     />
                   </div>
@@ -3105,7 +3054,7 @@ const WebSettingsTab = ({
                       type="url"
                       value={currentGeneralSettings.socials?.youtube || ""}
                       onChange={(e) => updateGeneralNested("socials", "youtube", e.target.value)}
-                      placeholder="https://youtube.com/@econoacademy"
+                      placeholder="https://youtube.com/@taizeracademy"
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
                     />
                   </div>
@@ -3120,7 +3069,7 @@ const WebSettingsTab = ({
                       type="url"
                       value={currentGeneralSettings.socials?.telegram || ""}
                       onChange={(e) => updateGeneralNested("socials", "telegram", e.target.value)}
-                      placeholder="https://t.me/econoacademy"
+                      placeholder="https://t.me/taizeracademy"
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
                     />
                   </div>
@@ -3146,7 +3095,7 @@ const WebSettingsTab = ({
                     type="url"
                     value={currentGeneralSettings.socials?.instagram || ""}
                     onChange={(e) => updateGeneralNested("socials", "instagram", e.target.value)}
-                    placeholder="https://instagram.com/econoacademy"
+                    placeholder="https://instagram.com/taizeracademy"
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
                   />
                 </div>
@@ -3291,7 +3240,7 @@ const WebSettingsTab = ({
                                   handleAddGradeToSubject(sub, inputValue);
                                 }
                               }}
-                              placeholder={`Add new class for ${sub} (e.g. Batch 2026, Scalping Mastery, Grade 12)...`}
+                              placeholder={`Add new class for ${sub} (e.g. Batch 2026, Scalping Mastery, Advance Batch)...`}
                               className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-teal-500"
                             />
                             <button
@@ -3342,7 +3291,7 @@ const WebSettingsTab = ({
                     onChange={(e) =>
                       updateGeneralNested("announcementBar", "text", e.target.value)
                     }
-                    placeholder="📢 2026 A/L Economics New Theory Batch registrations are now open! Limited seats available."
+                    placeholder="📢 Crypto Basic & Order Flow Masterclass registrations are now open! Limited seats available."
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 resize-none leading-relaxed"
                   />
                 </div>
@@ -3541,7 +3490,7 @@ const WebSettingsTab = ({
                         "{currentGeneralSettings.footerNotice}"
                       </p>
                       <p className="text-[9px] text-slate-500">
-                        © {new Date().getFullYear()} EconoAcademy LK • {currentGeneralSettings.copyrightText || "All rights reserved."}
+                        © {new Date().getFullYear()} Taizer LMS • {currentGeneralSettings.copyrightText || "All rights reserved."}
                       </p>
                     </div>
                   )}
@@ -3588,7 +3537,7 @@ const WebSettingsTab = ({
                     onChange={(e) =>
                       setEditingCourse({ ...editingCourse, title: e.target.value })
                     }
-                    placeholder="e.g. G.C.E. A/L Economics (Grade 12–13)"
+                    placeholder="e.g. Crypto Basic Masterclass"
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
                   />
                 </div>
@@ -3871,7 +3820,7 @@ const WebSettingsTab = ({
                   onChange={(e) =>
                     setEditingResource({ ...editingResource, title: e.target.value })
                   }
-                  placeholder="e.g. 2024 A/L Economics Prototype Model Paper"
+                  placeholder="e.g. Order Flow & Footprint Cheat Sheet"
                   className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
                 />
               </div>

@@ -81,7 +81,7 @@ const ZoomTab = ({
 
   // Toggle Attendance for All Grades
   const handleToggleAllGradesAttendance = (newState) => {
-    const grades = ["Grade 6", "Grade 7", "Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12", "Grade 13"];
+    const grades = availableGrades.length > 0 ? availableGrades : ["Crypto Basic", "Order Flow"];
     const updated = { ...zoomSettings };
     grades.forEach((g) => {
       if (!updated[g]) updated[g] = {};
@@ -178,9 +178,9 @@ const ZoomTab = ({
     : JSON.parse(localStorage.getItem("studentRequests") || "[]");
 
   const gradeStudents = allCurrentStudents.filter((s) => {
-    const sGrade = (s.grade || "Grade 12").trim().toLowerCase();
-    const selGrade = selectedZoomGrade.trim().toLowerCase();
-    return sGrade === selGrade || (sGrade.includes("12") && selGrade.includes("12")) || (sGrade.includes("13") && selGrade.includes("13"));
+    const sGrade = (s.grade || (availableGrades[0] || "Crypto Basic")).trim().toLowerCase();
+    const selGrade = (selectedZoomGrade || "").trim().toLowerCase();
+    return sGrade === selGrade || (s.subject && s.subject.trim().toLowerCase() === selGrade);
   });
 
   const presentStudents = gradeStudents.filter((s) => s.isPresent);
@@ -230,16 +230,7 @@ const ZoomTab = ({
             >
               {(availableGrades.length > 0
                 ? availableGrades
-                : [
-                    "Grade 6",
-                    "Grade 7",
-                    "Grade 8",
-                    "Grade 9",
-                    "Grade 10",
-                    "Grade 11",
-                    "Grade 12",
-                    "Grade 13"
-                  ]
+                : ["Crypto Basic", "Order Flow"]
               ).map((g) => (
                 <option key={g} value={g} className="bg-slate-900 text-slate-200">
                   {g}
@@ -462,7 +453,7 @@ const ZoomTab = ({
                     <Video className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="text-base font-bold text-white">Live Economics Class</h4>
+                    <h4 className="text-base font-bold text-white">Live Trading Masterclass</h4>
                     <p className="text-xs text-slate-400">
                       {selectedZoomGrade} Weekly Interactive Session
                     </p>

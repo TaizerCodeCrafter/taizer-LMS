@@ -15,7 +15,7 @@ const AdminLogin = () => {
       localStorage.getItem("adminProfile") ||
         JSON.stringify({
           name: "S.S.D Madusanka",
-          email: "admin@econoacademy.lk",
+          email: "admin@taizer.lk",
           photo: "/admin-profile.png",
           password: "admin"
         })
@@ -55,7 +55,7 @@ const AdminLogin = () => {
               Admin <span className="text-indigo-400">Console</span>
             </h1>
             <p className="text-xs text-slate-400 mt-1">
-              Econo Academy LMS Management System
+              Taizer LMS Management System
             </p>
           </div>
         </div>

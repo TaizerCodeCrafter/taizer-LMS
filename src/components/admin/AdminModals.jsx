@@ -107,7 +107,7 @@ export const PaymentSlipModal = ({
             <div>
               <h3 className="text-base font-bold text-white">Payment Deposit Verification</h3>
               <p className="text-xs text-slate-400">
-                {student.name} • {student.grade} ({student.subject || "Economics"})
+                {student.name} • {student.grade || student.subject || "Crypto Basic"} {student.subject && student.subject !== student.grade ? `(${student.subject})` : ''}
               </p>
             </div>
           </div>

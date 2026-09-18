@@ -23,6 +23,7 @@ const DashboardTab = ({
   questions = {},
   whatsappMessages = [],
   portalMessages = [],
+  availableGrades = [],
   setActiveTab,
   setViewingPayment
 }) => {
@@ -285,7 +286,12 @@ const DashboardTab = ({
 
             {/* GRADE BARS */}
             <div className="space-y-3">
-              {["Grade 12", "Grade 13", "Grade 10", "Grade 11"].map((g) => {
+              {(availableGrades.length > 0
+                ? availableGrades
+                : Object.keys(gradeDistribution).length > 0
+                ? Object.keys(gradeDistribution)
+                : ["Crypto Basic", "Order Flow"]
+              ).map((g) => {
                 const count = gradeDistribution[g] || 0;
                 const percentage = students.length > 0 ? Math.round((count / students.length) * 100) : 0;
                 return (

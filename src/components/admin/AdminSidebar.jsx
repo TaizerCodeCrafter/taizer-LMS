@@ -99,7 +99,7 @@ const AdminSidebar = ({
           >
             <div className="flex items-center gap-1.5">
               <h1 className="text-sm font-extrabold tracking-tight text-white uppercase truncate group-hover/title:text-indigo-400 transition-colors">
-                {brandingName || "EconoAcademy"}
+                {brandingName || "Taizer LMS"}
               </h1>
             </div>
             <div className="flex items-center gap-1.5 mt-0.5">
@@ -199,7 +199,7 @@ const AdminSidebar = ({
                 {adminProfile?.name || "Administrator"}
               </p>
               <p className="text-[10px] text-slate-500 truncate">
-                {adminProfile?.email || "admin@econoacademy.lk"}
+                {adminProfile?.email || "admin@taizer.lk"}
               </p>
             </div>
           </div>

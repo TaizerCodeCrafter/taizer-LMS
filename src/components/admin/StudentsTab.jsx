@@ -216,16 +216,7 @@ const StudentsTab = ({
             <option value="All">All Classes / Grades</option>
             {(availableGrades.length > 0
               ? availableGrades
-              : [
-                  "Grade 12",
-                  "Grade 13",
-                  "Grade 11",
-                  "Grade 10",
-                  "Grade 9",
-                  "Grade 8",
-                  "Grade 7",
-                  "Grade 6"
-                ]
+              : ["Crypto Basic", "Order Flow"]
             ).map((g) => (
               <option key={g} value={g}>
                 {g}
@@ -283,10 +274,10 @@ const StudentsTab = ({
 
                     <td className="px-6 py-4">
                       <span className="inline-block px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 font-bold text-[11px]">
-                        {s.grade || "Grade 12"}
+                        {s.grade || (availableGrades[0] || "Crypto Basic")}
                       </span>
                       <p className="text-[10px] text-slate-500 font-medium mt-0.5">
-                        {s.subject || "Economics"}
+                        {s.subject || "Crypto Basic"}
                       </p>
                     </td>
 
@@ -403,10 +394,10 @@ const StudentsTab = ({
                   </p>
                   <div className="flex flex-wrap items-center gap-2 mt-2">
                     <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-bold border border-indigo-500/30">
-                      {viewingStudent.grade || "Grade 12"}
+                      {viewingStudent.grade || viewingStudent.subject || "Crypto Basic"}
                     </span>
                     <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">
-                      {viewingStudent.subject || "Economics"}
+                      {viewingStudent.subject || "Trading"}
                     </span>
                     <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30">
                       {viewingStudent.paymentStatus || "Approved"}
@@ -428,8 +419,8 @@ const StudentsTab = ({
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="p-3.5 bg-slate-900/80 rounded-2xl border border-slate-800/80 space-y-1">
                 <span className="text-[10px] font-bold uppercase text-slate-400">Course / Grade</span>
-                <p className="font-black text-white text-xs sm:text-sm">{viewingStudent.grade || "Grade 12"}</p>
-                <p className="text-[10px] text-indigo-400 font-bold">{viewingStudent.subject || "Economics"}</p>
+                <p className="font-black text-white text-xs sm:text-sm">{viewingStudent.grade || viewingStudent.subject || "Crypto Basic"}</p>
+                <p className="text-[10px] text-indigo-400 font-bold">{viewingStudent.subject || "Trading"}</p>
               </div>
 
               <div className="p-3.5 bg-slate-900/80 rounded-2xl border border-slate-800/80 space-y-1">
@@ -541,7 +532,7 @@ const StudentsTab = ({
                   <div className="p-3.5 bg-slate-900/60 rounded-2xl border border-slate-800 space-y-1">
                     <span className="text-slate-500 font-bold text-[10px] uppercase">Enrolled Course Curriculum</span>
                     <p className="text-white font-bold">
-                      {viewingStudent.grade || "Grade 12"} • {viewingStudent.subject || "Economics"}
+                      {viewingStudent.grade || viewingStudent.subject || "Crypto Basic"} {viewingStudent.subject && viewingStudent.grade !== viewingStudent.subject ? `• ${viewingStudent.subject}` : ''}
                     </p>
                   </div>
                   <div className="p-3.5 bg-slate-900/60 rounded-2xl border border-slate-800 space-y-1">

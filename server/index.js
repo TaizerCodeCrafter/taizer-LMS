@@ -1094,21 +1094,20 @@ client.on('message', async (msg) => {
 
         try {
             const academyInfo = `
-            Academy Name: Econo Academy
-            Founder/Teacher: Ishara Madhushani
-            Qualifications: B.A. (Hons) in Economics (University of Colombo), Reading for M.A. in Economics. 10+ years experience.
+            Academy Name: Taizer Academy
+            Lead Mentor: Taizer Lead Trader
+            Qualifications: Certified Financial Technical Analyst (CFTe), 8+ Years Crypto & Futures Trading Experience, Order Flow & Volume Specialist.
             
             Available Courses:
-            1. Grade 6-9 Sinhala: Saturdays 8.00 AM - 10.00 AM (Rs. 1500/month)
-            2. Grade 10 Sinhala: Sundays 10.30 AM - 1.30 PM (Rs. 2000/month)
-            3. Economics A/L (Grade 12-13): Tuesdays & Thursdays 4.00 PM - 7.00 PM (Rs. 3500/month)
+            1. Crypto Basic Masterclass: Saturdays 7.00 PM - 9.30 PM (Rs. 2500/month)
+            2. Order Flow & Institutional Volume: Sundays 7.00 PM - 10.00 PM (Rs. 3500/month)
             
-            Location: Online & physical classes (contact for details).
+            Platform: Online LMS Portal with 24/7 video recordings, notes, and community chat.
             Website: http://localhost:5173
             `;
 
-            const prompt = `You are the AI assistant for Econo Academy. 
-            Use the following information to answer student inquiries:
+            const prompt = `You are the AI assistant for Taizer Trading Academy. 
+            Use the following information to answer student/trader inquiries:
             ${academyInfo}
             
             Always be polite and helpful. 

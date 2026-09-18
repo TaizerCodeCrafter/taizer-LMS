@@ -17,9 +17,9 @@ import {
 } from "lucide-react";
 
 const DEFAULT_COURSES_SETTINGS = {
-  badge: "Official Academic Syllabus",
+  badge: "Professional Trading Syllabus",
   title: "Comprehensive Curriculum & Programs",
-  desc: "Specialized Sinhala Language and Economics programs structured to guarantee distinctions in National O/L and A/L examinations.",
+  desc: "Specialized Crypto and Financial Market trading programs structured to build consistent, profitable independent traders.",
   ctaText: "Enroll Today",
   ctaLink: "/register"
 };
@@ -27,15 +27,15 @@ const DEFAULT_COURSES_SETTINGS = {
 const DEFAULT_COURSES = [
   {
     id: 1,
-    title: "Sinhala Language (Grade 6–9)",
-    category: "Sinhala",
-    badge: "Junior Foundation",
-    desc: "Comprehensive grammar, literature, essay structuring, and model paper training designed to build strong linguistic foundations.",
-    schedule: "Every Saturday • 8:00 AM – 10:30 AM",
-    price: "Rs. 2,000 / Month",
+    title: "Crypto Basic Masterclass",
+    category: "Crypto Basic",
+    badge: "Beginner to Advanced",
+    desc: "Comprehensive blockchain fundamentals, wallet security, exchange navigation, market order execution, and risk control rules.",
+    schedule: "Every Saturday • 7:00 PM – 9:30 PM",
+    price: "Rs. 2,500 / Month",
     image: "",
-    features: "Grammar & Vocabulary Mastery\nSet Book Literature Analysis\nWeekly Composition Practice\nDownloadable PDF Worksheets",
-    curriculum: "Complete school syllabus coverage, past paper discussions, and monthly evaluation tests.",
+    features: "Blockchain & Tokenomics Mastery\nExchange Spot & Futures Setup\nRisk Management & Position Sizing\nDownloadable PDF CheatSheets",
+    curriculum: "Complete crypto foundation from zero to active trading with weekly live market review sessions.",
     portalAccess: "Full access to video recordings and downloadable notes on LMS portal.",
     color: "from-blue-600/20",
     border: "border-blue-500/20",
@@ -46,40 +46,21 @@ const DEFAULT_COURSES = [
   },
   {
     id: 2,
-    title: "G.C.E. O/L Sinhala Language (Grade 10–11)",
-    category: "Sinhala",
-    badge: "O/L Exam Focus",
-    desc: "Intensive preparation for O/L candidates covering both papers, prescribed texts, précis writing, and timed mock exams.",
-    schedule: "Every Saturday • 2:00 PM – 4:30 PM",
-    price: "Rs. 2,500 / Month",
+    title: "Order Flow & Institutional Volume",
+    category: "Order Flow",
+    badge: "Elite Masterclass",
+    desc: "Master footprint charts, cumulative volume delta (CVD), DOM liquidity ladders, and institutional absorption setups.",
+    schedule: "Every Sunday • 7:00 PM – 10:00 PM",
+    price: "Rs. 3,500 / Month",
     image: "",
-    features: "Prescribed Texts & Poems\n10-Year Past Paper Marking Schemes\nModel Paper Discussions with Timed Sessions\nIndividual Feedback on Essays",
-    curriculum: "Grade 10 & 11 syllabus fast-track revision, essay writing techniques, and exam target questions.",
-    portalAccess: "24/7 unlimited access to all recordings, discussion forums, and revision notes.",
+    features: "Footprint & Volume Delta Analysis\nLiquidity Pools & Absorption Zones\nAuction Market Theory Concepts\nDaily Institutional Market Prep",
+    curriculum: "Professional execution framework combining smart money concepts with order flow precision.",
+    portalAccess: "24/7 unlimited access to recordings, private community discussions, and daily chart breakdowns.",
     color: "from-purple-600/20",
     border: "border-purple-500/20",
     text: "text-purple-400",
     iconBg: "bg-purple-500/20",
     btn: "bg-purple-600",
-    isHidden: false
-  },
-  {
-    id: 3,
-    title: "G.C.E. A/L Economics (Grade 12–13)",
-    category: "Economics",
-    badge: "A/L Distinction Program",
-    desc: "In-depth economic theory, macro & micro models, national income analysis, fiscal policies, and structured essay writing.",
-    schedule: "Every Sunday • 8:00 AM – 12:00 PM",
-    price: "Rs. 3,000 / Month",
-    image: "",
-    features: "Full Micro & Macro Theory\nMathematical & Diagrammatic Analysis\nTarget Island Rank Past Paper Program\nDetailed Model Essay Marking & Feedback",
-    curriculum: "Complete A/L syllabus with unit tests, past paper dissection from 2011 to 2024, and government budget analysis.",
-    portalAccess: "High-definition recorded lectures, downloadable summary sheets, and MCQ question bank access.",
-    color: "from-emerald-600/20",
-    border: "border-emerald-500/20",
-    text: "text-emerald-400",
-    iconBg: "bg-emerald-500/20",
-    btn: "bg-emerald-600",
     isHidden: false
   }
 ];
@@ -114,7 +95,7 @@ const Courses = () => {
       const saved = localStorage.getItem("webGeneralSettings");
       if (saved) return JSON.parse(saved);
     } catch (e) {}
-    return { subjects: ["Crypto Basic", "Price Action", "Sinhala", "Economics"] };
+    return { subjects: ["Crypto Basic", "Order Flow"] };
   });
 
   const [activeCategory, setActiveCategory] = useState("All");
@@ -207,14 +188,14 @@ const Courses = () => {
         >
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-bold">
             <BookOpen className="w-3.5 h-3.5 text-indigo-400" />
-            <span>{currentSettings.badge || "Official Academic Syllabus"}</span>
+            <span>{currentSettings.badge || "Professional Trading Syllabus"}</span>
           </div>
           <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
-            {currentSettings.title || "Academic Courses"}
+            {currentSettings.title || "Trading Courses"}
           </h1>
           <p className="text-sm sm:text-base text-slate-400 leading-relaxed whitespace-pre-line">
             {currentSettings.desc ||
-              "Specialized Sinhala Language and Economics programs structured to guarantee distinctions in National O/L and A/L examinations."}
+              "Specialized Crypto and Financial Market trading programs structured to build consistent, profitable independent traders."}
           </p>
 
           {/* CATEGORY FILTER PILLS */}

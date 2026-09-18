@@ -58,13 +58,10 @@ const Register = () => {
       if (saved) return JSON.parse(saved);
     } catch (e) {}
     return {
-      subjects: ["Crypto Basic", "Price Action", "Technical Analysis", "Sinhala", "Economics"],
+      subjects: ["Crypto Basic", "Order Flow"],
       grades: {
         "Crypto Basic": [],
-        "Price Action": [],
-        "Technical Analysis": [],
-        Sinhala: ["Grade 6", "Grade 7", "Grade 8", "Grade 9", "Grade 10"],
-        Economics: ["Grade 12", "Grade 13"]
+        "Order Flow": []
       }
     };
   });
@@ -318,7 +315,7 @@ const Register = () => {
                         }}
                         className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-xs font-semibold text-white outline-none focus:border-indigo-500 cursor-pointer"
                       >
-                        {(settings.subjects || ["Crypto Basic", "Price Action", "Sinhala", "Economics"]).map((s) => (
+                        {(settings.subjects || ["Crypto Basic", "Order Flow"]).map((s) => (
                           <option key={s} value={s} className="bg-slate-900">
                             {s}
                           </option>

@@ -111,9 +111,9 @@ const Footer = () => {
                 <MessageCircle className="w-4 h-4" />
               </a>
               <a
-                href={`mailto:${generalSettings?.supportEmail || "support@econoacademy.lk"}`}
+                href={`mailto:${generalSettings?.supportEmail || "support@taizer.lk"}`}
                 className="w-10 h-10 rounded-xl bg-slate-800/80 hover:bg-indigo-600 text-slate-300 hover:text-white border border-slate-700/80 flex items-center justify-center transition-all shadow active:scale-95"
-                title={`Email: ${generalSettings?.supportEmail || "support@econoacademy.lk"}`}
+                title={`Email: ${generalSettings?.supportEmail || "support@taizer.lk"}`}
               >
                 <Mail className="w-4 h-4" />
               </a>
@@ -196,27 +196,27 @@ const Footer = () => {
               <ul className="space-y-2.5 text-xs text-slate-400">
                 <li>
                   <Link to="/courses" className="hover:text-indigo-400 transition-colors">
-                    A/L Economics Full Theory
+                    Crypto Basic Masterclass
                   </Link>
                 </li>
                 <li>
                   <Link to="/courses" className="hover:text-indigo-400 transition-colors">
-                    A/L Economics Paper Class
+                    Order Flow & Institutional Volume
                   </Link>
                 </li>
                 <li>
                   <Link to="/courses" className="hover:text-indigo-400 transition-colors">
-                    O/L Sinhala Language
+                    Technical Analysis & Price Action
                   </Link>
                 </li>
                 <li>
                   <Link to="/courses" className="hover:text-indigo-400 transition-colors">
-                    Grade 6-9 Foundation
+                    Risk Management & Strategy
                   </Link>
                 </li>
                 <li>
                   <Link to="/resources" className="hover:text-indigo-400 transition-colors">
-                    Model Papers & Marking
+                    Trading Cheatsheets & Guides
                   </Link>
                 </li>
               </ul>
@@ -263,7 +263,7 @@ const Footer = () => {
         {/* BOTTOM COPYRIGHT BAR */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 text-center sm:text-left">
           <p>
-            © {new Date().getFullYear()} {branding.siteName || "EconoAcademy LK"}.{" "}
+            © {new Date().getFullYear()} {branding.siteName || "Taizer LMS"}.{" "}
             {generalSettings.copyrightText || "All rights reserved."}
           </p>
           <div className="flex flex-wrap items-center justify-center sm:justify-end gap-4 sm:gap-6">

@@ -857,7 +857,7 @@ const SlideDesignerModal = ({
                               updateActiveSlide("fileName", guessedName);
                             }
                           }}
-                          placeholder="https://... /pdf/economics_unit1.pdf or Google Drive link"
+                          placeholder="https://... /pdf/trading_basics.pdf or Google Drive link"
                           className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-4 pr-12 py-3 text-xs font-semibold text-white outline-none focus:border-indigo-500"
                         />
                         {(activeSlide.url || activeSlide.fileData || activeSlide.videoUrl) && (

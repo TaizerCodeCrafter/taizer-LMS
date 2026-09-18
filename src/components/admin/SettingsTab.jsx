@@ -149,7 +149,7 @@ const SettingsTab = ({
                 {adminProfile.name || "Administrator"}
               </p>
               <p className="text-xs text-indigo-400 mt-0.5">
-                {adminProfile.email || "admin@econoacademy.lk"}
+                {adminProfile.email || "admin@taizer.lk"}
               </p>
               <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mt-2">
                 Super Admin Access
@@ -257,10 +257,10 @@ const SettingsTab = ({
 
             <div>
               <p className="text-sm font-bold text-white">
-                {brandingForm.siteName || "EconoAcademy"}
+                {brandingForm.siteName || "Taizer LMS"}
               </p>
               <p className="text-xs text-indigo-400 mt-0.5">
-                {brandingForm.siteTagline || "Economics & Sinhala LMS"}
+                {brandingForm.siteTagline || "Crypto & Forex Trading LMS"}
               </p>
               <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mt-2">
                 Applies to Website, Sidebar & LMS

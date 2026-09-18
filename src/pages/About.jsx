@@ -13,16 +13,16 @@ import {
 } from "lucide-react";
 
 const DEFAULT_ABOUT_SETTINGS = {
-  badge: "Academic Background",
-  title: "About the Lecturer",
-  desc: "Dedicated to excellence and holistic student development in Economics and Sinhala.",
+  badge: "Trading Mentor & Director",
+  title: "About the Lead Mentor",
+  desc: "Dedicated to building professional, disciplined, and profitable traders in Cryptocurrency and Global Financial Markets.",
   image: "/teacher.jpg",
-  teacherName: "Ishara Madhushani",
-  teacherRole: "Economics & Sinhala Language Specialist",
+  teacherName: "Taizer Lead Trader",
+  teacherRole: "Crypto & Order Flow Specialist",
   quals:
-    "B.A. (Hons) in Economics - University of Sri Jayewardenepura, Diploma in English - Lakshman Yapa Foundation, Advanced Level Distinction Achiever",
-  exp: "Extensive teaching experience preparing candidates for national O/L and A/L examinations, with proven island ranks.",
-  phil: "Economics is not merely a subject to memorize; it is a lens to understand human decision making and market realities.",
+    "Certified Financial Technical Analyst, 8+ Years Crypto & Futures Trading Experience, Order Flow & Volume Profile Specialist",
+  exp: "Extensive experience mentoring traders from beginner to professional prop firm funded levels with live execution strategies.",
+  phil: "Trading is not gambling or guessing; it is probability, strict risk management, and understanding institutional order flow.",
   btnText: "Read Full Professional Biography",
   btnLink: "/instructor-profile"
 };
@@ -116,10 +116,10 @@ const About = () => {
 
             <div className="text-center space-y-1">
               <h3 className="text-xl font-bold text-white">
-                {currentAbout.teacherName || "Ishara Madhushani"}
+                {currentAbout.teacherName || "Taizer Lead Trader"}
               </h3>
               <p className="text-xs text-indigo-400 font-semibold">
-                {currentAbout.teacherRole || "Economics & Sinhala Language Specialist"}
+                {currentAbout.teacherRole || "Crypto & Order Flow Specialist"}
               </p>
             </div>
           </motion.div>

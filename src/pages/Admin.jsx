@@ -144,7 +144,7 @@ const Admin = () => {
       localStorage.getItem("adminProfile") ||
         JSON.stringify({
           name: "S.S.D Madusanka",
-          email: "admin@econoacademy.lk",
+          email: "admin@taizer.lk",
           photo: "/admin-profile.png",
           password: "admin"
         })
@@ -155,20 +155,20 @@ const Admin = () => {
   const [sessions, setSessions] = useState(
     JSON.parse(localStorage.getItem("lmsSessions") || "{}")
   );
-  const [selectedSessionGrade, setSelectedSessionGrade] = useState("Grade 12");
+  const [selectedSessionGrade, setSelectedSessionGrade] = useState("Crypto Basic");
   const [editingSessionIndex, setEditingSessionIndex] = useState(null);
 
   // QUESTIONS (MCQ BANK)
   const [questions, setQuestions] = useState(
     JSON.parse(localStorage.getItem("lmsQuestions") || "{}")
   );
-  const [selectedGrade, setSelectedGrade] = useState("Grade 12");
+  const [selectedGrade, setSelectedGrade] = useState("Crypto Basic");
 
   // LMS SETTINGS
   const [courseSettings, setCourseSettings] = useState(
     JSON.parse(
       localStorage.getItem("courseSettings") ||
-        '{"subject": "Economics", "fee": "2500"}'
+        '{"subject": "Crypto Basic", "fee": "2500"}'
     )
   );
   const [bankDetails, setBankDetails] = useState(
@@ -182,7 +182,7 @@ const Admin = () => {
   const [zoomSettings, setZoomSettings] = useState(
     JSON.parse(localStorage.getItem("zoomSettings") || "{}")
   );
-  const [selectedZoomGrade, setSelectedZoomGrade] = useState("Grade 12");
+  const [selectedZoomGrade, setSelectedZoomGrade] = useState("Crypto Basic");
   const [zoomForm, setZoomForm] = useState({
     link: "",
     date: "",
@@ -197,8 +197,8 @@ const Admin = () => {
         JSON.stringify([
           {
             id: 1,
-            title: "Sinhala Grade 6-9",
-            desc: "Foundation Sinhala Language",
+            title: "Crypto Basic Masterclass",
+            desc: "Blockchain, Wallets & Market Foundation",
             color: "from-blue-600/20",
             border: "border-blue-500/20",
             text: "text-blue-400",
@@ -207,8 +207,8 @@ const Admin = () => {
           },
           {
             id: 2,
-            title: "Sinhala O/L",
-            desc: "Grade 10 Exam-focused",
+            title: "Order Flow & Institutional Volume",
+            desc: "Footprint, DOM & Liquidity Engineering",
             color: "from-purple-600/20",
             border: "border-purple-500/20",
             text: "text-purple-400",
@@ -217,8 +217,8 @@ const Admin = () => {
           },
           {
             id: 3,
-            title: "Economics A/L",
-            desc: "Grade 12-13 Full Theory",
+            title: "Technical Analysis Pro",
+            desc: "Price Action & Risk Management",
             color: "from-emerald-600/20",
             border: "border-emerald-500/20",
             text: "text-emerald-400",
@@ -234,27 +234,27 @@ const Admin = () => {
       localStorage.getItem("webHomeSettings") ||
         JSON.stringify({
           hero: {
-            badge: "Premier Sinhala & Economics Academy LK",
-            title: "Master Economics (A/L) & Sinhala (Grade 6–11)",
+            badge: "Elite Crypto & Financial Trading Academy",
+            title: "Master Institutional Crypto & Order Flow Trading",
             subtitle:
-              "සරලව සහ නිවැරදිව විෂය කරුණු ඉගෙන ගෙන විශිෂ්ඨ සාමාර්ථයක් කරා යමු. Interactive online LMS, revision papers, model answers, and weekly live sessions.",
-            enrollBtnText: "Enroll for Classes",
+              "Master crypto basics, order flow, liquidity dynamics, and institutional trading strategies with high-probability setups and live trading sessions.",
+            enrollBtnText: "Enroll for Masterclass",
             enrollBtnLink: "/register",
-            whatsappBtnText: "Free WhatsApp Class",
+            whatsappBtnText: "Free Community",
             whatsappUrl: "https://wa.me/",
             heroImage: "/hero-image.png",
-            floatingBadge1Title: "98% A/L Pass Rate",
-            floatingBadge1Subtitle: "Consistent Island Results",
-            floatingBadge2Title: "24/7 LMS Portal",
-            floatingBadge2Subtitle: "Full Video & Note Archive",
-            socialProofText: "Over 5,000+ Students Guided to Distinctions"
+            floatingBadge1Title: "Institutional Setups",
+            floatingBadge1Subtitle: "High-Probability Execution",
+            floatingBadge2Title: "24/7 Trading Portal",
+            floatingBadge2Subtitle: "Live Sessions & Materials",
+            socialProofText: "Empowering Over 5,000+ Active Traders"
           },
           instructorSpotlight: {
-            badge: "Lead Lecturer & Academic Director",
-            name: "Ishara Madhushani",
-            role: "Economics & Management Lecturer",
+            badge: "Lead Mentor & Market Specialist",
+            name: "Taizer Lead Trader",
+            role: "Crypto & Order Flow Specialist",
             quote:
-              "Motivated Economics graduate with a passion for analytical thinking and global business development, dedicated to empowering students through clear communication and expert knowledge.",
+              "Empowering traders with institutional execution strategies, order flow footprint analysis, and disciplined risk management to achieve consistent profitability.",
             image: "/teacher.jpg",
             btn1Text: "View Full Credentials & Bio",
             btn1Link: "/instructor-profile",
@@ -265,12 +265,12 @@ const Admin = () => {
             badge: "Structured Curriculum",
             title: "Specialized Course Programs",
             subtitle:
-              "Select your grade level below to inspect weekly modules, downloadable tutes, and video lessons."
+              "Select your trading level below to inspect weekly modules, downloadable tutes, and video lessons."
           },
           "Watch a Sample Lesson": {
             badge: "Virtual Classroom",
             title: "Experience Our Teaching Style",
-            subtitle: "Watch a sample online session on A/L Economics Theory.",
+            subtitle: "Watch a sample online session on Market Structure & Order Flow.",
             videoUrl: "https://www.youtube-nocookie.com/embed/ERb6D8MW-u0",
             isLocal: false
           },
@@ -321,19 +321,19 @@ const Admin = () => {
       localStorage.getItem("webTestimonials") ||
         JSON.stringify([
           {
-            text: "The way teacher explains is so simple and easy to remember. I got an A for my exams thanks to these classes!",
-            author: "Student Name",
-            location: "Location"
-          },
-          {
-            text: "Highly recommended for A/L Economics. Best notes and clear explanations.",
-            author: "Kamal Perera",
+            text: "The way market structure and candlestick patterns are explained is crystal clear. I finally passed my funded challenge thanks to these classes!",
+            author: "Kasun Jayawardena",
             location: "Colombo"
           },
           {
-            text: "Sinhala lessons are very interesting. I improved my marks significantly.",
-            author: "Nimali Silva",
+            text: "Highly recommended for Order Flow and Volume analysis. The best live trading sessions, footprint charts, and risk rules.",
+            author: "Sachini Perera",
             location: "Kandy"
+          },
+          {
+            text: "Crypto Basic course changed my mindset completely. Proper risk management and disciplined execution instead of gambling.",
+            author: "Nimal Silva",
+            location: "Galle"
           }
         ])
     )
@@ -343,16 +343,16 @@ const Admin = () => {
     JSON.parse(
       localStorage.getItem("webAboutSettings") ||
         JSON.stringify({
-          badge: "Academic Background",
-          title: "About the Lecturer",
-          desc: "Dedicated to excellence and holistic student development in Economics and Sinhala.",
+          badge: "Trading Mentor & Director",
+          title: "About the Lead Mentor",
+          desc: "Dedicated to building professional, disciplined, and profitable traders in Cryptocurrency and Global Financial Markets.",
           image: "/teacher.jpg",
-          teacherName: "Ishara Madhushani",
-          teacherRole: "Economics & Sinhala Language Specialist",
+          teacherName: "Taizer Lead Trader",
+          teacherRole: "Crypto & Order Flow Specialist",
           quals:
-            "B.A. (Hons) in Economics - University of Sri Jayewardenepura, Diploma in English - Lakshman Yapa Foundation, Advanced Level Distinction Achiever",
-          exp: "Extensive teaching experience preparing candidates for national O/L and A/L examinations, with proven island ranks.",
-          phil: "Economics is not merely a subject to memorize; it is a lens to understand human decision making and market realities.",
+            "Certified Financial Technical Analyst, 8+ Years Crypto & Futures Trading Experience, Order Flow & Volume Profile Specialist",
+          exp: "Extensive experience mentoring traders from beginner to professional prop firm funded levels with live execution strategies.",
+          phil: "Trading is not gambling or guessing; it is probability, strict risk management, and understanding institutional order flow.",
           btnText: "Read Full Professional Biography",
           btnLink: "/instructor-profile"
         })
@@ -363,9 +363,9 @@ const Admin = () => {
     JSON.parse(
       localStorage.getItem("webCoursesSettings") ||
         JSON.stringify({
-          badge: "Official Academic Syllabus",
+          badge: "Professional Trading Syllabus",
           title: "Comprehensive Curriculum & Programs",
-          desc: "Specialized Sinhala Language and Economics programs structured to guarantee distinctions in National O/L and A/L examinations.",
+          desc: "Specialized Crypto and Financial Market trading programs structured to build consistent, profitable independent traders.",
           ctaText: "Enroll Today",
           ctaLink: "/register"
         })
@@ -384,67 +384,24 @@ const Admin = () => {
     )
   );
 
-  const [webResources, setWebResources] = useState(
-    JSON.parse(
-      localStorage.getItem("webResources") ||
-        JSON.stringify([
-          {
-            id: 1,
-            title: "Crypto Market Terminology & Beginner Handbook",
-            category: "Crypto Basic",
-            type: "PDF Document",
-            size: "2.4 MB",
-            badge: "Essential",
-            url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-            downloadCount: "1,420",
-            description: "Complete guide to blockchain mechanics, wallets, order types, exchanges, and crypto risk rules.",
-            isHidden: false
-          },
-          {
-            id: 2,
-            title: "Price Action Candlestick Patterns CheatSheet",
-            category: "Price Action",
-            type: "PDF CheatSheet",
-            size: "1.1 MB",
-            badge: "Quick Revision",
-            url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-            downloadCount: "2,890",
-            description: "High-probability bullish, bearish, and neutral candlestick patterns with entry/exit triggers.",
-            isHidden: false
-          },
-          {
-            id: 3,
-            title: "Technical Analysis & Chart Indicators Master Guide",
-            category: "Technical Analysis",
-            type: "PDF Document",
-            size: "1.8 MB",
-            badge: "Pro Trader",
-            url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-            downloadCount: "3,150",
-            description: "In-depth breakdown of RSI, MACD, Moving Averages, Support/Resistance zones, and Trendlines.",
-            isHidden: false
-          },
-          {
-            id: 4,
-            title: "Forex & Futures Position Sizing and Risk Model",
-            category: "Forex & Futures",
-            type: "PDF Document",
-            size: "1.5 MB",
-            badge: "Risk Control",
-            url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-            downloadCount: "980",
-            description: "Calculations for 1% risk rule, risk-to-reward ratio formulas, and margin leverage safety guidelines.",
-            isHidden: false
-          }
-        ])
-    )
-  );
+  const [webResources, setWebResources] = useState(() => {
+    try {
+      const saved = localStorage.getItem("webResources");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed.filter((r) => r.url && !r.url.includes("dummy.pdf"));
+        }
+      }
+    } catch (e) {}
+    return [];
+  });
 
   const [webGeneralSettings, setWebGeneralSettings] = useState(
     JSON.parse(
       localStorage.getItem("webGeneralSettings") ||
         JSON.stringify({
-          supportEmail: "support@econoacademy.lk",
+          supportEmail: "support@taizeracademy.com",
           supportPhone: "+94 77 123 4567",
           whatsappNumber: "94771234567",
           address: "Colombo, Sri Lanka",
@@ -456,21 +413,19 @@ const Admin = () => {
             whatsappGroup: "https://chat.whatsapp.com",
             instagram: "https://instagram.com"
           },
-          subjects: ["Crypto Basic", "Price Action", "Sinhala", "Economics"],
+          subjects: ["Crypto Basic", "Order Flow"],
           grades: {
             "Crypto Basic": [],
-            "Price Action": [],
-            Sinhala: ["Grade 6", "Grade 7", "Grade 8", "Grade 9", "Grade 10", "Grade 11"],
-            Economics: ["Grade 12", "Grade 13"]
+            "Order Flow": []
           },
           academicYear: "2026 / 2027",
           announcementBar: {
             enabled: true,
-            text: "📢 2026 A/L Economics New Theory Batch registrations are now open! Limited seats available.",
+            text: "📢 New Crypto Basic & Order Flow Masterclass batches are now open! Limited seats available.",
             link: "/register",
             linkText: "Register Now"
           },
-          footerNotice: "© 2026 EconoAcademy LK. Empowering the next generation of scholars."
+          footerNotice: "© 2026 Taizer LMS. Empowering high-probability market execution."
         })
     )
   );
@@ -486,16 +441,23 @@ const Admin = () => {
         ...allConfiguredGrades
       ].filter(Boolean))
     );
-    return combined.length > 0
-      ? combined
-      : [
-          "Crypto Basic",
-          "Price Action",
-          "Technical Analysis",
-          "Grade 12",
-          "Grade 13"
-        ];
+    return combined.length > 0 ? combined : ["Crypto Basic", "Order Flow"];
   }, [webGeneralSettings]);
+
+  // Keep selected grades synced with active available grades
+  useEffect(() => {
+    if (availableGrades.length > 0) {
+      if (!availableGrades.includes(selectedSessionGrade)) {
+        setSelectedSessionGrade(availableGrades[0]);
+      }
+      if (!availableGrades.includes(selectedGrade)) {
+        setSelectedGrade(availableGrades[0]);
+      }
+      if (!availableGrades.includes(selectedZoomGrade)) {
+        setSelectedZoomGrade(availableGrades[0]);
+      }
+    }
+  }, [availableGrades]);
 
   const handleQuickAddClass = (newClassName, targetSubject) => {
     const trimmed = (newClassName || "").trim();
@@ -594,37 +556,37 @@ const Admin = () => {
     JSON.parse(
       localStorage.getItem("webInstructorProfile") ||
         JSON.stringify({
-          role: "Economics & Management Lecturer",
-          name: "Ishara Madhushani",
+          role: "Crypto & Order Flow Specialist",
+          name: "Taizer Lead Trader",
           image: "/teacher.jpg",
           title: "Instructor Portfolio",
           quote:
-            "Motivated Economics graduate with a passion for analytical thinking and global business development, dedicated to empowering students through clear communication and expert knowledge.",
-          expYears: "3+",
+            "Professional trader and market analyst dedicated to empowering individuals with institutional execution models, quantitative order flow, and risk management.",
+          expYears: "8+",
           stats: [
-            { label: "Students Taught", value: "1000+", icon: "BookOpen", color: "blue" },
-            { label: "Pass Rate", value: "95%", icon: "GraduationCap", color: "emerald" }
+            { label: "Traders Trained", value: "2500+", icon: "BookOpen", color: "blue" },
+            { label: "Funded Traders", value: "92%", icon: "GraduationCap", color: "emerald" }
           ],
           education: [
-            { year: "2024", degree: "BA (Hons) in Economics", institution: "University of Sri Jayewardenepura" },
-            { year: "2018", degree: "G.C.E. Advanced Level", institution: "MR/Godapitiya National School (A,A,B)" },
-            { year: "2023", degree: "Diploma in English", institution: "Lakshman Yapa Foundation" }
+            { year: "2024", degree: "Advanced Order Flow Certification", institution: "Global Market Profile Institute" },
+            { year: "2020", degree: "Certified Financial Technical Analyst (CFTe)", institution: "International Federation of Technical Analysts" },
+            { year: "2018", degree: "B.Sc. in Financial Engineering & Analytics", institution: "Faculty of Applied Sciences" }
           ],
           subjects: [
-            "A/L Economics",
-            "Management Studies",
-            "Sinhala Language",
-            "Business Statistics",
-            "Data Analysis & Reporting"
+            "Crypto Basic & Intermediate",
+            "Order Flow & Footprint Dynamics",
+            "Volume Profile & Market Structure",
+            "Institutional Liquidity Concepts",
+            "Risk Management & Psychology"
           ],
           achievements: [
-            "Honours Graduate in Economics (USJ)",
-            "Former Intern at Bank of Ceylon (R&D)",
-            "Training Manager experience in Corporate Sector",
-            "Assistant Manager experience in Retail Management"
+            "Consistent Multi-Asset Proprietary Trader",
+            "Developer of Algorithmic Trading Systems & CVD Indicators",
+            "Over 2,500+ Active Trading Students Mentored Globally",
+            "Head of Research & Market Intelligence at Taizer"
           ],
           philosophy:
-            "I believe that education is the bridge between ambition and achievement. My goal is to break down complex economic frameworks into practical, relatable insights that stick with students for a lifetime."
+            "True trading consistency is not about predicting the future; it is about executing an edge with mathematical discipline, managing risk with zero emotional bias, and riding institutional liquidity."
         })
     )
   );
@@ -668,7 +630,7 @@ const Admin = () => {
           const sessionsData = await sessionsRes.json();
           const formattedSessions = {};
           sessionsData.forEach((s) => {
-            const g = s.grade || "Grade 12";
+            const g = s.grade || (availableGrades[0] || "Crypto Basic");
             if (!formattedSessions[g]) formattedSessions[g] = [];
             formattedSessions[g].push(s);
           });
@@ -683,7 +645,7 @@ const Admin = () => {
           const qsData = await qsRes.json();
           const formattedQs = {};
           qsData.forEach((q) => {
-            const g = q.grade || "Grade 12";
+            const g = q.grade || (availableGrades[0] || "Crypto Basic");
             if (!formattedQs[g]) formattedQs[g] = [];
             formattedQs[g].push(q);
           });
@@ -698,7 +660,7 @@ const Admin = () => {
           const assignmentsData = await assignmentsRes.json();
           const formattedAssignments = {};
           assignmentsData.forEach((a) => {
-            const g = a.grade || "Grade 12";
+            const g = a.grade || (availableGrades[0] || "Crypto Basic");
             if (!formattedAssignments[g]) formattedAssignments[g] = [];
             formattedAssignments[g].push(a);
           });
@@ -1264,6 +1226,7 @@ const Admin = () => {
                 questions={questions}
                 whatsappMessages={whatsappMessages}
                 portalMessages={portalMessages}
+                availableGrades={availableGrades}
                 setActiveTab={setActiveTab}
                 setViewingPayment={setViewingPayment}
               />
@@ -1389,6 +1352,7 @@ const Admin = () => {
                 onFetchWhatsappMessages={fetchWhatsappMessages}
                 onFetchInquiries={fetchInquiries}
                 markAsRead={markAsRead}
+                availableGrades={availableGrades}
               />
             )}
 

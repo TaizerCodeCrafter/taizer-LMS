@@ -109,7 +109,7 @@ const Contact = () => {
                     Email Inquiries
                   </p>
                   <p className="text-xs font-bold text-slate-200">
-                    support@econoacademy.lk
+                    support@taizer.lk
                   </p>
                 </div>
               </div>

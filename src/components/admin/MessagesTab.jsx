@@ -39,12 +39,13 @@ const MessagesTab = ({
   onFetchPortalMessages,
   onFetchWhatsappMessages,
   onFetchInquiries,
-  markAsRead
+  markAsRead,
+  availableGrades = []
 }) => {
   const [studentSearch, setStudentSearch] = useState("");
   const [inquirySearch, setInquirySearch] = useState("");
 
-  const [adminChatGrade, setAdminChatGrade] = useState("Grade 12");
+  const [adminChatGrade, setAdminChatGrade] = useState(availableGrades[0] || "All");
   const [adminChatMessages, setAdminChatMessages] = useState([]);
   const [adminChatInput, setAdminChatInput] = useState("");
   const [adminChatSending, setAdminChatSending] = useState(false);
@@ -85,8 +86,8 @@ const MessagesTab = ({
     const newMsg = {
       _id: "gm_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6),
       grade: adminChatGrade,
-      senderName: "Kavinda Sir (Lead Lecturer)",
-      senderEmail: "admin@econo.lk",
+      senderName: "Taizer Admin (Lead Mentor)",
+      senderEmail: "admin@taizer.lk",
       senderRole: "teacher",
       text,
       timestamp: new Date().toISOString()
@@ -105,8 +106,8 @@ const MessagesTab = ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           grade: adminChatGrade,
-          senderName: "Kavinda Sir (Lead Lecturer)",
-          senderEmail: "admin@econo.lk",
+          senderName: "Taizer Admin (Lead Mentor)",
+          senderEmail: "admin@taizer.lk",
           senderRole: "teacher",
           text
         })
@@ -627,7 +628,7 @@ const MessagesTab = ({
                         {inquiry.phone && (
                           <a
                             href={`https://wa.me/${waNumber}?text=${encodeURIComponent(
-                              `Hello ${inquiry.name}, thank you for contacting EconoAcademy. Regarding your inquiry: "${inquiry.message?.substring(0, 50)}..."`
+                              `Hello ${inquiry.name}, thank you for contacting Taizer Academy. Regarding your inquiry: "${inquiry.message?.substring(0, 50)}..."`
                             )}`}
                             target="_blank"
                             rel="noreferrer"
@@ -711,14 +712,7 @@ const MessagesTab = ({
               </span>
               {[
                 "All",
-                "Grade 6",
-                "Grade 7",
-                "Grade 8",
-                "Grade 9",
-                "Grade 10",
-                "Grade 11",
-                "Grade 12",
-                "Grade 13"
+                ...(availableGrades.length > 0 ? availableGrades : ["Crypto Basic", "Order Flow"])
               ].map((g) => (
                 <button
                   key={g}
@@ -729,7 +723,7 @@ const MessagesTab = ({
                       : "bg-slate-900 text-slate-400 hover:text-white border border-slate-800"
                   }`}
                 >
-                  {g === "All" ? "🌐 All Grades" : g}
+                  {g === "All" ? "🌐 All Channels" : g}
                 </button>
               ))}
             </div>

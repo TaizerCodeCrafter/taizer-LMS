@@ -17,58 +17,80 @@ import {
 } from "lucide-react";
 import { showAppConfirm, showAppToast } from "./GlobalAlert";
 
-const CHANNELS = [
-  { id: "All", name: "All Grades Community", badge: "Main Lounge (ප්‍රධාන හමුව)", icon: "🌐" },
-  { id: "Grade 6", name: "Grade 6 Group", badge: "Junior (කනිෂ්ඨ අංශය)", icon: "🌱" },
-  { id: "Grade 7", name: "Grade 7 Group", badge: "Junior (කනිෂ්ඨ අංශය)", icon: "🌿" },
-  { id: "Grade 8", name: "Grade 8 Group", badge: "Junior (කනිෂ්ඨ අංශය)", icon: "🌾" },
-  { id: "Grade 9", name: "Grade 9 Group", badge: "Junior (කනිෂ්ඨ අංශය)", icon: "📘" },
-  { id: "Grade 10", name: "Grade 10 Group", badge: "O/L Batch (සාමාන්‍ය පෙළ)", icon: "📙" },
-  { id: "Grade 11", name: "Grade 11 Group", badge: "O/L Exam Focus", icon: "🎯" },
-  { id: "Grade 12", name: "Grade 12 Group", badge: "A/L Econ Theory", icon: "🏛️" },
-  { id: "Grade 13", name: "Grade 13 Group", badge: "A/L Revision & Target", icon: "🏆" }
-];
+const getDynamicChannels = () => {
+  const base = [
+    { id: "All", name: "All Traders Community", badge: "Main Lounge", icon: "🌐" }
+  ];
+  try {
+    const saved = localStorage.getItem("webGeneralSettings");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      const gradesObj = parsed.grades || {};
+      const subs = parsed.subjects || [];
+      const allGrades = Object.values(gradesObj).flat();
+      const combined = Array.from(new Set([...subs, ...allGrades].filter(Boolean)));
+      if (combined.length > 0) {
+        return [
+          ...base,
+          ...combined.map((name, i) => ({
+            id: name,
+            name: `${name} Group`,
+            badge: "Active Cohort",
+            icon: i % 2 === 0 ? "⚡" : "🎯"
+          }))
+        ];
+      }
+    }
+  } catch {}
+  return [
+    ...base,
+    { id: "Crypto Basic", name: "Crypto Basic Group", badge: "Core Foundation", icon: "⚡" },
+    { id: "Order Flow", name: "Order Flow Group", badge: "Advanced Trading", icon: "🎯" }
+  ];
+};
+
+const CHANNELS = getDynamicChannels();
 
 const SEED_MESSAGES = {
   "All": [
     {
       _id: "gm_seed_all_1",
       grade: "All",
-      senderName: "Econo Admin / Teacher Support",
-      senderEmail: "admin@econo.lk",
+      senderName: "Taizer Academy Support",
+      senderEmail: "admin@taizeracademy.com",
       senderRole: "teacher",
-      text: "ආයුබෝවන් සියලුම දරුවන්ට! මෙම සමූහය ඔස්සේ ඔබට සහෝදර සිසුන් සමඟ අධ්‍යාපනික කරුණු හා පොදු දැනුම්දීම් සාකච්ඡා කළ හැක. විනයගරුකව සහ සහයෝගයෙන් කටයුතු කරන්න. 🌟",
+      text: "Welcome traders! Use this community channel to discuss market dynamics, news, and technical analysis setups. Maintain high trading discipline! 🌟",
       timestamp: new Date(Date.now() - 3600000 * 24).toISOString()
     }
   ],
-  "Grade 12": [
+  "Crypto Basic": [
     {
-      _id: "gm_seed_12_1",
-      grade: "Grade 12",
-      senderName: "Kavinda Sir",
-      senderEmail: "teacher@econo.lk",
+      _id: "gm_seed_cb_1",
+      grade: "Crypto Basic",
+      senderName: "Lead Mentor",
+      senderEmail: "mentor@taizeracademy.com",
       senderRole: "teacher",
-      text: "Grade 12 සිසුන් සඳහා නව නිෂ්පාදන හැකියා මායිම (PPF) පිළිබඳ කෙටි සටහන අද සවස Upload කෙරේ. පාඩම් කර ප්‍රශ්න ඇත්නම් මෙහි අසන්න.",
+      text: "Crypto Basic members: Make sure to review wallet safety and 1% risk position sizing before taking live trades.",
       timestamp: new Date(Date.now() - 3600000 * 10).toISOString()
     },
     {
-      _id: "gm_seed_12_2",
-      grade: "Grade 12",
+      _id: "gm_seed_cb_2",
+      grade: "Crypto Basic",
       senderName: "Dinuka Perera",
       senderEmail: "dinuka@sample.lk",
       senderRole: "student",
-      text: "ස්තූතියි සර්! අපි බලාපොරොත්තුවෙන් ඉන්නවා.",
+      text: "Thank you mentor! Looking forward to today's review session.",
       timestamp: new Date(Date.now() - 3600000 * 8).toISOString()
     }
   ],
-  "Grade 13": [
+  "Order Flow": [
     {
-      _id: "gm_seed_13_1",
-      grade: "Grade 13",
-      senderName: "Kavinda Sir",
-      senderEmail: "teacher@econo.lk",
+      _id: "gm_seed_of_1",
+      grade: "Order Flow",
+      senderName: "Lead Mentor",
+      senderEmail: "mentor@taizeracademy.com",
       senderRole: "teacher",
-      text: "Grade 13 පසුගිය විභාග ප්‍රශ්න පත්‍ර සාකච්ඡාව එළඹෙන සෙනසුරාදා සවස 7.00 ට Live Session හරහා පැවැත්වේ. සියලු දෙනා සූදානම් වන්න.",
+      text: "Order Flow members: Footprint chart review is scheduled for today's session. Analyze volume delta absorption at resistance.",
       timestamp: new Date(Date.now() - 3600000 * 15).toISOString()
     }
   ]
@@ -77,7 +99,7 @@ const SEED_MESSAGES = {
 export default function GradeGroupChatView({ user = {} }) {
   // Determine default grade channel
   const userGradeMatch = CHANNELS.find((c) => c.id === user?.grade);
-  const initialGrade = userGradeMatch ? userGradeMatch.id : "Grade 12";
+  const initialGrade = userGradeMatch ? userGradeMatch.id : (CHANNELS[1]?.id || "All");
 
   const [activeGrade, setActiveGrade] = useState(initialGrade);
   const [messages, setMessages] = useState(() => {
@@ -215,7 +237,7 @@ export default function GradeGroupChatView({ user = {} }) {
       _id: "gm_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6),
       grade: activeGrade,
       senderName: user?.name || "Student",
-      senderEmail: (user?.email || "student@econo.lk").toLowerCase(),
+      senderEmail: (user?.email || "student@taizer.lk").toLowerCase(),
       senderRole: isTeacher ? "teacher" : "student",
       senderPhoto: user?.profilePic || "",
       text: textToSend,
@@ -242,7 +264,7 @@ export default function GradeGroupChatView({ user = {} }) {
         body: JSON.stringify({
           grade: activeGrade,
           senderName: user?.name || "Student",
-          senderEmail: user?.email || "student@econo.lk",
+          senderEmail: user?.email || "student@taizer.lk",
           senderRole: isTeacher ? "teacher" : "student",
           senderPhoto: user?.profilePic || "",
           text: textToSend,
@@ -297,20 +319,20 @@ export default function GradeGroupChatView({ user = {} }) {
           <div className="space-y-1.5">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-bold">
               <Users className="w-3.5 h-3.5" />
-              <span>Grade 6 - 13 Community Network</span>
+              <span>Trading Community Network</span>
             </div>
             <h1 className="text-2xl font-black text-white tracking-tight">
-              ශිෂ්‍ය සමූහ කතාබහ (Grade Community Group Chat)
+              ශිෂ්‍ය සමූහ කතාබහ (Trading Community Group Chat)
             </h1>
             <p className="text-xs text-slate-300 font-medium leading-relaxed">
-              ඔබගේ ශ්‍රේණිය තෝරා සහෝදර සිසුන් හා ගුරු භවතුන් සමඟ අධ්‍යාපනික ගැටලු හා කරුණු සාකච්ඡා කරන්න.
+              ඔබගේ විෂය / කාණ්ඩය තෝරා සහෝදර සිසුන් හා උපදේශකවරුන් සමඟ වෙළඳපල කරුණු සාකච්ඡා කරන්න.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="px-4 py-2.5 rounded-2xl bg-slate-900/90 border border-slate-800 text-center">
-              <span className="text-[10px] text-slate-400 font-bold uppercase block">Your Enrolled Grade</span>
-              <span className="text-sm font-black text-emerald-400">{user?.grade || "Grade 12"}</span>
+              <span className="text-[10px] text-slate-400 font-bold uppercase block">Your Enrolled Batch</span>
+              <span className="text-sm font-black text-emerald-400">{user?.grade || user?.subject || "Crypto Basic"}</span>
             </div>
           </div>
         </div>
@@ -419,7 +441,7 @@ export default function GradeGroupChatView({ user = {} }) {
                 </div>
                 <h3 className="text-sm font-bold text-white">No messages in {activeGrade} yet</h3>
                 <p className="text-xs text-slate-400 max-w-xs">
-                  Be the first student to send a greeting or ask an economics question in this group!
+                  Be the first trader to send a greeting or ask a market analysis question in this channel!
                 </p>
               </div>
             ) : (

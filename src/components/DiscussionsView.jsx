@@ -21,32 +21,35 @@ import {
 } from "lucide-react";
 import { showAppConfirm, showAppToast } from "./GlobalAlert";
 
-const GRADES = [
-  "All",
-  "Grade 6",
-  "Grade 7",
-  "Grade 8",
-  "Grade 9",
-  "Grade 10",
-  "Grade 11",
-  "Grade 12",
-  "Grade 13"
-];
+const getDynamicGrades = () => {
+  try {
+    const saved = localStorage.getItem("webGeneralSettings");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      const gradesObj = parsed.grades || {};
+      const subs = parsed.subjects || [];
+      const allGrades = Object.values(gradesObj).flat();
+      const combined = Array.from(new Set([...subs, ...allGrades].filter(Boolean)));
+      if (combined.length > 0) return ["All", ...combined];
+    }
+  } catch {}
+  return ["All", "Crypto Basic", "Order Flow"];
+};
 
-const CATEGORIES = ["All", "Theory", "Past Paper", "Model Paper", "Discussion", "General"];
+const CATEGORIES = ["All", "Theory", "Market Analysis", "Order Flow", "Discussion", "General"];
 
 const INITIAL_TOPICS = [
   {
     _id: "seed_top_1",
-    title: "Opportunity Cost in Economic Decision Making",
-    titleSi: "ආර්ථික තීරණ ගැනීමේදී ආවස්ථික පිරිවැය (Opportunity Cost) යෙදෙන්නේ කෙසේද?",
-    question: "Explain the concept of opportunity cost with a real-world example from Sri Lanka's economy. How does scarcity force society to make choices between consumer goods and capital goods?",
-    grade: "Grade 12",
+    title: "Identifying Institutional Liquidity Sweeps in Crypto",
+    titleSi: "Crypto වෙළඳපලේ ආයතනික Liquidity Sweeps හඳුනාගැනීම",
+    question: "When price sweeps previous session highs/lows and immediately rejects with high volume, how do you confirm an institutional fakeout versus a genuine breakout?",
+    grade: "Crypto Basic",
     category: "Theory",
-    authorName: "Kavinda Sir (Lead Lecturer)",
+    authorName: "Taizer Mentor",
     authorRole: "teacher",
     pinned: true,
-    tags: ["Microeconomics", "Unit 1", "Opportunity Cost"],
+    tags: ["Crypto", "Liquidity", "Fakeouts"],
     comments: [
       {
         id: "comm_seed_1",
@@ -54,8 +57,8 @@ const INITIAL_TOPICS = [
         studentEmail: "kasun@sample.lk",
         studentPhoto: "",
         role: "student",
-        comment: "ආවස්ථික පිරිවැය යනු කිසියම් තේරීමක් කිරීමේදී කැප කිරීමට සිදුවන හොඳම විකල්පයේ අගයයි. උදාහරණයක් ලෙස රජය අධ්‍යාපනයට මුදල් වෙන් කිරීමේදී යටිතල පහසුකම් සංවර්ධනය වෙනුවෙන් වැය කිරීමට තිබූ අවස්ථාව අහිමි වේ.",
-        likes: 4,
+        comment: "Look for strong delta divergence on footprint charts combined with open interest drops. If OI drops on the sweep, it usually indicates stop hunts rather than fresh aggressive positioning.",
+        likes: 5,
         likedBy: [],
         isVerifiedAnswer: true,
         createdAt: new Date(Date.now() - 3600000 * 5).toISOString()
@@ -65,26 +68,26 @@ const INITIAL_TOPICS = [
   },
   {
     _id: "seed_top_2",
-    title: "Fiscal Policy vs Monetary Policy during Inflation",
-    titleSi: "උද්ධමනය පාලනය කිරීම සඳහා මූල්‍ය ප්‍රතිපත්තිය හා රාජ්‍ය මූල්‍ය ප්‍රතිපත්තිය භාවිතය",
-    question: "Which policy tool is more immediately effective in curtailing demand-pull inflation in a developing economy? Discuss interest rate adjustments vs government expenditure cuts.",
-    grade: "Grade 13",
-    category: "Past Paper",
-    authorName: "Kavinda Sir (Lead Lecturer)",
+    title: "Order Flow Absorption vs Exhaustion Signals",
+    titleSi: "Footprint Charts වල Absorption සහ Exhaustion වෙන්කර හඳුනාගැනීම",
+    question: "How do you distinguish between aggressive buyers getting absorbed at resistance vs buyer exhaustion where bid volume simply evaporates?",
+    grade: "Order Flow",
+    category: "Order Flow",
+    authorName: "Taizer Mentor",
     authorRole: "teacher",
     pinned: true,
-    tags: ["Macroeconomics", "Inflation", "Fiscal Policy"],
+    tags: ["Footprint", "CVD", "Absorption"],
     comments: [],
     createdAt: new Date(Date.now() - 3600000 * 12).toISOString()
   },
   {
     _id: "seed_top_3",
-    title: "Welcome to Study Forum! විෂය කරුණු සම්බන්ධ ප්‍රශ්න මෙහිදී සාකච්ඡා කරමු.",
-    titleSi: "සියලුම සිසුන් සඳහා සාකච්ඡා මණ්ඩපය (All Grades Q&A)",
-    question: "ඔබට ආර්ථික විද්‍යා පාඩම් මාලාවේ ගැටලු සහ විභාග ප්‍රශ්න පිළිබඳව මෙහිදී ගුරුවරයාගෙන් සහ සහෝදර සිසුන්ගෙන් විමසා දැනගත හැක. ගුරුවරයා විසින් දමන ප්‍රශ්න වලට නිවැරදිව පිළිතුරු සපයා ලකුණු හා Verified Badges දිනාගන්න!",
+    title: "Welcome to Trading Forum! Ask Questions & Share Trade Ideas",
+    titleSi: "සියලුම සිසුන් සඳහා සාකච්ඡා මණ්ඩපය (All Traders Community Q&A)",
+    question: "Welcome to the academy discussion forum! Share your chart markups, ask about entry triggers and risk management rules. Respect fellow traders and let's win together! 🚀",
     grade: "All",
     category: "General",
-    authorName: "Admin / Teacher Support",
+    authorName: "Academy Support",
     authorRole: "teacher",
     pinned: true,
     tags: ["General", "Announcement", "Q&A"],
@@ -94,7 +97,8 @@ const INITIAL_TOPICS = [
 ];
 
 export default function DiscussionsView({ user = {} }) {
-  const defaultGrade = user?.grade && GRADES.includes(user.grade) ? user.grade : "All";
+  const dynamicGrades = React.useMemo(() => getDynamicGrades(), []);
+  const defaultGrade = user?.grade && dynamicGrades.includes(user.grade) ? user.grade : "All";
   const [selectedGrade, setSelectedGrade] = useState(defaultGrade);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -157,7 +161,7 @@ export default function DiscussionsView({ user = {} }) {
     const newCommentObj = {
       id: "cmt_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6),
       studentName: user?.name || "Student",
-      studentEmail: (user?.email || "student@econo.lk").toLowerCase(),
+      studentEmail: (user?.email || "student@taizer.lk").toLowerCase(),
       studentPhoto: user?.profilePic || "",
       role: user?.email === "admin" || user?.role === "teacher" ? "teacher" : "student",
       comment: text,
@@ -192,7 +196,7 @@ export default function DiscussionsView({ user = {} }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           studentName: user?.name || "Student",
-          studentEmail: user?.email || "student@econo.lk",
+          studentEmail: user?.email || "student@taizer.lk",
           studentPhoto: user?.profilePic || "",
           role: user?.email === "admin" || user?.role === "teacher" ? "teacher" : "student",
           comment: text
@@ -206,7 +210,7 @@ export default function DiscussionsView({ user = {} }) {
   };
 
   const handleLikeComment = async (topicId, commentId) => {
-    const userEmail = (user?.email || "student@econo.lk").toLowerCase();
+    const userEmail = (user?.email || "student@taizer.lk").toLowerCase();
 
     // Optimistic UI update
     setTopics((prev) => {
@@ -342,7 +346,7 @@ export default function DiscussionsView({ user = {} }) {
             <Filter className="w-3.5 h-3.5 text-indigo-400" />
             <span>Select Grade:</span>
           </span>
-          {GRADES.map((g) => {
+          {dynamicGrades.map((g) => {
             const isSelected = selectedGrade === g;
             return (
               <button

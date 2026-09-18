@@ -68,9 +68,7 @@ const LmsTab = ({
   syncToBackend,
   showNotification
 }) => {
-  const gradeList = availableGrades.length > 0 ? availableGrades : [
-    "Grade 6", "Grade 7", "Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12", "Grade 13"
-  ];
+  const gradeList = availableGrades.length > 0 ? availableGrades : ["Crypto Basic", "Order Flow"];
   // Generic state for Materials and Referrals
   const safeJson = (raw, fallback = {}) => {
     try {
@@ -102,9 +100,9 @@ const LmsTab = ({
   // Referral Management State
   const [referralConfig, setReferralConfig] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem("lmsReferralConfig") || '{"active":true,"rewardAmount":"Rs. 500 Discount","rewardDesc":"Earn Rs. 500 fee discount for every friend who registers and enrolls in class.","noticeSi":"ඔබගේ මිතුරන්ට EconoAcademy වෙත ආරාධනා කර පන්ති ගාස්තු වට්ටම් දිනාගන්න!"}');
+      return JSON.parse(localStorage.getItem("lmsReferralConfig") || '{"active":true,"rewardAmount":"Rs. 500 Discount","rewardDesc":"Earn Rs. 500 fee discount for every friend who registers and enrolls in class.","noticeSi":"ඔබගේ මිතුරන්ට Taizer LMS වෙත ආරාධනා කර පාඨමාලා ගාස්තු වට්ටම් දිනාගන්න!"}');
     } catch {
-      return { active: true, rewardAmount: "Rs. 500 Discount", rewardDesc: "Earn Rs. 500 fee discount for every friend who registers and enrolls in class.", noticeSi: "ඔබගේ මිතුරන්ට EconoAcademy වෙත ආරාධනා කර පන්ති ගාස්තු වට්ටම් දිනාගන්න!" };
+      return { active: true, rewardAmount: "Rs. 500 Discount", rewardDesc: "Earn Rs. 500 fee discount for every friend who registers and enrolls in class.", noticeSi: "ඔබගේ මිතුරන්ට Taizer LMS වෙත ආරාධනා කර පාඨමාලා ගාස්තු වට්ටම් දිනාගන්න!" };
     }
   });
   const [isAddPartnerLinkOpen, setIsAddPartnerLinkOpen] = useState(false);
@@ -681,8 +679,8 @@ const LmsTab = ({
     setSubmittingDiscussionReply((prev) => ({ ...prev, [topicId]: true }));
     const newComment = {
       id: "cmt_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6),
-      studentName: "Kavinda Sir (Lead Lecturer)",
-      studentEmail: "admin@econo.lk",
+      studentName: "Taizer Admin (Lead Mentor)",
+      studentEmail: "admin@taizer.lk",
       studentPhoto: "",
       role: "teacher",
       comment: text,
@@ -712,8 +710,8 @@ const LmsTab = ({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          studentName: "Kavinda Sir (Lead Lecturer)",
-          studentEmail: "admin@econo.lk",
+          studentName: "Taizer Admin (Lead Mentor)",
+          studentEmail: "admin@taizer.lk",
           studentPhoto: "",
           role: "teacher",
           comment: text
@@ -1060,8 +1058,8 @@ const LmsTab = ({
       studentId: sub.studentId || "STU-" + (sub.studentEmail ? sub.studentEmail.split("@")[0].toUpperCase() : "101"),
       name: sub.studentName || "Student",
       email: sub.studentEmail || "student@example.com",
-      grade: sub.grade || "Grade 12",
-      subject: "Economics",
+      grade: sub.grade || (gradeList[0] || "Crypto Basic"),
+      subject: sub.subject || "Crypto Basic",
       phone: "Not provided",
       paymentStatus: "Approved"
     };
@@ -1173,7 +1171,7 @@ const LmsTab = ({
                   onChange={(e) =>
                     setCourseSettings({ ...courseSettings, subject: e.target.value })
                   }
-                  placeholder="e.g. A/L Economics"
+                  placeholder="e.g. Crypto Basic"
                   className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs font-semibold text-white outline-none focus:border-indigo-500"
                 />
               </div>
@@ -1296,19 +1294,10 @@ const LmsTab = ({
               <select
                 value={selectedSessionGrade}
                 onChange={(e) => setSelectedSessionGrade(e.target.value)}
-                className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-amber-400 outline-none"
+                className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-amber-400 outline-none cursor-pointer"
               >
-                {[
-                  "Grade 6",
-                  "Grade 7",
-                  "Grade 8",
-                  "Grade 9",
-                  "Grade 10",
-                  "Grade 11",
-                  "Grade 12",
-                  "Grade 13"
-                ].map((g) => (
-                  <option key={g} value={g}>
+                {gradeList.map((g) => (
+                  <option key={g} value={g} className="bg-slate-900 text-slate-200">
                     {g}
                   </option>
                 ))}
@@ -1580,7 +1569,7 @@ const LmsTab = ({
                                   ID: {student.studentId || student.id}
                                 </span>
                                 <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold">
-                                  {sub.grade || student.grade || "Grade 12"}
+                                  {sub.grade || student.grade || (gradeList[0] || "Crypto Basic")}
                                 </span>
                               </div>
                               <p className="text-xs font-semibold text-slate-300 line-clamp-1">
@@ -2096,7 +2085,7 @@ const LmsTab = ({
                 friendId: s.studentId || "Pending",
                 friendName: s.name || "Student",
                 friendEmail: s.email || "",
-                friendGrade: s.grade || "Grade 12",
+                friendGrade: s.grade || (gradeList[0] || "Crypto Basic"),
                 friendStatus: s.status === "Approved" || s.paymentStatus === "Approved" ? "Enrolled" : (s.paymentStatus === "Uploaded" ? "Payment Under Review" : "Pending"),
                 joinedDate: s.joined ? String(s.joined).split(',')[0] : "Recent",
                 referrerCode: rawRef,
@@ -2206,10 +2195,12 @@ const LmsTab = ({
                     <select
                       value={selectedSessionGrade}
                       onChange={(e) => setSelectedSessionGrade(e.target.value)}
-                      className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-indigo-400 outline-none"
+                      className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-indigo-400 outline-none cursor-pointer"
                     >
-                      {["Grade 6", "Grade 7", "Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12", "Grade 13"].map((g) => (
-                        <option key={g} value={g}>{g}</option>
+                      {gradeList.map((g) => (
+                        <option key={g} value={g} className="bg-slate-900 text-slate-200">
+                          {g}
+                        </option>
                       ))}
                     </select>
 
@@ -2407,8 +2398,8 @@ const LmsTab = ({
                     onChange={(e) => setDiscussionForm({ ...discussionForm, grade: e.target.value })}
                     className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500"
                   >
-                    {["All", "Grade 6", "Grade 7", "Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12", "Grade 13"].map((g) => (
-                      <option key={g} value={g}>{g === "All" ? "All Grades" : g}</option>
+                    {["All", ...gradeList].map((g) => (
+                      <option key={g} value={g}>{g === "All" ? "All Batches / Grades" : g}</option>
                     ))}
                   </select>
                 </div>
@@ -2443,7 +2434,7 @@ const LmsTab = ({
                 <label className="text-xs font-bold text-slate-300 block mb-1">Tags (Comma separated)</label>
                 <input
                   type="text"
-                  placeholder="e.g. Elasticity, Microeconomics, Unit 3"
+                  placeholder="e.g. Market Structure, Order Flow, Candlestick Patterns"
                   value={discussionForm.tags}
                   onChange={(e) => setDiscussionForm({ ...discussionForm, tags: e.target.value })}
                   className="w-full px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
@@ -3121,10 +3112,10 @@ const LmsTab = ({
                 </p>
                 <div className="flex items-center gap-2">
                   <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-bold border border-emerald-500/20">
-                    {viewingStudentProfile.grade || "Grade 12"}
+                    {viewingStudentProfile.grade || (gradeList[0] || "Crypto Basic")}
                   </span>
                   <span className="px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 text-[10px] font-bold border border-blue-500/20">
-                    {viewingStudentProfile.subject || "Economics"}
+                    {viewingStudentProfile.subject || "Crypto Basic"}
                   </span>
                 </div>
               </div>
@@ -3768,7 +3759,7 @@ const LmsTab = ({
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Official WhatsApp Economics Discussion Group"
+                  placeholder="e.g. Official WhatsApp Trading Discussion Group"
                   value={partnerLinkForm.title}
                   onChange={(e) => setPartnerLinkForm({ ...partnerLinkForm, title: e.target.value })}
                   className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs font-semibold text-white outline-none focus:border-indigo-500"

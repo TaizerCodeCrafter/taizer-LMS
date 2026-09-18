@@ -183,86 +183,7 @@ const getActiveZoomMeeting = (zoom) => {
    };
 };
 
-const defaultEconomicsAssignments = [
-  {
-    id: "asg-econ-1",
-    grade: "Grade 12",
-    title: "Unit 3 Assignment: Elasticity of Demand & Market Analysis",
-    titleSi: "3 වන ඒකකය: ඉල්ලුමේ මිල නම්‍යතාවය සහ වෙළඳපල විශ්ලේෂණය",
-    desc: "Complete interactive multiple-choice questions, write structured analytical explanations, and draw market equilibrium shift diagrams.",
-    dueDate: "2026-09-25",
-    timeLimit: "45 Mins",
-    totalMarks: 50,
-    locked: false,
-    tasks: [
-      {
-        id: "t-1",
-        type: "mcq",
-        question: "When the price of a good increases by 10%, the quantity demanded decreases by 25%. What is the price elasticity of demand coefficient?",
-        questionSi: "භාණ්ඩයක මිල 10% කින් ඉහළ යන විට ඉල්ලුම් ප්‍රමාණය 25% කින් පහත වැටේ නම්, ඉල්ලුමේ මිල නම්‍යතා සංගුණකය කුමක්ද?",
-        options: ["0.4 (Inelastic)", "1.0 (Unitary Elastic)", "2.5 (Relatively Elastic)", "-0.4 (Inelastic)"],
-        correctIndex: 2,
-        marks: 10,
-        explanation: "PED = % Change in Quantity / % Change in Price = 25% / 10% = 2.5."
-      },
-      {
-        id: "t-2",
-        type: "essay",
-        question: "Explain the economic rationale behind why consumers bear a larger burden of an indirect tax when demand is relatively inelastic compared to supply.",
-        questionSi: "සැපයුමට සාපේක්ෂව ඉල්ලුම අනම්‍ය වන විට, වක්‍ර බද්දක වැඩි බරක් පාරිභෝගිකයා මත පැටවීමට හේතුව ආර්ථික විද්‍යාත්මකව පැහැදිලි කරන්න.",
-        marks: 20,
-        explanation: "Key concepts: Inelastic demand means consumers have fewer substitutes and cannot easily switch away, allowing producers to pass on the tax burden through higher prices."
-      },
-      {
-        id: "t-3",
-        type: "diagram",
-        question: "Draw a clearly labeled supply and demand diagram showing the imposition of a per-unit specific tax on an inelastic good. Upload a clear photo of your handwritten graph.",
-        questionSi: "අනම්‍ය ඉල්ලුමක් සහිත භාණ්ඩයක් මත ඒකක බද්දක් පැනවූ විට සැපයුම් වක්‍රය ඉහළට විතැන් වීම හා බදු ආදායම දැක්වෙන ප්‍රස්ථාරයක් ඇඳ upload කරන්න.",
-        marks: 20,
-        instructions: "Upload a clear photo or scan of your handwritten answer sheet with axes P and Q, showing P1, P2, and deadweight loss."
-      }
-    ]
-  },
-  {
-    id: "asg-econ-2",
-    grade: "Grade 12",
-    title: "Unit 4 Assignment: Short-Run Production Costs & Law of Diminishing Returns",
-    titleSi: "4 වන ඒකකය: කෙටිකාලීන නිෂ්පාදන පිරිවැය හා ක්ෂයවන ඵලදා නීතිය",
-    desc: "Analytical assignment covering Marginal Cost (MC), Average Variable Cost (AVC), and short-run production optimization.",
-    dueDate: "2026-10-02",
-    timeLimit: "60 Mins",
-    totalMarks: 50,
-    locked: false,
-    tasks: [
-      {
-        id: "t-2-1",
-        type: "mcq",
-        question: "Which of the following cost curves slopes continuously downward as output increases?",
-        questionSi: "නිෂ්පාදිතය වැඩි වන විට අඛණ්ඩව පහළට බසින පිරිවැය වක්‍රය කුමක්ද?",
-        options: ["Average Variable Cost (AVC)", "Average Fixed Cost (AFC)", "Marginal Cost (MC)", "Average Total Cost (ATC)"],
-        correctIndex: 1,
-        marks: 10,
-        explanation: "Average Fixed Cost (AFC = TFC / Q) declines continuously because fixed cost is spread over more units."
-      },
-      {
-        id: "t-2-2",
-        type: "essay",
-        question: "State the Law of Diminishing Marginal Returns and explain the exact relationship between the Marginal Product (MP) curve and the Marginal Cost (MC) curve.",
-        questionSi: "ක්ෂයවන ආන්තික ඵලදා නීතිය ප්‍රකාශ කර, ආන්තික නිෂ්පාදිත (MP) වක්‍රය සහ ආන්තික පිරිවැය (MC) වක්‍රය අතර පවතින ප්‍රතිලෝම සම්බන්ධතාවය පැහැදිලි කරන්න.",
-        marks: 20,
-        explanation: "When MP increases, MC decreases; when MP reaches its peak, MC reaches its minimum; when MP begins to diminish, MC begins to rise."
-      },
-      {
-        id: "t-2-3",
-        type: "diagram",
-        question: "Draw the relationship between Marginal Cost (MC), Average Variable Cost (AVC), and Average Total Cost (ATC) curves, clearly marking the minimum points.",
-        questionSi: "MC, AVC සහ ATC වක්‍ර අතර සම්බන්ධතාවය හා ඒවායේ අවම ලක්ෂ්‍යයන් හරහා MC වක්‍රය ගමන් කරන ආකාරය දක්වමින් ප්‍රස්ථාරයක් ඇඳ upload කරන්න.",
-        marks: 20,
-        instructions: "Ensure MC intersects both AVC and ATC at their lowest points."
-      }
-    ]
-  }
-];
+const defaultInitialAssignments = [];
 
 const LMSDashboard = () => {
    const navigate = useNavigate();
@@ -334,9 +255,9 @@ const LMSDashboard = () => {
     const [activeNote, setActiveNote] = useState(null);
     const [referralConfig, setReferralConfig] = useState(() => {
        try {
-          return JSON.parse(localStorage.getItem("lmsReferralConfig") || '{"active":true,"rewardAmount":"Rs. 500 Discount","rewardDesc":"Earn Rs. 500 fee discount for every friend who registers and enrolls in class.","noticeSi":"ඔබගේ මිතුරන්ට EconoAcademy වෙත ආරාධනා කර පන්ති ගාස්තු වට්ටම් දිනාගන්න!"}');
+          return JSON.parse(localStorage.getItem("lmsReferralConfig") || '{"active":true,"rewardAmount":"Rs. 500 Discount","rewardDesc":"Earn Rs. 500 fee discount for every friend who registers and enrolls in class.","noticeSi":"ඔබගේ මිතුරන්ට Taizer LMS වෙත ආරාධනා කර පාඨමාලා ගාස්තු වට්ටම් දිනාගන්න!"}');
        } catch {
-          return { active: true, rewardAmount: "Rs. 500 Discount", rewardDesc: "Earn Rs. 500 fee discount for every friend who registers and enrolls in class.", noticeSi: "ඔබගේ මිතුරන්ට EconoAcademy වෙත ආරාධනා කර පන්ති ගාස්තු වට්ටම් දිනාගන්න!" };
+          return { active: true, rewardAmount: "Rs. 500 Discount", rewardDesc: "Earn Rs. 500 fee discount for every friend who registers and enrolls in class.", noticeSi: "ඔබගේ මිතුරන්ට Taizer LMS වෙත ආරාධනා කර පාඨමාලා ගාස්තු වට්ටම් දිනාගන්න!" };
        }
     });
     const [bankDetails, setBankDetails] = useState(() => {
@@ -348,9 +269,9 @@ const LMSDashboard = () => {
     });
     const [courseSettings, setCourseSettings] = useState(() => {
        try {
-          return JSON.parse(localStorage.getItem("courseSettings") || '{"subject":"Economics","fee":"2500"}');
+          return JSON.parse(localStorage.getItem("courseSettings") || '{"subject":"Crypto Basic","fee":"2500"}');
        } catch {
-          return { subject: "Economics", fee: "2500" };
+          return { subject: "Crypto Basic", fee: "2500" };
        }
     });
     const [generalSettings, setGeneralSettings] = useState(() => {
@@ -519,11 +440,6 @@ const LMSDashboard = () => {
             if (currentGradeAssignments.length === 0) {
                const allAssignments = JSON.parse(localStorage.getItem("lmsAssignments") || "{}");
                currentGradeAssignments = allAssignments[userGrade] || [];
-               if (currentGradeAssignments.length === 0 && (userGrade === "Grade 12" || userGrade === "Grade 13")) {
-                  currentGradeAssignments = defaultEconomicsAssignments;
-                  allAssignments[userGrade] = defaultEconomicsAssignments;
-                  localStorage.setItem("lmsAssignments", JSON.stringify(allAssignments));
-               }
             }
             setAssignments(currentGradeAssignments);
 
@@ -957,8 +873,8 @@ const LMSDashboard = () => {
             studentEmail: user?.email,
             studentName: user?.name,
             studentId: user?.studentId || user?.id || "STU-" + (user?.name || "STUDENT").slice(0, 3).toUpperCase(),
-            grade: user?.grade || "Grade 12",
-            subject: user?.subject || "Economics",
+            grade: user?.grade || user?.subject || "Crypto Basic",
+            subject: user?.subject || user?.grade || "Crypto Basic",
             answers: studentAnswers,
             taskScores,
             autoTestResults,
@@ -1196,7 +1112,7 @@ const LMSDashboard = () => {
    };
 
    const startAssessment = async () => {
-      const userGrade = user?.grade || "Grade 12";
+      const userGrade = user?.grade || user?.subject || "Crypto Basic";
       let gradeQuestions = [];
       try {
          const res = await fetch(`http://localhost:5000/api/questions?grade=${encodeURIComponent(userGrade)}`);
@@ -1696,7 +1612,7 @@ const LMSDashboard = () => {
                                   <span className="text-xs font-semibold text-slate-400">Welcome back,</span>
                                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold">
                                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                                     {user.grade || "Grade 12"}
+                                     {user.grade || user.subject || "Crypto Basic"}
                                   </span>
                                </div>
                                <h1 className="text-base sm:text-xl font-bold text-white tracking-tight leading-snug">
@@ -2144,7 +2060,7 @@ const LMSDashboard = () => {
                            <>
                               <div className="text-center space-y-4">
                                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-black uppercase tracking-widest">
-                                    <span>🎯</span> Enrolled Grade: {user?.grade || "Grade 12"}
+                                    <span>🎯</span> Enrolled: {user?.grade || user?.subject || "Crypto Basic"}
                                  </div>
                                  <h2 className="text-2xl sm:text-4xl font-black text-[#2dd4bf] tracking-tighter uppercase italic">
                                     {user?.grade || "Course"} Curriculum Sessions
@@ -2510,7 +2426,7 @@ const LMSDashboard = () => {
                                  {/* Institution Brand Badge */}
                                  <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full bg-slate-950/70 backdrop-blur-md border border-white/10 text-xs font-bold text-slate-200 shadow-xl">
                                     <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                                    <span className="hidden sm:inline">EconoAcademy •</span>
+                                    <span className="hidden sm:inline">Taizer LMS •</span>
                                     <span className="text-amber-300/90 font-extrabold">Official Student Portal</span>
                                  </div>
 
@@ -2594,10 +2510,10 @@ const LMSDashboard = () => {
                                           <span className="opacity-60">ID:</span> {user.studentId || user.id}
                                        </span>
                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold">
-                                          <GraduationCap className="w-3.5 h-3.5" /> Grade {user?.grade || "Grade 12"}
+                                          <GraduationCap className="w-3.5 h-3.5" /> {user?.grade || user?.subject || "Crypto Basic"}
                                        </span>
                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-bold">
-                                          <BookOpen className="w-3.5 h-3.5" /> {user.subject || 'Economics'}
+                                          <BookOpen className="w-3.5 h-3.5" /> {user.subject || user.grade || "Crypto Basic"}
                                        </span>
                                        {user.joined && (
                                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-800/80 border border-slate-700/60 text-slate-400 text-xs font-medium">
@@ -2628,9 +2544,9 @@ const LMSDashboard = () => {
                                  <GraduationCap className="w-5 h-5" />
                               </div>
                               <div>
-                                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Enrolled Grade</p>
-                                 <p className="text-sm sm:text-base font-extrabold text-white mt-0.5">Grade {user.grade}</p>
-                                 <p className="text-[11px] font-medium text-indigo-400">{user.subject || 'A/L Economics'}</p>
+                                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Enrolled Curriculum</p>
+                                 <p className="text-sm sm:text-base font-extrabold text-white mt-0.5">{user.grade || user.subject || 'Crypto Basic'}</p>
+                                 <p className="text-[11px] font-medium text-indigo-400">{user.subject || user.grade || 'Crypto Basic'}</p>
                               </div>
                            </div>
 
@@ -3102,7 +3018,7 @@ const LMSDashboard = () => {
                                              <div className="p-5 space-y-3">
                                                 <div className="space-y-1">
                                                    <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">
-                                                      Grade {user?.grade || "Grade 12"} • {user?.subject || "Economics"}
+                                                      {user?.grade || user?.subject || "Crypto Basic"}
                                                    </span>
                                                    <h4 className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors line-clamp-2 leading-snug">
                                                       {session.title}
@@ -3264,7 +3180,7 @@ const LMSDashboard = () => {
 
                            {portalTab === "Referrals" && (() => {
                               try {
-                                 const currentStudentGrade = user?.grade || "Grade 12";
+                                 const currentStudentGrade = user?.grade || user?.subject || "Crypto Basic";
                                  const myReferralCode = user?.studentId ? String(user.studentId).trim() : (user?.email ? String(user.email).split("@")[0].toUpperCase() : "STU-2026");
                                  const myReferralLink = `${window.location.origin}/register?ref=${encodeURIComponent(myReferralCode)}`;
                                  
@@ -3290,7 +3206,7 @@ const LMSDashboard = () => {
                                  active: true,
                                  rewardAmount: "Rs. 500 Discount",
                                  rewardDesc: "Earn Rs. 500 fee discount for every friend who registers and enrolls in class.",
-                                 noticeSi: "ඔබගේ මිතුරන්ට EconoAcademy වෙත ආරාධනා කර පන්ති ගාස්තු වට්ටම් දිනාගන්න!"
+                                 noticeSi: "ඔබගේ මිතුරන්ට Taizer LMS වෙත ආරාධනා කර පාඨමාලා ගාස්තු වට්ටම් දිනාගන්න!"
                               };
 
                               const handleCopyCode = () => {
@@ -3307,7 +3223,7 @@ const LMSDashboard = () => {
 
                               const handleShareWhatsApp = () => {
                                  const rewardText = currentRefConfig.rewardAmount || "Rs. 500 Discount";
-                                 const message = `👋 Hey! Join me at EconoAcademy LMS for Economics & Sinhala classes.\n\n🎁 Register using my referral link or code: *${myReferralCode}* to get ${rewardText} bonus!\n\n🔗 Join Link: ${myReferralLink}`;
+                                 const message = `👋 Hey! Join me at Taizer LMS for Crypto & Trading masterclasses.\n\n🎁 Register using my referral link or code: *${myReferralCode}* to get ${rewardText} bonus!\n\n🔗 Join Link: ${myReferralLink}`;
                                  window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`, "_blank");
                               };
 
@@ -3315,8 +3231,8 @@ const LMSDashboard = () => {
                                  if (navigator.share) {
                                     try {
                                        await navigator.share({
-                                          title: "Join EconoAcademy LMS",
-                                          text: `Join me at EconoAcademy LMS! Use referral code: ${myReferralCode}`,
+                                          title: "Join Taizer LMS",
+                                          text: `Join me at Taizer LMS! Use referral code: ${myReferralCode}`,
                                           url: myReferralLink,
                                        });
                                     } catch (e) {}
@@ -4050,7 +3966,7 @@ const LMSDashboard = () => {
                       </button>
                       <div className="absolute top-0 left-0 h-2 bg-blue-600 transition-all duration-500" style={{ width: `${((currentQuizIndex + 1) / (assessmentQuestions.length || 1)) * 100}%` }}></div>
                       <div className="flex justify-between items-center text-slate-500 text-[10px] font-black uppercase tracking-widest pt-2">
-                         <span>Assessment • {user?.grade || "Grade 12"}</span>
+                         <span>Assessment • {user?.grade || user?.subject || "Crypto Basic"}</span>
                          <span>Q {currentQuizIndex + 1} / {assessmentQuestions.length}</span>
                       </div>
                       <div className="space-y-4 my-8 sm:my-10">

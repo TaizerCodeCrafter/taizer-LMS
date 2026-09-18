@@ -73,16 +73,7 @@ const QuestionsTab = ({
             >
               {(availableGrades.length > 0
                 ? availableGrades
-                : [
-                    "Grade 6",
-                    "Grade 7",
-                    "Grade 8",
-                    "Grade 9",
-                    "Grade 10",
-                    "Grade 11",
-                    "Grade 12",
-                    "Grade 13"
-                  ]
+                : ["Crypto Basic", "Order Flow"]
               ).map((g) => (
                 <option key={g} value={g} className="bg-slate-900 text-slate-200">
                   {g}

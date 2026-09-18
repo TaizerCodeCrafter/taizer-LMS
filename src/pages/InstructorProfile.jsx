@@ -19,49 +19,49 @@ const InstructorProfile = () => {
     JSON.parse(
       localStorage.getItem("webInstructorProfile") ||
         JSON.stringify({
-          role: "Economics & Management Lecturer",
-          name: "Ishara Madhushani",
+          role: "Crypto & Order Flow Specialist",
+          name: "Taizer Lead Trader",
           image: "/teacher.jpg",
           title: "Instructor Portfolio",
           quote:
-            "Motivated Economics graduate with a passion for analytical thinking and global business development, dedicated to empowering students through clear communication and expert knowledge.",
-          expYears: "3+",
+            "Professional trader and market analyst dedicated to empowering individuals with institutional execution models, quantitative order flow, and risk management.",
+          expYears: "8+",
           stats: [
-            { label: "Students Taught", value: "1000+", icon: "BookOpen", color: "blue" },
-            { label: "Pass Rate", value: "95%", icon: "GraduationCap", color: "emerald" }
+            { label: "Traders Trained", value: "2500+", icon: "BookOpen", color: "blue" },
+            { label: "Funded Traders", value: "92%", icon: "GraduationCap", color: "emerald" }
           ],
           education: [
             {
               year: "2024",
-              degree: "BA (Hons) in Economics",
-              institution: "University of Sri Jayewardenepura"
+              degree: "Advanced Order Flow Certification",
+              institution: "Global Market Profile Institute"
+            },
+            {
+              year: "2020",
+              degree: "Certified Financial Technical Analyst (CFTe)",
+              institution: "International Federation of Technical Analysts"
             },
             {
               year: "2018",
-              degree: "G.C.E. Advanced Level",
-              institution: "MR/Godapitiya National School (A,A,B)"
-            },
-            {
-              year: "2023",
-              degree: "Diploma in English",
-              institution: "Lakshman Yapa Foundation"
+              degree: "B.Sc. in Financial Engineering & Analytics",
+              institution: "Faculty of Applied Sciences"
             }
           ],
           subjects: [
-            "A/L Economics",
-            "Management Studies",
-            "Sinhala Language",
-            "Business Statistics",
-            "Data Analysis & Reporting"
+            "Crypto Basic & Intermediate",
+            "Order Flow & Footprint Dynamics",
+            "Volume Profile & Market Structure",
+            "Institutional Liquidity Concepts",
+            "Risk Management & Psychology"
           ],
           achievements: [
-            "Honours Graduate in Economics (USJ)",
-            "Former Intern at Bank of Ceylon (R&D)",
-            "Training Manager experience in Corporate Sector",
-            "Assistant Manager experience in Retail Management"
+            "Consistent Multi-Asset Proprietary Trader",
+            "Developer of Algorithmic Trading Systems & CVD Indicators",
+            "Over 2,500+ Active Trading Students Mentored Globally",
+            "Head of Research & Market Intelligence at Taizer"
           ],
           philosophy:
-            "I believe that education is the bridge between ambition and achievement. My goal is to break down complex economic frameworks into practical, relatable insights that stick with students for a lifetime."
+            "True trading consistency is not about predicting the future; it is about executing an edge with mathematical discipline, managing risk with zero emotional bias, and riding institutional liquidity."
         })
     )
   );
@@ -122,11 +122,11 @@ const InstructorProfile = () => {
           <div className="space-y-4 text-center md:text-left flex-grow">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-bold">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>{profile.role || "Economics & Management Lecturer"}</span>
+              <span>{profile.role || "Crypto & Order Flow Specialist"}</span>
             </div>
 
             <h1 className="text-3xl sm:text-4xl font-black text-white uppercase tracking-tight">
-              {profile.name || "Ishara Madhushani"}
+              {profile.name || "Taizer Lead Trader"}
             </h1>
 
             <p className="text-xs sm:text-sm text-slate-400 leading-relaxed italic max-w-xl">

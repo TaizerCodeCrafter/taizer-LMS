@@ -26,56 +26,7 @@ const DEFAULT_RESOURCES_SETTINGS = {
   studyTipBtnLink: "/register"
 };
 
-const DEFAULT_RESOURCES = [
-  {
-    id: 1,
-    title: "Crypto Market Terminology & Beginner Handbook",
-    category: "Crypto Basic",
-    type: "PDF Document",
-    size: "2.4 MB",
-    badge: "Essential",
-    url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-    downloadCount: "1,420",
-    description: "Complete guide to blockchain mechanics, wallets, order types, exchanges, and crypto risk rules.",
-    isHidden: false
-  },
-  {
-    id: 2,
-    title: "Price Action Candlestick Patterns CheatSheet",
-    category: "Price Action",
-    type: "PDF CheatSheet",
-    size: "1.1 MB",
-    badge: "Quick Revision",
-    url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-    downloadCount: "2,890",
-    description: "High-probability bullish, bearish, and neutral candlestick patterns with entry/exit triggers.",
-    isHidden: false
-  },
-  {
-    id: 3,
-    title: "Technical Analysis & Chart Indicators Master Guide",
-    category: "Technical Analysis",
-    type: "PDF Document",
-    size: "1.8 MB",
-    badge: "Pro Trader",
-    url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-    downloadCount: "3,150",
-    description: "In-depth breakdown of RSI, MACD, Moving Averages, Support/Resistance zones, and Trendlines.",
-    isHidden: false
-  },
-  {
-    id: 4,
-    title: "Forex & Futures Position Sizing and Risk Model",
-    category: "Forex & Futures",
-    type: "PDF Document",
-    size: "1.5 MB",
-    badge: "Risk Control",
-    url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-    downloadCount: "980",
-    description: "Calculations for 1% risk rule, risk-to-reward ratio formulas, and margin leverage safety guidelines.",
-    isHidden: false
-  }
-];
+const DEFAULT_RESOURCES = [];
 
 const Resources = () => {
   const [settings, setSettings] = useState(() => {
@@ -92,14 +43,12 @@ const Resources = () => {
       const saved = localStorage.getItem("webResources");
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.filter((r) => !r.isHidden);
+        if (Array.isArray(parsed)) {
+          return parsed.filter((r) => !r.isHidden && r.url && !r.url.includes("dummy.pdf"));
         }
       }
-      return DEFAULT_RESOURCES;
-    } catch (e) {
-      return DEFAULT_RESOURCES;
-    }
+    } catch (e) {}
+    return [];
   });
 
   const [generalSettings, setGeneralSettings] = useState(() => {
@@ -107,7 +56,7 @@ const Resources = () => {
       const saved = localStorage.getItem("webGeneralSettings");
       if (saved) return JSON.parse(saved);
     } catch (e) {}
-    return { subjects: ["Crypto Basic", "Price Action", "Sinhala", "Economics"] };
+    return { subjects: ["Crypto Basic", "Order Flow"] };
   });
 
   const [activeCategory, setActiveCategory] = useState("All");
@@ -126,13 +75,16 @@ const Resources = () => {
           }
 
           const resTarget = data.find((s) => s.type === "webResources");
-          if (resTarget && Array.isArray(resTarget.data) && resTarget.data.length > 0) {
-            setResources(resTarget.data.filter((r) => !r.isHidden));
+          if (resTarget && Array.isArray(resTarget.data)) {
+            const cleanList = resTarget.data.filter((r) => !r.isHidden && r.url && !r.url.includes("dummy.pdf"));
+            setResources(cleanList);
+            try { localStorage.setItem("webResources", JSON.stringify(cleanList)); } catch (e) {}
           }
 
           const genTarget = data.find((s) => s.type === "webGeneralSettings");
           if (genTarget && genTarget.data) {
             setGeneralSettings(genTarget.data);
+            try { localStorage.setItem("webGeneralSettings", JSON.stringify(genTarget.data)); } catch (e) {}
           }
         }
       } catch (e) {
@@ -153,8 +105,8 @@ const Resources = () => {
           const saved = localStorage.getItem("webResources");
           if (saved) {
             const parsed = JSON.parse(saved);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              setResources(parsed.filter((r) => !r.isHidden));
+            if (Array.isArray(parsed)) {
+              setResources(parsed.filter((r) => !r.isHidden && r.url && !r.url.includes("dummy.pdf")));
             }
           }
         } catch (err) {}

@@ -58,7 +58,7 @@ const SessionsTab = ({
   const subjects =
     webGeneralSettings?.subjects && webGeneralSettings.subjects.length > 0
       ? webGeneralSettings.subjects
-      : ["Crypto Basic", "Price Action", "Sinhala", "Economics"];
+      : ["Crypto Basic", "Order Flow"];
   const gradesObj = webGeneralSettings?.grades || {};
 
   const getSubjectForGrade = (grade) => {

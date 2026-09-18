@@ -71,7 +71,7 @@ const AssignmentView = ({
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-black uppercase tracking-widest">
-              <span>📝</span> Enrolled: {user?.grade || "Grade 12"} Curriculum
+              <span>📝</span> Enrolled: {user?.grade || user?.subject || "Crypto Basic"} Curriculum
             </div>
             <h3 className="text-2xl sm:text-3xl font-black text-white uppercase italic tracking-tight">
               Online Assignments & Evaluations
@@ -1011,7 +1011,7 @@ const AssignmentView = ({
                     </p>
                     <p className="flex justify-between">
                       <span>Grade:</span>
-                      <span className="font-bold text-white">{user?.grade || "Grade 12"}</span>
+                      <span className="font-bold text-white">{user?.grade || user?.subject || "Crypto Basic"}</span>
                     </p>
                   </div>
 

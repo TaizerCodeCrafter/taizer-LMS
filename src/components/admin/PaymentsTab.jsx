@@ -122,13 +122,7 @@ const PaymentsTab = ({
             <option value="All">All Courses / Grades</option>
             {(availableGrades.length > 0
               ? availableGrades
-              : [
-                  "Crypto Basic",
-                  "Price Action",
-                  "Technical Analysis",
-                  "Grade 12",
-                  "Grade 13"
-                ]
+              : ["Crypto Basic", "Order Flow"]
             ).map((g) => (
               <option key={g} value={g}>
                 {g}
@@ -171,10 +165,10 @@ const PaymentsTab = ({
                   {/* Grade */}
                   <td className="px-6 py-4">
                     <span className="inline-block px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 font-bold text-[11px]">
-                      {s.grade || "Grade 12"}
+                      {s.grade || (availableGrades[0] || "Crypto Basic")}
                     </span>
                     <p className="text-[10px] text-slate-500 font-medium mt-0.5">
-                      {s.subject || "Economics"}
+                      {s.subject || "Crypto Basic"}
                     </p>
                   </td>
 
