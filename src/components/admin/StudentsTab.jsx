@@ -29,6 +29,7 @@ import {
 const StudentsTab = ({
   students = [],
   setStudents,
+  availableGrades = [],
   syncToBackend,
   showNotification,
   onDeleteStudent
@@ -212,15 +213,24 @@ const StudentsTab = ({
             onChange={(e) => setGradeFilter(e.target.value)}
             className="bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2 text-xs font-semibold text-slate-300 outline-none focus:border-indigo-500 cursor-pointer"
           >
-            <option value="All">All Grades</option>
-            <option value="Grade 12">Grade 12</option>
-            <option value="Grade 13">Grade 13</option>
-            <option value="Grade 11">Grade 11</option>
-            <option value="Grade 10">Grade 10</option>
-            <option value="Grade 9">Grade 9</option>
-            <option value="Grade 8">Grade 8</option>
-            <option value="Grade 7">Grade 7</option>
-            <option value="Grade 6">Grade 6</option>
+            <option value="All">All Classes / Grades</option>
+            {(availableGrades.length > 0
+              ? availableGrades
+              : [
+                  "Grade 12",
+                  "Grade 13",
+                  "Grade 11",
+                  "Grade 10",
+                  "Grade 9",
+                  "Grade 8",
+                  "Grade 7",
+                  "Grade 6"
+                ]
+            ).map((g) => (
+              <option key={g} value={g}>
+                {g}
+              </option>
+            ))}
           </select>
         </div>
       </div>

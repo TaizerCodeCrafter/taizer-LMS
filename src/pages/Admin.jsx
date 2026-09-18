@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 
@@ -472,6 +472,43 @@ const Admin = () => {
         })
     )
   );
+
+  // DYNAMIC CLASSES & GRADES DERIVED FROM GENERAL SETTINGS & DATABASE
+  const availableGrades = useMemo(() => {
+    const gradesObj = webGeneralSettings?.grades || {};
+    const allConfigured = Object.values(gradesObj).flat();
+    const existingInSessions = Object.keys(sessions || {});
+    const existingInStudents = (students || []).map((s) => s.grade).filter(Boolean);
+    const combined = Array.from(new Set([...allConfigured, ...existingInSessions, ...existingInStudents].filter(Boolean)));
+    return combined.length > 0 ? combined : [
+      "Grade 6", "Grade 7", "Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12", "Grade 13"
+    ];
+  }, [webGeneralSettings, sessions, students]);
+
+  const handleQuickAddClass = (newClassName, targetSubject) => {
+    const trimmed = (newClassName || "").trim();
+    if (!trimmed) return;
+    const currentGrades = webGeneralSettings?.grades || {};
+    const sub = targetSubject || (webGeneralSettings?.subjects && webGeneralSettings.subjects[0]) || Object.keys(currentGrades)[0] || "General";
+    const existing = currentGrades[sub] || [];
+    if (!existing.includes(trimmed)) {
+      const updatedGeneral = {
+        ...webGeneralSettings,
+        grades: {
+          ...currentGrades,
+          [sub]: [...existing, trimmed]
+        }
+      };
+      setWebGeneralSettings(updatedGeneral);
+      try {
+        localStorage.setItem("webGeneralSettings", JSON.stringify(updatedGeneral));
+      } catch (e) {}
+      syncToBackend("webGeneralSettings", updatedGeneral);
+      window.dispatchEvent(new Event("storage"));
+      showNotification("Class Created", `Class "${trimmed}" successfully added to ${sub}!`, "success");
+    }
+    setSelectedSessionGrade(trimmed);
+  };
 
   const [webInstructorProfile, setWebInstructorProfile] = useState(
     JSON.parse(
@@ -1165,6 +1202,7 @@ const Admin = () => {
               <StudentsTab
                 students={students}
                 setStudents={setStudents}
+                availableGrades={availableGrades}
                 syncToBackend={syncToBackend}
                 showNotification={showNotification}
                 onDeleteStudent={handleDeleteStudent}
@@ -1176,6 +1214,8 @@ const Admin = () => {
                 sessions={sessions}
                 selectedSessionGrade={selectedSessionGrade}
                 setSelectedSessionGrade={setSelectedSessionGrade}
+                availableGrades={availableGrades}
+                onQuickAddClass={handleQuickAddClass}
                 onToggleLock={handleToggleLockSession}
                 onDeleteSession={handleDeleteSession}
                 onOpenDesigner={(idx) => setEditingSessionIndex(idx)}
@@ -1188,6 +1228,7 @@ const Admin = () => {
                 questions={questions}
                 selectedGrade={selectedGrade}
                 setSelectedGrade={setSelectedGrade}
+                availableGrades={availableGrades}
                 onAddQuestion={handleAddQuestion}
                 onDeleteQuestion={handleDeleteQuestion}
               />
@@ -1199,6 +1240,7 @@ const Admin = () => {
                 setLmsSubTab={setLmsSubTab}
                 selectedSessionGrade={selectedSessionGrade}
                 setSelectedSessionGrade={setSelectedSessionGrade}
+                availableGrades={availableGrades}
                 courseSettings={courseSettings}
                 setCourseSettings={setCourseSettings}
                 bankDetails={bankDetails}
@@ -1222,6 +1264,7 @@ const Admin = () => {
                 setZoomSettings={setZoomSettings}
                 selectedZoomGrade={selectedZoomGrade}
                 setSelectedZoomGrade={setSelectedZoomGrade}
+                availableGrades={availableGrades}
                 zoomSubTab={zoomSubTab}
                 setZoomSubTab={setZoomSubTab}
                 zoomForm={zoomForm}

@@ -34,12 +34,16 @@ const SessionsTab = ({
   sessions = {},
   selectedSessionGrade,
   setSelectedSessionGrade,
+  availableGrades = [],
+  onQuickAddClass,
   onToggleLock,
   onDeleteSession,
   onOpenDesigner,
   onSaveNewSession
 }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isQuickAddClassOpen, setIsQuickAddClassOpen] = useState(false);
+  const [newClassNameInput, setNewClassNameInput] = useState("");
   const [videoSourceMode, setVideoSourceMode] = useState("url");
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
@@ -155,25 +159,28 @@ const SessionsTab = ({
           </div>
         </div>
 
-        {/* GRADE PICKER & ADD BUTTON */}
-        <div className="flex items-center gap-3">
+        {/* GRADE / CLASS PICKER & QUICK ADD & ADD BUTTON */}
+        <div className="flex items-center gap-2.5 flex-wrap">
           <div className="flex items-center gap-2 bg-slate-900/90 px-3 py-2 rounded-xl border border-slate-800">
-            <label className="text-xs font-bold text-slate-400">Grade:</label>
+            <label className="text-xs font-bold text-slate-400">Class / Grade:</label>
             <select
               value={selectedSessionGrade}
               onChange={(e) => setSelectedSessionGrade(e.target.value)}
-              className="bg-transparent text-xs font-black text-indigo-400 outline-none cursor-pointer"
+              className="bg-transparent text-xs font-black text-emerald-400 outline-none cursor-pointer max-w-[180px] sm:max-w-[220px]"
             >
-              {[
-                "Grade 6",
-                "Grade 7",
-                "Grade 8",
-                "Grade 9",
-                "Grade 10",
-                "Grade 11",
-                "Grade 12",
-                "Grade 13"
-              ].map((g) => (
+              {(availableGrades.length > 0
+                ? availableGrades
+                : [
+                    "Grade 6",
+                    "Grade 7",
+                    "Grade 8",
+                    "Grade 9",
+                    "Grade 10",
+                    "Grade 11",
+                    "Grade 12",
+                    "Grade 13"
+                  ]
+              ).map((g) => (
                 <option key={g} value={g} className="bg-slate-900 text-slate-200">
                   {g}
                 </option>
@@ -181,9 +188,69 @@ const SessionsTab = ({
             </select>
           </div>
 
+          {/* QUICK ADD NEW CLASS BUTTON */}
+          {onQuickAddClass && (
+            <div>
+              {!isQuickAddClassOpen ? (
+                <button
+                  type="button"
+                  onClick={() => setIsQuickAddClassOpen(true)}
+                  className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-teal-300 hover:text-white border border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95"
+                  title="Add new class / batch category"
+                >
+                  <Plus className="w-3.5 h-3.5 text-teal-400" />
+                  <span className="hidden sm:inline">Add Class</span>
+                </button>
+              ) : (
+                <div className="flex items-center gap-1.5 bg-slate-900 p-1 rounded-xl border border-teal-500/50 shadow-lg animate-fadeIn">
+                  <input
+                    type="text"
+                    autoFocus
+                    value={newClassNameInput}
+                    onChange={(e) => setNewClassNameInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        if (newClassNameInput.trim()) {
+                          onQuickAddClass(newClassNameInput.trim());
+                          setNewClassNameInput("");
+                          setIsQuickAddClassOpen(false);
+                        }
+                      } else if (e.key === "Escape") {
+                        setIsQuickAddClassOpen(false);
+                      }
+                    }}
+                    placeholder="New Class name..."
+                    className="w-36 sm:w-44 bg-slate-950 border-0 rounded-lg px-2.5 py-1 text-xs text-white placeholder-slate-500 focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (newClassNameInput.trim()) {
+                        onQuickAddClass(newClassNameInput.trim());
+                        setNewClassNameInput("");
+                        setIsQuickAddClassOpen(false);
+                      }
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-teal-600 text-white text-xs font-bold hover:bg-teal-500"
+                  >
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsQuickAddClassOpen(false)}
+                    className="px-1.5 py-1 text-slate-400 hover:text-white text-xs"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/20 flex items-center gap-2 transition-all active:scale-95"
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/20 flex items-center gap-2 transition-all active:scale-95 ml-auto sm:ml-0"
           >
             <Plus className="w-4 h-4" />
             <span>Create Session</span>

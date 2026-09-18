@@ -58,6 +58,7 @@ const LmsTab = ({
   setLmsSubTab,
   selectedSessionGrade,
   setSelectedSessionGrade,
+  availableGrades = [],
   courseSettings = {},
   setCourseSettings = () => {},
   bankDetails = {},
@@ -67,6 +68,9 @@ const LmsTab = ({
   syncToBackend,
   showNotification
 }) => {
+  const gradeList = availableGrades.length > 0 ? availableGrades : [
+    "Grade 6", "Grade 7", "Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12", "Grade 13"
+  ];
   // Generic state for Materials and Referrals
   const safeJson = (raw, fallback = {}) => {
     try {
@@ -1495,7 +1499,7 @@ const LmsTab = ({
                   className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-indigo-400 outline-none"
                 >
                   <option value="all">All Grades</option>
-                  {["Grade 6", "Grade 7", "Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12", "Grade 13"].map(g => (
+                  {gradeList.map(g => (
                     <option key={g} value={g}>{g}</option>
                   ))}
                 </select>
@@ -1659,7 +1663,7 @@ const LmsTab = ({
                       onChange={(e) => setSelectedSessionGrade(e.target.value)}
                       className="bg-transparent text-xs font-bold text-rose-400 outline-none cursor-pointer"
                     >
-                      {["Grade 6", "Grade 7", "Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12", "Grade 13"].map((g) => (
+                      {gradeList.map((g) => (
                         <option key={g} value={g} className="bg-slate-900 text-slate-200">
                           {g}
                         </option>
@@ -1768,7 +1772,7 @@ const LmsTab = ({
                       onChange={(e) => setSelectedSessionGrade(e.target.value)}
                       className="bg-transparent text-xs font-bold text-blue-400 outline-none cursor-pointer"
                     >
-                      {["Grade 6", "Grade 7", "Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12", "Grade 13"].map((g) => (
+                      {gradeList.map((g) => (
                         <option key={g} value={g} className="bg-slate-900 text-slate-200">
                           {g}
                         </option>

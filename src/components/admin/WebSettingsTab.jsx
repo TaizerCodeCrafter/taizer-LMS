@@ -422,6 +422,7 @@ const WebSettingsTab = ({
   const [editingResource, setEditingResource] = useState(null);
   const [isEditResourceOpen, setIsEditResourceOpen] = useState(false);
   const [newSubjectInput, setNewSubjectInput] = useState("");
+  const [newGradeInputs, setNewGradeInputs] = useState({});
 
   const currentResourcesSettings = {
     ...DEFAULT_RESOURCES_SETTINGS,
@@ -528,6 +529,31 @@ const WebSettingsTab = ({
   const handleRemoveSubject = (sub) => {
     const updatedSubs = (currentGeneralSettings.subjects || []).filter((s) => s !== sub);
     updateGeneralField("subjects", updatedSubs);
+  };
+
+  const handleAddGradeToSubject = (sub, gradeName) => {
+    const trimmed = (gradeName || "").trim();
+    if (!trimmed) return;
+    const currentGrades = currentGeneralSettings.grades || {};
+    const existing = currentGrades[sub] || [];
+    if (!existing.includes(trimmed)) {
+      const updatedGrades = {
+        ...currentGrades,
+        [sub]: [...existing, trimmed]
+      };
+      updateGeneralField("grades", updatedGrades);
+    }
+    setNewGradeInputs((prev) => ({ ...prev, [sub]: "" }));
+  };
+
+  const handleRemoveGradeFromSubject = (sub, gradeToRemove) => {
+    const currentGrades = currentGeneralSettings.grades || {};
+    const existing = currentGrades[sub] || [];
+    const updatedGrades = {
+      ...currentGrades,
+      [sub]: existing.filter((g) => g !== gradeToRemove)
+    };
+    updateGeneralField("grades", updatedGrades);
   };
 
   return (
@@ -3141,6 +3167,98 @@ const WebSettingsTab = ({
                       <span>Add Subject</span>
                     </button>
                   </form>
+                </div>
+
+                {/* ACTIVE CLASSES / BATCHES PER SUBJECT (SYNCS REGISTRATION & ADMIN CURRICULUM) */}
+                <div className="pt-4 border-t border-slate-800/80 space-y-4">
+                  <div>
+                    <label className="text-xs font-bold text-slate-200 block mb-1">
+                      Active Classes / Batches per Subject (Student Registration & LMS Dynamic Categories)
+                    </label>
+                    <p className="text-[11px] text-slate-400">
+                      Configure the specific classes, batches, or grade levels available for each subject. These will dynamically appear in the Student Registration Form and the Admin Curriculum / Sessions picker.
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    {(currentGeneralSettings.subjects || []).map((sub) => {
+                      const gradesForSub = (currentGeneralSettings.grades && currentGeneralSettings.grades[sub]) || [];
+                      const inputValue = newGradeInputs[sub] || "";
+
+                      return (
+                        <div
+                          key={sub}
+                          className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-3"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-black text-white flex items-center gap-1.5">
+                              <BookOpen className="w-3.5 h-3.5 text-teal-400" />
+                              {sub} Classes / Batches ({gradesForSub.length})
+                            </span>
+                            <span className="text-[10px] text-slate-500 font-mono">
+                              Subject: {sub}
+                            </span>
+                          </div>
+
+                          {/* Existing Grade Chips */}
+                          <div className="flex flex-wrap gap-1.5">
+                            {gradesForSub.length === 0 ? (
+                              <p className="text-[11px] text-amber-400/80 italic">
+                                No classes added for {sub} yet. Add a class below!
+                              </p>
+                            ) : (
+                              gradesForSub.map((g) => (
+                                <span
+                                  key={g}
+                                  className="px-3 py-1 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-semibold flex items-center gap-2 shadow-sm"
+                                >
+                                  <span>{g}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveGradeFromSubject(sub, g)}
+                                    className="w-4 h-4 rounded-full bg-emerald-500/20 hover:bg-rose-500 hover:text-white flex items-center justify-center text-[9px] transition-colors"
+                                    title={`Remove ${g}`}
+                                  >
+                                    ✕
+                                  </button>
+                                </span>
+                              ))
+                            )}
+                          </div>
+
+                          {/* Add Class Input */}
+                          <div className="flex gap-2 pt-1">
+                            <input
+                              type="text"
+                              value={inputValue}
+                              onChange={(e) =>
+                                setNewGradeInputs((prev) => ({
+                                  ...prev,
+                                  [sub]: e.target.value
+                                }))
+                              }
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  handleAddGradeToSubject(sub, inputValue);
+                                }
+                              }}
+                              placeholder={`Add new class for ${sub} (e.g. Batch 2026, Scalping Mastery, Grade 12)...`}
+                              className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-teal-500"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleAddGradeToSubject(sub, inputValue)}
+                              className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-teal-600/20 transition-all active:scale-95 cursor-pointer"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                              <span>Add Class</span>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 

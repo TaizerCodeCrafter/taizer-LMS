@@ -13,6 +13,7 @@ const QuestionsTab = ({
   questions = {},
   selectedGrade,
   setSelectedGrade,
+  availableGrades = [],
   onAddQuestion,
   onDeleteQuestion
 }) => {
@@ -70,16 +71,19 @@ const QuestionsTab = ({
               onChange={(e) => setSelectedGrade(e.target.value)}
               className="bg-transparent text-xs font-black text-purple-400 outline-none cursor-pointer"
             >
-              {[
-                "Grade 6",
-                "Grade 7",
-                "Grade 8",
-                "Grade 9",
-                "Grade 10",
-                "Grade 11",
-                "Grade 12",
-                "Grade 13"
-              ].map((g) => (
+              {(availableGrades.length > 0
+                ? availableGrades
+                : [
+                    "Grade 6",
+                    "Grade 7",
+                    "Grade 8",
+                    "Grade 9",
+                    "Grade 10",
+                    "Grade 11",
+                    "Grade 12",
+                    "Grade 13"
+                  ]
+              ).map((g) => (
                 <option key={g} value={g} className="bg-slate-900 text-slate-200">
                   {g}
                 </option>
