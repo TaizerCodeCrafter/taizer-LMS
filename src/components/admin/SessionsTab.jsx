@@ -162,7 +162,7 @@ const SessionsTab = ({
         {/* GRADE / CLASS PICKER & QUICK ADD & ADD BUTTON */}
         <div className="flex items-center gap-2.5 flex-wrap">
           <div className="flex items-center gap-2 bg-slate-900/90 px-3 py-2 rounded-xl border border-slate-800">
-            <label className="text-xs font-bold text-slate-400">Class / Grade:</label>
+            <label className="text-xs font-bold text-slate-400">Course / Category:</label>
             <select
               value={selectedSessionGrade}
               onChange={(e) => setSelectedSessionGrade(e.target.value)}
@@ -171,12 +171,9 @@ const SessionsTab = ({
               {(availableGrades.length > 0
                 ? availableGrades
                 : [
-                    "Grade 6",
-                    "Grade 7",
-                    "Grade 8",
-                    "Grade 9",
-                    "Grade 10",
-                    "Grade 11",
+                    "Crypto Basic",
+                    "Price Action",
+                    "Technical Analysis",
                     "Grade 12",
                     "Grade 13"
                   ]
@@ -188,7 +185,7 @@ const SessionsTab = ({
             </select>
           </div>
 
-          {/* QUICK ADD NEW CLASS BUTTON */}
+          {/* QUICK ADD NEW CLASS / COURSE BUTTON */}
           {onQuickAddClass && (
             <div>
               {!isQuickAddClassOpen ? (
@@ -196,10 +193,10 @@ const SessionsTab = ({
                   type="button"
                   onClick={() => setIsQuickAddClassOpen(true)}
                   className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-teal-300 hover:text-white border border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95"
-                  title="Add new class / batch category"
+                  title="Add new course category or batch"
                 >
                   <Plus className="w-3.5 h-3.5 text-teal-400" />
-                  <span className="hidden sm:inline">Add Class</span>
+                  <span className="hidden sm:inline">Add Course</span>
                 </button>
               ) : (
                 <div className="flex items-center gap-1.5 bg-slate-900 p-1 rounded-xl border border-teal-500/50 shadow-lg animate-fadeIn">
@@ -220,7 +217,7 @@ const SessionsTab = ({
                         setIsQuickAddClassOpen(false);
                       }
                     }}
-                    placeholder="New Class name..."
+                    placeholder="Course name (e.g. Crypto Basic)..."
                     className="w-36 sm:w-44 bg-slate-950 border-0 rounded-lg px-2.5 py-1 text-xs text-white placeholder-slate-500 focus:outline-none"
                   />
                   <button

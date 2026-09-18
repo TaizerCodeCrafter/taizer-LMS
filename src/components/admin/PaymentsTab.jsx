@@ -14,6 +14,7 @@ import {
 
 const PaymentsTab = ({
   students = [],
+  availableGrades = [],
   onPaymentStatus,
   onDeleteStudent,
   setViewingPayment
@@ -34,7 +35,7 @@ const PaymentsTab = ({
       statusFilter === "All" || 
       (statusFilter === "Pending" ? (s.paymentStatus === "Pending" || s.paymentStatus === "Uploaded") : s.paymentStatus === statusFilter);
     const matchesGrade =
-      gradeFilter === "All" || s.grade === gradeFilter;
+      gradeFilter === "All" || s.grade === gradeFilter || s.subject === gradeFilter;
     return matchesSearch && matchesStatus && matchesGrade;
   });
 
@@ -112,17 +113,27 @@ const PaymentsTab = ({
             ))}
           </div>
 
-          {/* Grade Filter */}
+          {/* Grade / Course Filter */}
           <select
             value={gradeFilter}
             onChange={(e) => setGradeFilter(e.target.value)}
-            className="bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-2 text-xs font-semibold text-slate-300 outline-none focus:border-indigo-500"
+            className="bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-2 text-xs font-semibold text-slate-300 outline-none focus:border-indigo-500 cursor-pointer"
           >
-            <option value="All">All Grades</option>
-            <option value="Grade 12">Grade 12</option>
-            <option value="Grade 13">Grade 13</option>
-            <option value="Grade 11">Grade 11</option>
-            <option value="Grade 10">Grade 10</option>
+            <option value="All">All Courses / Grades</option>
+            {(availableGrades.length > 0
+              ? availableGrades
+              : [
+                  "Crypto Basic",
+                  "Price Action",
+                  "Technical Analysis",
+                  "Grade 12",
+                  "Grade 13"
+                ]
+            ).map((g) => (
+              <option key={g} value={g}>
+                {g}
+              </option>
+            ))}
           </select>
         </div>
       </div>

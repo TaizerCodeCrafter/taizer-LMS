@@ -517,18 +517,46 @@ const WebSettingsTab = ({
 
   const handleAddSubject = (e) => {
     e.preventDefault();
-    if (!newSubjectInput.trim()) return;
+    const trimmed = (newSubjectInput || "").trim();
+    if (!trimmed) return;
     const currentSubs = currentGeneralSettings.subjects || [];
-    if (!currentSubs.includes(newSubjectInput.trim())) {
-      const updatedSubs = [...currentSubs, newSubjectInput.trim()];
-      updateGeneralField("subjects", updatedSubs);
+    const currentGrades = currentGeneralSettings.grades || {};
+    if (!currentSubs.includes(trimmed)) {
+      const updatedSubs = [...currentSubs, trimmed];
+      const updatedGrades = {
+        ...currentGrades,
+        [trimmed]: currentGrades[trimmed] || []
+      };
+      const updated = {
+        ...currentGeneralSettings,
+        subjects: updatedSubs,
+        grades: updatedGrades
+      };
+      setWebGeneralSettings(updated);
+      try {
+        localStorage.setItem("webGeneralSettings", JSON.stringify(updated));
+      } catch (err) {}
+      onSaveSetting("webGeneralSettings", updated);
+      window.dispatchEvent(new Event("storage"));
     }
     setNewSubjectInput("");
   };
 
   const handleRemoveSubject = (sub) => {
     const updatedSubs = (currentGeneralSettings.subjects || []).filter((s) => s !== sub);
-    updateGeneralField("subjects", updatedSubs);
+    const updatedGrades = { ...(currentGeneralSettings.grades || {}) };
+    delete updatedGrades[sub];
+    const updated = {
+      ...currentGeneralSettings,
+      subjects: updatedSubs,
+      grades: updatedGrades
+    };
+    setWebGeneralSettings(updated);
+    try {
+      localStorage.setItem("webGeneralSettings", JSON.stringify(updated));
+    } catch (err) {}
+    onSaveSetting("webGeneralSettings", updated);
+    window.dispatchEvent(new Event("storage"));
   };
 
   const handleAddGradeToSubject = (sub, gradeName) => {
@@ -541,7 +569,16 @@ const WebSettingsTab = ({
         ...currentGrades,
         [sub]: [...existing, trimmed]
       };
-      updateGeneralField("grades", updatedGrades);
+      const updated = {
+        ...currentGeneralSettings,
+        grades: updatedGrades
+      };
+      setWebGeneralSettings(updated);
+      try {
+        localStorage.setItem("webGeneralSettings", JSON.stringify(updated));
+      } catch (err) {}
+      onSaveSetting("webGeneralSettings", updated);
+      window.dispatchEvent(new Event("storage"));
     }
     setNewGradeInputs((prev) => ({ ...prev, [sub]: "" }));
   };
@@ -553,7 +590,16 @@ const WebSettingsTab = ({
       ...currentGrades,
       [sub]: existing.filter((g) => g !== gradeToRemove)
     };
-    updateGeneralField("grades", updatedGrades);
+    const updated = {
+      ...currentGeneralSettings,
+      grades: updatedGrades
+    };
+    setWebGeneralSettings(updated);
+    try {
+      localStorage.setItem("webGeneralSettings", JSON.stringify(updated));
+    } catch (err) {}
+    onSaveSetting("webGeneralSettings", updated);
+    window.dispatchEvent(new Event("storage"));
   };
 
   return (
@@ -3156,7 +3202,7 @@ const WebSettingsTab = ({
                       type="text"
                       value={newSubjectInput}
                       onChange={(e) => setNewSubjectInput(e.target.value)}
-                      placeholder="Add new subject (e.g. Business Studies, Accounting)..."
+                      placeholder="Add new course / subject (e.g. Crypto Basic, Price Action, Scalping)..."
                       className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
                     />
                     <button
@@ -3173,10 +3219,10 @@ const WebSettingsTab = ({
                 <div className="pt-4 border-t border-slate-800/80 space-y-4">
                   <div>
                     <label className="text-xs font-bold text-slate-200 block mb-1">
-                      Active Classes / Batches per Subject (Student Registration & LMS Dynamic Categories)
+                      Active Classes / Batches per Subject (Optional Cohorts)
                     </label>
                     <p className="text-[11px] text-slate-400">
-                      Configure the specific classes, batches, or grade levels available for each subject. These will dynamically appear in the Student Registration Form and the Admin Curriculum / Sessions picker.
+                      Configure sub-batches or cohorts if desired (e.g. Batch 01, VIP Group). Standalone trading courses (such as Crypto Basic) without sub-batches will display directly in Registration without asking students for a grade level.
                     </p>
                   </div>
 
@@ -3203,8 +3249,8 @@ const WebSettingsTab = ({
                           {/* Existing Grade Chips */}
                           <div className="flex flex-wrap gap-1.5">
                             {gradesForSub.length === 0 ? (
-                              <p className="text-[11px] text-amber-400/80 italic">
-                                No classes added for {sub} yet. Add a class below!
+                              <p className="text-[11px] text-emerald-400/80 italic">
+                                Standalone Course — No grade levels required. Students registering for {sub} will be enrolled directly.
                               </p>
                             ) : (
                               gradesForSub.map((g) => (

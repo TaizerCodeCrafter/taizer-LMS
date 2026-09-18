@@ -428,29 +428,32 @@ const LMSDashboard = () => {
          if (foundUser.coverPhoto) setCoverPhoto(foundUser.coverPhoto);
          if (foundUser.quizResult) setAssessmentResult(foundUser.quizResult);
 
-         const userGrade = foundUser.grade || "Grade 12";
+         const userGrade = foundUser.grade || foundUser.subject || "Crypto Basic";
 
          // Load Chats from API
          try {
             const res = await fetch(`http://localhost:5000/api/portal/messages?email=${encodeURIComponent(currentUserEmail)}`);
             if (res.ok) {
                const data = await res.json();
-               const userMessages = data.length > 0 ? data : [{ id: 1, text: "Hello! Welcome to Econo Academy support.", sender: "admin", time: "10:00 AM", isRead: true }];
+               const userMessages = data.length > 0 ? data : [{ id: 1, text: "Hello! Welcome to Taizer LMS support.", sender: "admin", time: "10:00 AM", isRead: true }];
                setMessages(userMessages);
             }
          } catch (err) {
             console.error('Failed to fetch chats:', err);
          }
 
-         // Load Sessions strictly filtered by student's registered grade from Backend API
+         // Load Sessions strictly filtered by student's registered grade or subject from Backend API
          try {
             const res = await fetch(`http://localhost:5000/api/sessions?grade=${encodeURIComponent(userGrade)}`);
             if (res.ok) {
                const apiSessions = await res.json();
-               // Strict filter: only show sessions matching student's registered grade
+               const uGrade = (foundUser.grade || "").trim().toLowerCase();
+               const uSub = (foundUser.subject || "").trim().toLowerCase();
+               // Strict filter: only show sessions matching student's registered grade or subject category
                const gradeSessions = apiSessions.filter(s => {
                   if (!s.grade) return false;
-                  return s.grade.trim().toLowerCase() === userGrade.trim().toLowerCase();
+                  const g = s.grade.trim().toLowerCase();
+                  return (uGrade && g === uGrade) || (uSub && g === uSub);
                });
                setSessions(gradeSessions);
 
@@ -466,10 +469,19 @@ const LMSDashboard = () => {
             try {
                const savedSessions = JSON.parse(localStorage.getItem("lmsSessions") || "{}");
                let gradeSessions = [];
+               const uGrade = (foundUser.grade || "").trim().toLowerCase();
+               const uSub = (foundUser.subject || "").trim().toLowerCase();
                if (Array.isArray(savedSessions)) {
-                  gradeSessions = savedSessions.filter(s => s.grade?.trim().toLowerCase() === userGrade.trim().toLowerCase());
+                  gradeSessions = savedSessions.filter(s => {
+                     if (!s.grade) return false;
+                     const g = s.grade.trim().toLowerCase();
+                     return (uGrade && g === uGrade) || (uSub && g === uSub);
+                  });
                } else if (savedSessions && typeof savedSessions === "object") {
-                  const matchingKey = Object.keys(savedSessions).find(k => k.trim().toLowerCase() === userGrade.trim().toLowerCase());
+                  const matchingKey = Object.keys(savedSessions).find(k => {
+                     const lower = k.trim().toLowerCase();
+                     return (uGrade && lower === uGrade) || (uSub && lower === uSub);
+                  });
                   gradeSessions = matchingKey ? (savedSessions[matchingKey] || []) : [];
                }
                setSessions(gradeSessions);

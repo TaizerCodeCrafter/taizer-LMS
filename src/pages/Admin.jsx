@@ -476,37 +476,66 @@ const Admin = () => {
   // DYNAMIC CLASSES & GRADES DERIVED FROM GENERAL SETTINGS & DATABASE
   const availableGrades = useMemo(() => {
     const gradesObj = webGeneralSettings?.grades || {};
-    const allConfigured = Object.values(gradesObj).flat();
+    const configuredSubjects = webGeneralSettings?.subjects || [];
+    const allConfiguredGrades = Object.values(gradesObj).flat();
     const existingInSessions = Object.keys(sessions || {});
-    const existingInStudents = (students || []).map((s) => s.grade).filter(Boolean);
-    const combined = Array.from(new Set([...allConfigured, ...existingInSessions, ...existingInStudents].filter(Boolean)));
-    return combined.length > 0 ? combined : [
-      "Grade 6", "Grade 7", "Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12", "Grade 13"
-    ];
+    const existingInStudents = (students || []).map((s) => s.grade || s.subject).filter(Boolean);
+    const combined = Array.from(
+      new Set([
+        ...configuredSubjects,
+        ...allConfiguredGrades,
+        ...existingInSessions,
+        ...existingInStudents
+      ].filter(Boolean))
+    );
+    return combined.length > 0
+      ? combined
+      : [
+          "Crypto Basic",
+          "Price Action",
+          "Technical Analysis",
+          "Grade 12",
+          "Grade 13"
+        ];
   }, [webGeneralSettings, sessions, students]);
 
   const handleQuickAddClass = (newClassName, targetSubject) => {
     const trimmed = (newClassName || "").trim();
     if (!trimmed) return;
+    const currentSubjects = webGeneralSettings?.subjects || [];
     const currentGrades = webGeneralSettings?.grades || {};
-    const sub = targetSubject || (webGeneralSettings?.subjects && webGeneralSettings.subjects[0]) || Object.keys(currentGrades)[0] || "General";
-    const existing = currentGrades[sub] || [];
-    if (!existing.includes(trimmed)) {
-      const updatedGeneral = {
-        ...webGeneralSettings,
-        grades: {
-          ...currentGrades,
-          [sub]: [...existing, trimmed]
-        }
-      };
-      setWebGeneralSettings(updatedGeneral);
-      try {
-        localStorage.setItem("webGeneralSettings", JSON.stringify(updatedGeneral));
-      } catch (e) {}
-      syncToBackend("webGeneralSettings", updatedGeneral);
-      window.dispatchEvent(new Event("storage"));
-      showNotification("Class Created", `Class "${trimmed}" successfully added to ${sub}!`, "success");
+
+    let updatedSubjects = [...currentSubjects];
+    let updatedGrades = { ...currentGrades };
+
+    if (targetSubject && currentSubjects.includes(targetSubject)) {
+      // Adding a batch / class under a specific subject
+      const existing = currentGrades[targetSubject] || [];
+      if (!existing.includes(trimmed)) {
+        updatedGrades[targetSubject] = [...existing, trimmed];
+      }
+    } else {
+      // Adding a standalone Course Category / Subject
+      if (!updatedSubjects.includes(trimmed)) {
+        updatedSubjects.push(trimmed);
+      }
+      if (!updatedGrades[trimmed]) {
+        updatedGrades[trimmed] = [];
+      }
     }
+
+    const updatedGeneral = {
+      ...webGeneralSettings,
+      subjects: updatedSubjects,
+      grades: updatedGrades
+    };
+    setWebGeneralSettings(updatedGeneral);
+    try {
+      localStorage.setItem("webGeneralSettings", JSON.stringify(updatedGeneral));
+    } catch (e) {}
+    syncToBackend("webGeneralSettings", updatedGeneral);
+    window.dispatchEvent(new Event("storage"));
+    showNotification("Course / Category Added", `"${trimmed}" is now active in curriculum and registration!`, "success");
     setSelectedSessionGrade(trimmed);
   };
 
@@ -1192,6 +1221,7 @@ const Admin = () => {
             {activeTab === "Payment" && (
               <PaymentsTab
                 students={students}
+                availableGrades={availableGrades}
                 onPaymentStatus={handlePaymentStatus}
                 onDeleteStudent={handleDeleteStudent}
                 setViewingPayment={setViewingPayment}

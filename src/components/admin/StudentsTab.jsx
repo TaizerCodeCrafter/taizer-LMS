@@ -85,7 +85,7 @@ const StudentsTab = ({
       s.studentId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       s.phone?.includes(searchTerm);
     const matchesGrade =
-      gradeFilter === "All" || s.grade === gradeFilter;
+      gradeFilter === "All" || s.grade === gradeFilter || s.subject === gradeFilter;
     return matchesSearch && matchesGrade;
   });
 

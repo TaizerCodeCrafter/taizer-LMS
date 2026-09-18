@@ -31,8 +31,8 @@ const Register = () => {
     name: "",
     email: "",
     phone: "",
-    subject: "Economics",
-    grade: "Grade 12",
+    subject: "Crypto Basic",
+    grade: "Crypto Basic",
     receiptImage: null,
     referralCode: ""
   });
@@ -53,18 +53,22 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState(null);
 
-  const [settings, setSettings] = useState(
-    JSON.parse(
-      localStorage.getItem("webGeneralSettings") ||
-        JSON.stringify({
-          subjects: ["Economics", "Sinhala"],
-          grades: {
-            Sinhala: ["Grade 6", "Grade 7", "Grade 8", "Grade 9", "Grade 10"],
-            Economics: ["Grade 12", "Grade 13"]
-          }
-        })
-    )
-  );
+  const [settings, setSettings] = useState(() => {
+    try {
+      const saved = localStorage.getItem("webGeneralSettings");
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return {
+      subjects: ["Crypto Basic", "Price Action", "Technical Analysis", "Sinhala", "Economics"],
+      grades: {
+        "Crypto Basic": [],
+        "Price Action": [],
+        "Technical Analysis": [],
+        Sinhala: ["Grade 6", "Grade 7", "Grade 8", "Grade 9", "Grade 10"],
+        Economics: ["Grade 12", "Grade 13"]
+      }
+    };
+  });
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -73,13 +77,19 @@ const Register = () => {
         if (res.ok) {
           const data = await res.json();
           const generalSetting = data.find((s) => s.type === "webGeneralSettings");
-          if (generalSetting) {
+          if (generalSetting && generalSetting.data) {
             setSettings(generalSetting.data);
-            const firstSub = generalSetting.data.subjects[0] || "Economics";
+            try {
+              localStorage.setItem("webGeneralSettings", JSON.stringify(generalSetting.data));
+            } catch (e) {}
+            const subjectsList = generalSetting.data.subjects || ["Crypto Basic"];
+            const currentSub = subjectsList[0] || "Crypto Basic";
+            const subGrades = (generalSetting.data.grades && generalSetting.data.grades[currentSub]) || [];
+            const defaultGrade = subGrades.length > 0 ? subGrades[0] : currentSub;
             setFormData((prev) => ({
               ...prev,
-              subject: firstSub,
-              grade: (generalSetting.data.grades[firstSub] || [])[0] || "Grade 12"
+              subject: prev.subject && subjectsList.includes(prev.subject) ? prev.subject : currentSub,
+              grade: prev.grade || defaultGrade
             }));
           }
         }
@@ -88,6 +98,17 @@ const Register = () => {
       }
     };
     fetchSettings();
+
+    const handleStorageChange = (e) => {
+      if (!e || !e.key || e.key === "webGeneralSettings") {
+        try {
+          const fresh = JSON.parse(localStorage.getItem("webGeneralSettings") || "null");
+          if (fresh) setSettings(fresh);
+        } catch (err) {}
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
   const showNotification = (title, message, type = "success") => {
@@ -170,8 +191,10 @@ const Register = () => {
     };
 
     const completeRegistration = () => {
+      const resolvedGrade = formData.grade || formData.subject;
       const newStudent = {
         ...formData,
+        grade: resolvedGrade,
         id: "REQ" + Math.floor(Math.random() * 10000),
         studentId: studentId,
         password: generatedPass,
@@ -300,56 +323,58 @@ const Register = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                    Subject
-                  </label>
-                  <select
-                    value={formData.subject}
-                    onChange={(e) => {
-                      const subject = e.target.value;
-                      const defaultGrade =
-                        (settings.grades &&
-                          settings.grades[subject] &&
-                          settings.grades[subject][0]) ||
-                        "";
-                      setFormData({ ...formData, subject, grade: defaultGrade });
-                    }}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-xs font-semibold text-white outline-none focus:border-indigo-500"
-                  >
-                    {(settings.subjects || ["Economics", "Sinhala"]).map((s) => (
-                      <option key={s} value={s} className="bg-slate-900">
-                        {s}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              {/* SUBJECT / COURSE SELECTION & OPTIONAL BATCH SELECTION */}
+              {(() => {
+                const subGrades = (settings.grades && settings.grades[formData.subject]) || [];
+                const hasGrades = Array.isArray(subGrades) && subGrades.length > 0;
 
-                <div>
-                  <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                    Grade Level
-                  </label>
-                  <select
-                    value={formData.grade}
-                    onChange={(e) =>
-                      setFormData({ ...formData, grade: e.target.value })
-                    }
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-xs font-semibold text-white outline-none focus:border-indigo-500"
-                  >
-                    {(
-                      (settings.grades && settings.grades[formData.subject]) || [
-                        "Grade 12",
-                        "Grade 13"
-                      ]
-                    ).map((g) => (
-                      <option key={g} value={g} className="bg-slate-900">
-                        {g}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+                return (
+                  <div className={hasGrades ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "space-y-1"}>
+                    <div>
+                      <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                        Course / Subject
+                      </label>
+                      <select
+                        value={formData.subject}
+                        onChange={(e) => {
+                          const newSub = e.target.value;
+                          const gradesForSub = (settings.grades && settings.grades[newSub]) || [];
+                          const defaultGrade = gradesForSub.length > 0 ? gradesForSub[0] : newSub;
+                          setFormData({ ...formData, subject: newSub, grade: defaultGrade });
+                        }}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-xs font-semibold text-white outline-none focus:border-indigo-500 cursor-pointer"
+                      >
+                        {(settings.subjects || ["Crypto Basic", "Price Action", "Sinhala", "Economics"]).map((s) => (
+                          <option key={s} value={s} className="bg-slate-900">
+                            {s}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {hasGrades && (
+                      <div>
+                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                          Class / Batch Level
+                        </label>
+                        <select
+                          value={formData.grade}
+                          onChange={(e) =>
+                            setFormData({ ...formData, grade: e.target.value })
+                          }
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-xs font-semibold text-white outline-none focus:border-indigo-500 cursor-pointer"
+                        >
+                          {subGrades.map((g) => (
+                            <option key={g} value={g} className="bg-slate-900">
+                              {g}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* PAYMENT SLIP UPLOAD (OPTIONAL) */}
               <div>
