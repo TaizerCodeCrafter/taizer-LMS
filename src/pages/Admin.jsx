@@ -22,6 +22,7 @@ import {
   ToastAlert
 } from "../components/admin/AdminModals";
 import { DEFAULT_INSTRUCTORS } from "../utils/defaultInstructors";
+import { DEFAULT_RESOURCES } from "../utils/defaultResources";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -400,12 +401,12 @@ const Admin = () => {
       const saved = localStorage.getItem("webResources");
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          return parsed.filter((r) => r.url && !r.url.includes("dummy.pdf"));
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
         }
       }
     } catch (e) {}
-    return [];
+    return DEFAULT_RESOURCES;
   });
 
   const [webGeneralSettings, setWebGeneralSettings] = useState(

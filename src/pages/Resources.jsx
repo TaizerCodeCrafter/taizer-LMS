@@ -27,16 +27,17 @@ import {
   Hash,
   MapPin
 } from "lucide-react";
+import { DEFAULT_RESOURCES } from "../utils/defaultResources";
 
 const DEFAULT_RESOURCES_SETTINGS = {
-  badge: "Open Academic Library",
-  title: "Free Educational Resources",
-  desc: "Download model papers, formula summary sheets, and past paper discussions to boost your examination revision.",
+  badge: "Open Knowledge Library",
+  title: "Trading Study Resources",
+  desc: "Download institutional trading cheat sheets, market structure guides, and risk calculators to boost your trading journey.",
   searchPlaceholder: "Search study materials, papers, or guides...",
   studyTipBadge: "Pro Revision Tip",
-  studyTipTitle: "Consistent Practice Yields Distinctions",
-  studyTipDesc: "Download and attempt at least one past paper under timed exam conditions every week. Compare your answers with our model marking schemes to spot weak areas.",
-  studyTipBtnText: "Join Exam Discussion Class",
+  studyTipTitle: "Consistent Practice Yields Trading Edge",
+  studyTipDesc: "Review market structure and backtest footprint setups daily under realistic market conditions to build high execution confidence.",
+  studyTipBtnText: "Join Live Trading Masterclass",
   studyTipBtnLink: "/register"
 };
 
@@ -55,12 +56,13 @@ const Resources = () => {
       const saved = localStorage.getItem("webResources");
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          return parsed.filter((r) => !r.isHidden && r.url && !r.url.includes("dummy.pdf"));
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const visible = parsed.filter((r) => !r.isHidden);
+          if (visible.length > 0) return visible;
         }
       }
     } catch (e) {}
-    return [];
+    return DEFAULT_RESOURCES;
   });
 
   const [generalSettings, setGeneralSettings] = useState(() => {
@@ -109,10 +111,12 @@ const Resources = () => {
           }
 
           const resTarget = data.find((s) => s.type === "webResources");
-          if (resTarget && Array.isArray(resTarget.data)) {
-            const cleanList = resTarget.data.filter((r) => !r.isHidden && r.url && !r.url.includes("dummy.pdf"));
-            setResources(cleanList);
-            try { localStorage.setItem("webResources", JSON.stringify(cleanList)); } catch (e) {}
+          if (resTarget && Array.isArray(resTarget.data) && resTarget.data.length > 0) {
+            const cleanList = resTarget.data.filter((r) => !r.isHidden);
+            if (cleanList.length > 0) {
+              setResources(cleanList);
+              try { localStorage.setItem("webResources", JSON.stringify(cleanList)); } catch (e) {}
+            }
           }
 
           const genTarget = data.find((s) => s.type === "webGeneralSettings");
@@ -145,8 +149,8 @@ const Resources = () => {
           const saved = localStorage.getItem("webResources");
           if (saved) {
             const parsed = JSON.parse(saved);
-            if (Array.isArray(parsed)) {
-              setResources(parsed.filter((r) => !r.isHidden && r.url && !r.url.includes("dummy.pdf")));
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setResources(parsed.filter((r) => !r.isHidden));
             }
           }
         } catch (err) {}
@@ -303,7 +307,7 @@ const Resources = () => {
     : "#";
 
   return (
-    <div className="bg-[#070b14] text-slate-100 min-h-screen py-20 select-none relative">
+    <div className="bg-[#070b14] text-slate-100 min-h-screen pt-32 pb-24 sm:pt-36 sm:pb-28 select-none relative">
       {/* DOWNLOAD TOAST */}
       {downloadToast && (
         <div className="fixed bottom-6 right-6 z-50 bg-emerald-500 text-white font-bold text-xs px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-2 animate-slideUp">
@@ -317,10 +321,10 @@ const Resources = () => {
         <div className="text-center space-y-4 max-w-2xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-bold">
             <FolderDown className="w-3.5 h-3.5 text-indigo-400" />
-            <span>{currentSettings.badge || "Open Academic Library"}</span>
+            <span>{currentSettings.badge || "Open Knowledge Library"}</span>
           </div>
           <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
-            {currentSettings.title || "Free Resources"}
+            {currentSettings.title || "Trading Study Resources"}
           </h1>
           <p className="text-sm text-slate-400 leading-relaxed whitespace-pre-line">
             {currentSettings.desc}

@@ -50,6 +50,7 @@ import {
   Loader2
 } from "lucide-react";
 import DualImageInput from "./DualImageInput";
+import { DEFAULT_RESOURCES } from "../../utils/defaultResources";
 
 const DEFAULT_HOME_SETTINGS = {
   hero: {
@@ -151,8 +152,6 @@ const DEFAULT_RESOURCES_SETTINGS = {
   searchPlaceholder: "Search study materials, papers, or guides..."
 };
 
-const DEFAULT_RESOURCES = [];
-
 const DEFAULT_GENERAL_SETTINGS = {
   supportEmail: "support@taizeracademy.com",
   supportPhone: "+94 77 123 4567",
@@ -202,7 +201,7 @@ const WebSettingsTab = ({
   setWebCoursesSettings,
   webResourcesSettings = {},
   setWebResourcesSettings,
-  webResources = [],
+  webResources = DEFAULT_RESOURCES,
   setWebResources,
   webGeneralSettings = {},
   setWebGeneralSettings,
