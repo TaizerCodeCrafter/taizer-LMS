@@ -234,6 +234,163 @@ const LMSDashboard = () => {
    const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
    const [answeredSlides, setAnsweredSlides] = useState({});
    const [userProgress, setUserProgress] = useState({});
+   const [completedModalSession, setCompletedModalSession] = useState(null);
+
+   // Persistent session progress state per student
+   const [sessionProgress, setSessionProgress] = useState(() => {
+      try {
+         const currentUserEmail = localStorage.getItem("currentUser") || "guest";
+         const saved = localStorage.getItem(`lms_session_progress_${currentUserEmail}`);
+         return saved ? JSON.parse(saved) : {};
+      } catch (e) {
+         return {};
+      }
+   });
+
+   const saveSessionProgress = (newProgress) => {
+      setSessionProgress(newProgress);
+      try {
+         const currentUserEmail = localStorage.getItem("currentUser") || "guest";
+         localStorage.setItem(`lms_session_progress_${currentUserEmail}`, JSON.stringify(newProgress));
+      } catch (e) {
+         console.error("Failed to save session progress", e);
+      }
+   };
+
+   const getSessionKey = (session) => {
+      if (!session) return "session_unknown";
+      return String(session.id || session.title || "session_0");
+   };
+
+   // Open session: resumes where left off if started, or in review mode if completed
+   const handleOpenSession = (session) => {
+      if (!session.content || session.content.length === 0) {
+         showNotification("Notice", "This session has no content yet.", "info");
+         return;
+      }
+
+      const sKey = getSessionKey(session);
+      const prog = sessionProgress[sKey] || {};
+
+      setActiveSession(session);
+
+      if (prog.status === "completed") {
+         setCurrentSlideIndex(0);
+         setAnsweredSlides(prog.answeredSlides || {});
+      } else {
+         const resumeIdx = Math.max(0, Math.min(prog.lastSlideIndex || 0, (session.content?.length || 1) - 1));
+         setCurrentSlideIndex(resumeIdx);
+         setAnsweredSlides(prog.answeredSlides || {});
+
+         const updated = {
+            ...sessionProgress,
+            [sKey]: {
+               ...prog,
+               status: "started",
+               lastSlideIndex: resumeIdx,
+               answeredSlides: prog.answeredSlides || {}
+            }
+         };
+         saveSessionProgress(updated);
+      }
+   };
+
+   // Answer quiz slide permanently
+   const handleAnswerQuizSlide = (slideIdx, selectedIdx, isCorrect) => {
+      if (!activeSession) return;
+      const sKey = getSessionKey(activeSession);
+      const prog = sessionProgress[sKey] || {};
+
+      if (prog.status === "completed" || answeredSlides[slideIdx]) {
+         return;
+      }
+
+      const newAnswers = {
+         ...answeredSlides,
+         [slideIdx]: { selected: selectedIdx, correct: isCorrect }
+      };
+      setAnsweredSlides(newAnswers);
+
+      const updated = {
+         ...sessionProgress,
+         [sKey]: {
+            ...prog,
+            status: prog.status || "started",
+            lastSlideIndex: currentSlideIndex,
+            answeredSlides: newAnswers
+         }
+      };
+      saveSessionProgress(updated);
+   };
+
+   // Slide change with auto-resume tracking
+   const handleSlideChange = (newIndex) => {
+      if (!activeSession) return;
+      const validIndex = Math.max(0, Math.min(newIndex, (activeSession.content?.length || 1) - 1));
+      setCurrentSlideIndex(validIndex);
+
+      const sKey = getSessionKey(activeSession);
+      const prog = sessionProgress[sKey] || {};
+      if (prog.status !== "completed") {
+         const updated = {
+            ...sessionProgress,
+            [sKey]: {
+               ...prog,
+               status: "started",
+               lastSlideIndex: validIndex,
+               answeredSlides: answeredSlides
+            }
+         };
+         saveSessionProgress(updated);
+      }
+   };
+
+   // Complete Session with full score computation
+   const handleCompleteSession = () => {
+      if (!activeSession) return;
+      const sKey = getSessionKey(activeSession);
+      const totalSlides = activeSession.content?.length || 0;
+
+      let quizCount = 0;
+      let correctCount = 0;
+      let wrongCount = 0;
+
+      activeSession.content?.forEach((slide, idx) => {
+         if (slide.type === "quiz") {
+            quizCount++;
+            const ans = answeredSlides[idx];
+            if (ans && ans.correct) {
+               correctCount++;
+            } else if (ans && !ans.correct) {
+               wrongCount++;
+            }
+         }
+      });
+
+      const scorePercent = quizCount > 0 ? Math.round((correctCount / quizCount) * 100) : 100;
+
+      const completionData = {
+         status: "completed",
+         completedAt: new Date().toISOString(),
+         lastSlideIndex: Math.max(0, totalSlides - 1),
+         answeredSlides: { ...answeredSlides },
+         totalQuestions: quizCount,
+         correctCount: correctCount,
+         wrongCount: wrongCount,
+         score: scorePercent
+      };
+
+      const updated = {
+         ...sessionProgress,
+         [sKey]: completionData
+      };
+      saveSessionProgress(updated);
+
+      setCompletedModalSession({
+         session: activeSession,
+         ...completionData
+      });
+   };
     const [portalTab, setPortalTab] = useState("Live");
     const [activeVideo, setActiveVideo] = useState(null);
     const [liveRecordings, setLiveRecordings] = useState([]);
@@ -706,17 +863,19 @@ const LMSDashboard = () => {
          if (!activeSession) return;
          if (e.key === "ArrowRight") {
             if (currentSlideIndex < (activeSession.content?.length || 0) - 1) {
-               setCurrentSlideIndex(prev => prev + 1);
+               handleSlideChange(currentSlideIndex + 1);
+            } else if (currentSlideIndex === (activeSession.content?.length || 0) - 1) {
+               handleCompleteSession();
             }
          } else if (e.key === "ArrowLeft") {
-            setCurrentSlideIndex(prev => Math.max(0, prev - 1));
+            handleSlideChange(Math.max(0, currentSlideIndex - 1));
          } else if (e.key === "Escape") {
             setActiveSession(null);
          }
       };
       window.addEventListener("keydown", handleKeyDown);
       return () => window.removeEventListener("keydown", handleKeyDown);
-   }, [activeSession, currentSlideIndex]);
+   }, [activeSession, currentSlideIndex, answeredSlides, sessionProgress]);
 
    // --- ONLINE ASSIGNMENTS ACTIONS ---
    const handleOpenAssignment = (assignment) => {
@@ -2073,89 +2232,122 @@ const LMSDashboard = () => {
                               </div>
 
                               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                 {sessions.map((session, index) => {
-                                    const isCompleted = userProgress[session.title] === 'completed';
-                                    const isStarted = userProgress[session.title] === 'started';
+                                  {sessions.map((session, index) => {
+                                     const sKey = getSessionKey(session);
+                                     const prog = sessionProgress[sKey] || {};
+                                     const isCompleted = prog.status === 'completed';
+                                     const isStarted = prog.status === 'started' && !isCompleted;
+                                     const currentSlide = (prog.lastSlideIndex || 0) + 1;
+                                     const totalSlides = session.content?.length || 0;
 
-                                    const palettes = [
-                                       { badgeBg: "bg-[#06b6d4]", badgeText: "text-white" }, // Cyan
-                                       { badgeBg: "bg-[#3b82f6]", badgeText: "text-white" }, // Blue
-                                       { badgeBg: "bg-[#d946ef]", badgeText: "text-white" }, // Fuchsia
-                                       { badgeBg: "bg-[#f59e0b]", badgeText: "text-white" }, // Amber
-                                       { badgeBg: "bg-[#10b981]", badgeText: "text-white" }, // Emerald
-                                    ];
-                                    const palette = session.locked 
-                                       ? { badgeBg: "bg-slate-700/50", badgeText: "text-slate-400" } 
-                                       : palettes[index % palettes.length];
+                                     const palettes = [
+                                        { badgeBg: "bg-[#06b6d4]", badgeText: "text-white" },
+                                        { badgeBg: "bg-[#3b82f6]", badgeText: "text-white" },
+                                        { badgeBg: "bg-[#d946ef]", badgeText: "text-white" },
+                                        { badgeBg: "bg-[#f59e0b]", badgeText: "text-white" },
+                                        { badgeBg: "bg-[#10b981]", badgeText: "text-white" },
+                                     ];
+                                     const palette = session.locked 
+                                        ? { badgeBg: "bg-slate-700/50", badgeText: "text-slate-400" } 
+                                        : palettes[index % palettes.length];
 
-                                    return (
-                                       <motion.div
-                                          key={index}
-                                          whileHover={!session.locked ? { y: -5 } : {}}
-                                          className={`p-8 rounded-[1.5rem] bg-[#1e293b]/90 border border-slate-700/50 flex flex-col shadow-xl relative ${session.locked ? 'opacity-60' : ''}`}
-                                       >
-                                          <div className="flex justify-between items-start mb-6">
-                                             <div className={`px-4 py-1.5 rounded-full text-[11px] font-black ${palette.badgeBg} ${palette.badgeText}`}>
-                                                Session {index + 1}
-                                             </div>
-                                             {session.locked ? (
-                                                <span className="text-slate-500 text-lg">🔒</span>
-                                             ) : isCompleted ? (
-                                                <span className="text-[#34d399] text-xl">✓</span>
-                                             ) : null}
-                                          </div>
+                                     return (
+                                        <motion.div
+                                           key={index}
+                                           whileHover={!session.locked ? { y: -5 } : {}}
+                                           className={`p-7 sm:p-8 rounded-[1.75rem] bg-[#1e293b]/90 border ${isCompleted ? 'border-emerald-500/40 shadow-[0_10px_30px_rgba(16,185,129,0.08)]' : 'border-slate-700/50'} flex flex-col shadow-xl relative ${session.locked ? 'opacity-60' : ''}`}
+                                        >
+                                           <div className="flex justify-between items-start mb-6">
+                                              <div className={`px-4 py-1.5 rounded-full text-[11px] font-black ${palette.badgeBg} ${palette.badgeText}`}>
+                                                 Session {index + 1}
+                                              </div>
+                                              {session.locked ? (
+                                                 <span className="text-slate-500 text-lg">🔒</span>
+                                              ) : isCompleted ? (
+                                                 <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black bg-emerald-500/15 border border-emerald-500/40 text-emerald-400">
+                                                    <span>✓</span> Completed • සම්පූර්ණයි
+                                                 </div>
+                                              ) : isStarted ? (
+                                                 <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black bg-blue-500/15 border border-blue-500/40 text-blue-400">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>
+                                                    In Progress
+                                                 </div>
+                                              ) : null}
+                                           </div>
 
-                                          <div className="space-y-1 mb-3">
-                                             <h4 className={`text-xl font-black tracking-tight ${session.locked ? 'text-slate-500' : 'text-white'}`}>{session.title}</h4>
-                                             <p className={`text-sm font-medium ${session.locked ? 'text-slate-600' : 'text-slate-400'}`}>{session.titleSi}</p>
-                                          </div>
+                                           <div className="space-y-1 mb-3">
+                                              <h4 className={`text-xl font-black tracking-tight ${session.locked ? 'text-slate-500' : 'text-white'}`}>{session.title}</h4>
+                                              <p className={`text-sm font-medium ${session.locked ? 'text-slate-600' : 'text-slate-400'}`}>{session.titleSi}</p>
+                                           </div>
 
-                                          <p className={`text-xs leading-relaxed flex-grow ${session.locked ? 'text-slate-600' : 'text-slate-500'}`}>{session.desc}</p>
-                                          <p className={`text-xs font-medium mt-4 ${session.locked ? 'text-slate-700' : 'text-slate-500'}`}>{session.stats || "24 slides - 60 min"}</p>
+                                           <p className={`text-xs leading-relaxed flex-grow ${session.locked ? 'text-slate-600' : 'text-slate-500'}`}>{session.desc}</p>
+                                           <p className={`text-xs font-medium mt-4 ${session.locked ? 'text-slate-700' : 'text-slate-500'}`}>{session.stats || `${totalSlides} slides`}</p>
 
-                                          <div className="pt-6 flex justify-center mt-auto">
-                                             {session.locked ? (
-                                                <div className="flex items-center gap-2 bg-slate-900/50 px-6 py-2.5 rounded-xl text-slate-500 text-xs font-bold">
-                                                   <span>🔒</span> Locked
-                                                </div>
-                                             ) : (
-                                                <button
-                                                   onClick={() => {
-                                                      if (!session.content || session.content.length === 0) {
-                                                         showNotification("Notice", "This session has no content yet.", "info");
-                                                         return;
-                                                      }
+                                           {/* Completed Marks Breakdown Card */}
+                                           {isCompleted && (
+                                              <div className="mt-4 p-3.5 rounded-2xl bg-[#0b1322] border border-emerald-500/30 space-y-2">
+                                                 <div className="flex items-center justify-between">
+                                                    <span className="text-[11px] font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1">
+                                                       <span>✓</span> Results / ප්‍රතිඵල:
+                                                    </span>
+                                                    <span className="text-white text-xs font-black bg-emerald-500/20 px-2.5 py-0.5 rounded-md border border-emerald-500/40">
+                                                       Score: {prog.score !== undefined ? `${prog.score}%` : '100%'}
+                                                    </span>
+                                                 </div>
+                                                 {prog.totalQuestions > 0 ? (
+                                                    <div className="flex items-center justify-between text-[11px] font-semibold text-slate-300 pt-1.5 border-t border-slate-800">
+                                                       <span className="text-emerald-400">✅ {prog.correctCount || 0} Correct</span>
+                                                       <span className="text-rose-400">❌ {prog.wrongCount || 0} Wrong</span>
+                                                       <span className="text-slate-400">Total: {prog.totalQuestions}</span>
+                                                    </div>
+                                                 ) : (
+                                                    <p className="text-[10px] text-slate-400 pt-1 border-t border-slate-800">All module content completed</p>
+                                                 )}
+                                              </div>
+                                           )}
 
-                                                      const currentUserEmail = localStorage.getItem("currentUser");
-                                                      const allProgress = JSON.parse(localStorage.getItem("lmsProgress") || "{}");
-                                                      if (!allProgress[currentUserEmail]) allProgress[currentUserEmail] = {};
-                                                      if (allProgress[currentUserEmail][session.title] !== "completed") {
-                                                         allProgress[currentUserEmail][session.title] = "started";
-                                                         localStorage.setItem("lmsProgress", JSON.stringify(allProgress));
-                                                         setUserProgress(allProgress[currentUserEmail]);
-                                                      }
+                                           {/* Mid-Session Progress Indicator */}
+                                           {isStarted && (
+                                              <div className="mt-4 p-3 rounded-2xl bg-blue-950/30 border border-blue-500/30 flex items-center justify-between text-xs font-semibold text-blue-300">
+                                                 <span className="flex items-center gap-1.5">
+                                                    <span className="inline-block w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                                                    Resume Position:
+                                                 </span>
+                                                 <span className="text-[11px] font-bold text-blue-200">
+                                                    Slide {currentSlide} of {totalSlides}
+                                                 </span>
+                                              </div>
+                                           )}
 
-                                                      setActiveSession(session);
-                                                      setCurrentSlideIndex(0);
-                                                      setAnsweredSlides({});
-                                                   }}
-                                                   className={`px-6 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center gap-2 ${
-                                                      isCompleted 
-                                                         ? 'bg-[#115e59]/40 text-[#2dd4bf] hover:bg-[#115e59]/60' 
-                                                         : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700'
-                                                   }`}
-                                                >
-                                                   {isCompleted ? (
-                                                      <><span className="text-sm -mt-0.5">✓</span> Review Session</>
-                                                   ) : (
-                                                      <><span className="text-blue-400 text-[10px]">▶</span> {isStarted ? 'View Session' : 'Start Session'}</>
-                                                   )}
-                                                </button>
-                                             )}
-                                          </div>
-                                       </motion.div>
-                                    );
-                                 })}
+                                           <div className="pt-6 flex justify-center mt-auto">
+                                              {session.locked ? (
+                                                 <div className="flex items-center gap-2 bg-slate-900/50 px-6 py-2.5 rounded-xl text-slate-500 text-xs font-bold">
+                                                    <span>🔒</span> Locked
+                                                 </div>
+                                              ) : (
+                                                 <button
+                                                    onClick={() => handleOpenSession(session)}
+                                                    className={`w-full px-6 py-3 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 ${
+                                                       isCompleted 
+                                                          ? 'bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-900/60 shadow-lg shadow-emerald-900/20' 
+                                                          : isStarted
+                                                          ? 'bg-blue-600/30 border border-blue-500/50 text-blue-200 hover:bg-blue-600/50'
+                                                          : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700'
+                                                    }`}
+                                                 >
+                                                    {isCompleted ? (
+                                                       <><span className="text-sm">👁️</span> Review Session (Locked)</>
+                                                    ) : isStarted ? (
+                                                       <><span className="text-blue-400 text-[10px]">▶</span> Resume from Slide {currentSlide}</>
+                                                    ) : (
+                                                       <><span className="text-emerald-400 text-[10px]">▶</span> Start Session</>
+                                                    )}
+                                                 </button>
+                                              )}
+                                           </div>
+                                        </motion.div>
+                                     );
+                                  })}
                                  {sessions.length === 0 && (
                                     <div className="col-span-full py-20 text-center bg-[#0f172a] rounded-[3rem] border border-slate-800/50 space-y-3">
                                        <div className="text-4xl">📚</div>
@@ -2168,15 +2360,30 @@ const LMSDashboard = () => {
                         ) : (
                            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="fixed inset-0 z-50 bg-[#020617] flex flex-col overflow-hidden">
                               {/* Top Bar */}
-                              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-800/50 bg-[#0f172a]/80 backdrop-blur-md">
-                                 <button onClick={() => setActiveSession(null)} className="flex items-center gap-3 text-slate-400 hover:text-white transition-colors">
-                                    <span className="text-xl">‹</span> <span className="text-xs sm:text-sm font-bold tracking-widest uppercase truncate max-w-[200px] sm:max-w-none">Sessions | {activeSession.title}</span>
-                                 </button>
-                                 <div className="flex items-center gap-4 text-xs font-black tracking-widest text-slate-500">
-                                    <span className="text-[#2dd4bf]">{currentSlideIndex + 1}</span> / {activeSession.content?.length || 0}
-                                    <button className="text-xl hover:text-white transition-colors" onClick={() => document.documentElement.requestFullscreen().catch(()=>{})}>⛶</button>
-                                 </div>
-                              </div>
+                              {(() => {
+                                 const activeKey = getSessionKey(activeSession);
+                                 const activeProg = sessionProgress[activeKey] || {};
+                                 const isSessionCompleted = activeProg.status === "completed";
+
+                                 return (
+                                    <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-800/50 bg-[#0f172a]/80 backdrop-blur-md">
+                                       <button onClick={() => setActiveSession(null)} className="flex items-center gap-3 text-slate-400 hover:text-white transition-colors">
+                                          <span className="text-xl">‹</span> <span className="text-xs sm:text-sm font-bold tracking-widest uppercase truncate max-w-[200px] sm:max-w-none">Sessions | {activeSession.title}</span>
+                                       </button>
+                                       <div className="flex items-center gap-3 sm:gap-4 text-xs font-black tracking-widest text-slate-500">
+                                          {isSessionCompleted && (
+                                             <span className="hidden sm:inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-black bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
+                                                <span>🔒</span> Review Mode
+                                             </span>
+                                          )}
+                                          <div>
+                                             <span className="text-[#2dd4bf]">{currentSlideIndex + 1}</span> / {activeSession.content?.length || 0}
+                                          </div>
+                                          <button className="text-xl hover:text-white transition-colors" onClick={() => document.documentElement.requestFullscreen().catch(()=>{})}>⛶</button>
+                                       </div>
+                                    </div>
+                                 );
+                              })()}
                               
                               {/* Progress Bar */}
                               <div className="w-full h-1 bg-slate-800">
@@ -2192,7 +2399,7 @@ const LMSDashboard = () => {
                               <div className="flex-1 flex justify-center relative px-8 py-0 overflow-hidden min-h-0">
                                  {/* Left Arrow */}
                                  <button 
-                                    onClick={() => setCurrentSlideIndex(prev => Math.max(0, prev - 1))}
+                                    onClick={() => handleSlideChange(Math.max(0, currentSlideIndex - 1))}
                                     disabled={currentSlideIndex === 0}
                                     className="absolute left-2 sm:left-8 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-slate-800/50 border border-slate-700 text-slate-400 flex items-center justify-center hover:bg-slate-700 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed z-10 text-sm sm:text-base"
                                  >‹</button>
@@ -2324,73 +2531,136 @@ const LMSDashboard = () => {
                                                           className="w-full h-full"
                                                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                                           allowFullScreen
-                                                       />
-                                                    )}
-                                                 </div>
-                                              )}
+                                                        />
+                                                     )}
+                                                  </div>
+                                               )}
 
-                                              {slide.type === 'quiz' && (
-                                                 <div className="space-y-6 mt-12">
-                                                    {slide.candlestickType && (
-                                                       <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 flex flex-col items-center justify-center space-y-3 shadow-xl">
-                                                          <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
-                                                             Candlestick Pattern Diagram
-                                                          </span>
-                                                          <div className="w-40 h-24 flex items-center justify-center p-2 bg-slate-950/80 rounded-2xl border border-slate-800/80 shadow-inner">
-                                                             <PatternGraphic type={slide.candlestickType} />
-                                                          </div>
-                                                          <p className="text-xs text-slate-400 font-semibold">Examine the candle body, shadows, and wicks above</p>
-                                                       </div>
-                                                    )}
+                                               {slide.type === 'quiz' && (() => {
+                                                  const activeKey = getSessionKey(activeSession);
+                                                  const isSessionCompleted = sessionProgress[activeKey]?.status === "completed";
+                                                  const isAnswered = Boolean(answeredSlides[currentSlideIndex]);
 
-                                                    <div className="space-y-4">
-                                                       {(slide.options || []).map((opt, oIdx) => {
-                                                          const isAnswered = answeredSlides[currentSlideIndex];
-                                                          const correctTarget = slide.correctIndex !== undefined ? slide.correctIndex : slide.correctAnswer;
-                                                          const isCorrectOption = oIdx === correctTarget;
-                                                          const isSelected = answeredSlides[currentSlideIndex]?.selected === oIdx;
-                                                          let btnClass = "bg-[#0f172a] border-slate-700 text-slate-300 hover:bg-slate-800";
-                                                          
-                                                          if (isAnswered) {
-                                                             if (isCorrectOption) btnClass = "bg-[#064e3b]/40 border-emerald-500/50 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.1)]";
-                                                             else if (isSelected) btnClass = "bg-rose-900/20 border-rose-500/50 text-rose-400";
-                                                             else btnClass = "bg-[#0f172a]/50 border-slate-800 text-slate-600 opacity-50";
-                                                          }
+                                                  return (
+                                                     <div className="space-y-6 mt-12">
+                                                        {slide.candlestickType && (
+                                                           <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 flex flex-col items-center justify-center space-y-3 shadow-xl">
+                                                              <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
+                                                                 Candlestick Pattern Diagram
+                                                              </span>
+                                                              <div className="w-40 h-24 flex items-center justify-center p-2 bg-slate-950/80 rounded-2xl border border-slate-800/80 shadow-inner">
+                                                                 <PatternGraphic type={slide.candlestickType} />
+                                                              </div>
+                                                              <p className="text-xs text-slate-400 font-semibold">Examine the candle body, shadows, and wicks above</p>
+                                                           </div>
+                                                        )}
 
-                                                          return (
-                                                             <button 
-                                                                key={oIdx}
-                                                                disabled={isAnswered}
-                                                                onClick={() => setAnsweredSlides(prev => ({ ...prev, [currentSlideIndex]: { selected: oIdx, correct: isCorrectOption } }))}
-                                                                className={`w-full p-6 text-left rounded-2xl border transition-all duration-300 ${btnClass} font-medium text-lg`}
-                                                             >
-                                                                {opt}
-                                                             </button>
-                                                          );
-                                                       })}
-                                                    </div>
-                                                    {answeredSlides[currentSlideIndex] && (
-                                                       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`p-8 mt-8 rounded-2xl border ${answeredSlides[currentSlideIndex].correct ? 'bg-[#064e3b]/20 border-emerald-500/30' : 'bg-rose-900/20 border-rose-500/30'}`}>
-                                                          <p className={`font-black text-sm tracking-widest uppercase ${answeredSlides[currentSlideIndex].correct ? 'text-emerald-400' : 'text-rose-400'}`}>
-                                                             {answeredSlides[currentSlideIndex].correct ? "✓ Correct!" : "✗ Incorrect"}
-                                                          </p>
-                                                          {slide.explanation && <div className="mt-6 border-t border-slate-700/50 pt-6 text-sm">{renderContent(slide.explanation)}</div>}
-                                                          {slide.explanationSi && <div className="mt-4 border-t border-slate-700/50 pt-4 text-xs">{renderContent(slide.explanationSi)}</div>}
-                                                       </motion.div>
-                                                    )}
-                                                 </div>
-                                              )}
-                                          </div>
-                                       );
-                                    })()}
-                                 </div>
+                                                        <div className="space-y-4">
+                                                           {(slide.options || []).map((opt, oIdx) => {
+                                                              const correctTarget = slide.correctIndex !== undefined ? slide.correctIndex : slide.correctAnswer;
+                                                              const isCorrectOption = oIdx === correctTarget;
+                                                              const isSelected = answeredSlides[currentSlideIndex]?.selected === oIdx;
+                                                              let btnClass = "bg-[#0f172a] border-slate-700 text-slate-300 hover:bg-slate-800";
+                                                              
+                                                              if (isAnswered) {
+                                                                 if (isCorrectOption) btnClass = "bg-[#064e3b]/40 border-emerald-500/50 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.1)]";
+                                                                 else if (isSelected) btnClass = "bg-rose-900/20 border-rose-500/50 text-rose-400";
+                                                                 else btnClass = "bg-[#0f172a]/50 border-slate-800 text-slate-600 opacity-50";
+                                                              }
 
-                                 {/* Right Arrow */}
-                                 <button 
-                                    onClick={() => setCurrentSlideIndex(prev => Math.min((activeSession.content?.length || 1) - 1, prev + 1))}
-                                    disabled={currentSlideIndex === (activeSession.content?.length || 1) - 1}
-                                    className="absolute right-2 sm:right-8 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-slate-800/50 border border-slate-700 text-slate-400 flex items-center justify-center hover:bg-slate-700 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed z-10 text-sm sm:text-base"
-                                 >›</button>
+                                                              return (
+                                                                 <button 
+                                                                    key={oIdx}
+                                                                    disabled={isAnswered || isSessionCompleted}
+                                                                    onClick={() => handleAnswerQuizSlide(currentSlideIndex, oIdx, isCorrectOption)}
+                                                                    className={`w-full p-6 text-left rounded-2xl border transition-all duration-300 ${btnClass} font-medium text-lg disabled:cursor-not-allowed`}
+                                                                 >
+                                                                    <div className="flex items-center justify-between">
+                                                                       <span>{opt}</span>
+                                                                       {isAnswered && isCorrectOption && <span className="text-emerald-400 font-bold text-xs uppercase tracking-wider">✓ Correct</span>}
+                                                                       {isAnswered && isSelected && !isCorrectOption && <span className="text-rose-400 font-bold text-xs uppercase tracking-wider">✗ Your Answer</span>}
+                                                                    </div>
+                                                                 </button>
+                                                              );
+                                                           })}
+                                                        </div>
+                                                        {answeredSlides[currentSlideIndex] && (
+                                                           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`p-8 mt-8 rounded-2xl border ${answeredSlides[currentSlideIndex].correct ? 'bg-[#064e3b]/20 border-emerald-500/30' : 'bg-rose-900/20 border-rose-500/30'}`}>
+                                                              <p className={`font-black text-sm tracking-widest uppercase ${answeredSlides[currentSlideIndex].correct ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                                                 {answeredSlides[currentSlideIndex].correct ? "✓ Correct! / නිවැරදියි!" : "✗ Incorrect / වැරදියි!"}
+                                                              </p>
+                                                              {slide.explanation && <div className="mt-6 border-t border-slate-700/50 pt-6 text-sm">{renderContent(slide.explanation)}</div>}
+                                                              {slide.explanationSi && <div className="mt-4 border-t border-slate-700/50 pt-4 text-xs">{renderContent(slide.explanationSi)}</div>}
+                                                           </motion.div>
+                                                        )}
+                                                     </div>
+                                                  );
+                                               })()}
+
+                                               {/* Completion Bar on Last Slide */}
+                                               {currentSlideIndex === (activeSession.content?.length || 1) - 1 && (() => {
+                                                  const activeKey = getSessionKey(activeSession);
+                                                  const isSessionCompleted = sessionProgress[activeKey]?.status === "completed";
+                                                  
+                                                  return (
+                                                     <div className="mt-12 pt-8 border-t border-slate-800/80 flex flex-col items-center justify-center space-y-4">
+                                                        <div className="text-center space-y-1">
+                                                           <p className="text-xs font-black uppercase tracking-widest text-emerald-400">
+                                                              {isSessionCompleted ? "🎉 Session Completed • සම්පූර්ණ කරන ලදී" : "🏁 End of Session • පාඩම අවසන් කරන්න"}
+                                                           </p>
+                                                           <p className="text-slate-400 text-xs">
+                                                              {isSessionCompleted 
+                                                                 ? "ඔබ මෙම පාඩම සම්පූර්ණ කර ඇත. සියලුම slides ඕනෑම වේලාවක Review කළ හැක."
+                                                                 : "ප්‍රතිඵලය සටහන් කරගෙන Session එක සම්පූර්ණ කිරීමට පහත බොත්තම ඔබන්න."}
+                                                           </p>
+                                                        </div>
+
+                                                        {isSessionCompleted ? (
+                                                           <button
+                                                              onClick={() => setActiveSession(null)}
+                                                              className="px-8 py-3.5 bg-emerald-500 text-black font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-emerald-400 shadow-xl shadow-emerald-500/20 transition-all flex items-center gap-2"
+                                                           >
+                                                              <span>✓ Return to Sessions List / සැසි ලැයිස්තුවට යන්න</span>
+                                                           </button>
+                                                        ) : (
+                                                           <button
+                                                              onClick={handleCompleteSession}
+                                                              className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-black uppercase tracking-widest text-xs sm:text-sm rounded-2xl hover:brightness-110 shadow-2xl shadow-emerald-500/30 transition-all flex items-center gap-3 active:scale-95"
+                                                           >
+                                                              <span className="text-base">🎉</span> Complete Session / පාඩම අවසන් කරන්න
+                                                           </button>
+                                                        )}
+                                                     </div>
+                                                  );
+                                               })()}
+                                           </div>
+                                        );
+                                     })()}
+                                  </div>
+
+                                  {/* Right Arrow */}
+                                  {(() => {
+                                     const activeKey = getSessionKey(activeSession);
+                                     const isSessionCompleted = sessionProgress[activeKey]?.status === "completed";
+                                     const isLastSlide = currentSlideIndex === (activeSession.content?.length || 1) - 1;
+
+                                     return (
+                                        <button 
+                                           onClick={() => {
+                                              if (!isLastSlide) {
+                                                 handleSlideChange(currentSlideIndex + 1);
+                                              } else if (!isSessionCompleted) {
+                                                 handleCompleteSession();
+                                              }
+                                           }}
+                                           disabled={isLastSlide && isSessionCompleted}
+                                           className="absolute right-2 sm:right-8 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-slate-800/50 border border-slate-700 text-slate-400 flex items-center justify-center hover:bg-slate-700 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed z-10 text-sm sm:text-base"
+                                           title={isLastSlide ? (isSessionCompleted ? "Completed" : "Complete Session") : "Next Slide"}
+                                        >
+                                           {isLastSlide ? (isSessionCompleted ? '✓' : '🏁') : '›'}
+                                        </button>
+                                     );
+                                  })()}
                               </div>
                            </motion.div>
                         )}
@@ -4030,6 +4300,93 @@ const LMSDashboard = () => {
                       </div>
                    </motion.div>
                 </div>
+            )}
+         </AnimatePresence>
+
+         {/* SESSION COMPLETION CELEBRATION MODAL */}
+         <AnimatePresence>
+            {completedModalSession && (
+               <div className="fixed inset-0 bg-black/85 backdrop-blur-2xl z-[150] flex items-center justify-center p-4 sm:p-6 animate-fade-in">
+                  <motion.div 
+                     initial={{ opacity: 0, scale: 0.9, y: 20 }} 
+                     animate={{ opacity: 1, scale: 1, y: 0 }} 
+                     exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                     className="bg-[#0f172a] rounded-[2.5rem] sm:rounded-[3rem] w-full max-w-[540px] p-6 sm:p-10 border border-emerald-500/30 shadow-[0_0_50px_rgba(16,185,129,0.15)] relative text-center overflow-hidden"
+                  >
+                     {/* Ambient glow */}
+                     <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-64 h-64 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
+
+                     {/* Icon */}
+                     <div className="relative w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-tr from-emerald-500/20 to-teal-500/10 border border-emerald-500/40 flex items-center justify-center text-4xl shadow-inner shadow-emerald-500/20">
+                        <span>🎉</span>
+                     </div>
+
+                     {/* Badge */}
+                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-black uppercase tracking-widest mb-4">
+                        <span>✓</span> Session Completed
+                     </div>
+
+                     {/* Title */}
+                     <h3 className="text-2xl sm:text-3xl font-black text-white mb-1 tracking-tight">
+                        {completedModalSession.session?.title || "Session Completed!"}
+                     </h3>
+                     <p className="text-slate-400 text-xs sm:text-sm font-semibold mb-6">
+                        පාඩම සාර්ථකව අවසන් කරන ලදී! සියලු ප්‍රගතිය සුරැකිණි.
+                     </p>
+
+                     {/* Marks Breakdown Card */}
+                     <div className="bg-[#070b14]/80 rounded-3xl p-5 sm:p-6 border border-slate-800 space-y-4 mb-8">
+                        <div className="flex items-center justify-between">
+                           <span className="text-xs font-black uppercase tracking-widest text-slate-400">Total Score / ප්‍රතිඵලය</span>
+                           <span className="text-2xl sm:text-3xl font-black text-emerald-400">
+                              {completedModalSession.score}%
+                           </span>
+                        </div>
+
+                        {/* Score bar */}
+                        <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
+                           <div 
+                              className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-1000"
+                              style={{ width: `${completedModalSession.score}%` }}
+                           />
+                        </div>
+
+                        {/* Details Grid */}
+                        <div className="grid grid-cols-3 gap-3 pt-2">
+                           <div className="bg-slate-900/80 rounded-2xl p-3 border border-emerald-500/20">
+                              <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Correct</p>
+                              <p className="text-lg font-black text-emerald-400 mt-0.5">✅ {completedModalSession.correctCount}</p>
+                              <p className="text-[9px] text-slate-500">නිවැරදි</p>
+                           </div>
+                           <div className="bg-slate-900/80 rounded-2xl p-3 border border-rose-500/20">
+                              <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Wrong</p>
+                              <p className="text-lg font-black text-rose-400 mt-0.5">❌ {completedModalSession.wrongCount}</p>
+                              <p className="text-[9px] text-slate-500">වැරදි</p>
+                           </div>
+                           <div className="bg-slate-900/80 rounded-2xl p-3 border border-slate-800">
+                              <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Questions</p>
+                              <p className="text-lg font-black text-white mt-0.5">📝 {completedModalSession.totalQuestions}</p>
+                              <p className="text-[9px] text-slate-500">ප්‍රශ්න</p>
+                           </div>
+                        </div>
+
+                        <p className="text-[11px] text-slate-400 pt-1 leading-relaxed">
+                           🔒 මෙම session එක දැන් Review Mode එකට මාරු වී ඇත. ඔබට නැවත පිළිතුරු සංශෝධනය කළ නොහැක.
+                        </p>
+                     </div>
+
+                     {/* Action Buttons */}
+                     <button
+                        onClick={() => {
+                           setCompletedModalSession(null);
+                           setActiveSession(null);
+                        }}
+                        className="w-full py-4 px-6 bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-black uppercase tracking-widest text-xs sm:text-sm rounded-2xl hover:brightness-110 shadow-xl shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
+                     >
+                        <span>✓</span> OK • Return to Sessions / සැසි ලැයිස්තුවට යන්න
+                     </button>
+                  </motion.div>
+               </div>
             )}
          </AnimatePresence>
 
