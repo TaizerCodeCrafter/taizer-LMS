@@ -210,8 +210,10 @@ const DEFAULT_GENERAL_SETTINGS = {
     whatsappGroup: "https://chat.whatsapp.com",
     instagram: "https://instagram.com"
   },
-  subjects: ["Economics", "Sinhala"],
+  subjects: ["Crypto Basic", "Price Action", "Sinhala", "Economics"],
   grades: {
+    "Crypto Basic": [],
+    "Price Action": [],
     Sinhala: ["Grade 6", "Grade 7", "Grade 8", "Grade 9", "Grade 10", "Grade 11"],
     Economics: ["Grade 12", "Grade 13"]
   },

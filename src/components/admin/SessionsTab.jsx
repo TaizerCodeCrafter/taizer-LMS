@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   BookOpen,
   Plus,
@@ -41,6 +42,8 @@ const SessionsTab = ({
   syncToBackend,
   showNotification,
   onQuickAddClass,
+  onDeleteSubject,
+  onDeleteGrade,
   onToggleLock,
   onDeleteSession,
   onOpenDesigner,
@@ -128,36 +131,96 @@ const SessionsTab = ({
     }
   };
 
-  const handleDeleteSubject = (subToDelete) => {
-    if (!subToDelete) return;
+  // Delete Confirmation Modal State
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    type: "subject", // "subject" | "grade"
+    target: "",
+    subject: ""
+  });
+
+  const confirmDeleteSubject = (sub) => {
+    if (!sub) return;
     if (subjects.length <= 1) {
-      if (showNotification) showNotification("Cannot Delete", "You must keep at least one subject.", "error");
+      if (showNotification) showNotification("Cannot Delete", "You must keep at least one subject in the system.", "error");
       return;
     }
-    if (!window.confirm(`Are you sure you want to delete "${subToDelete}"? This will also remove it from the student registration form.`)) {
-      return;
+    setDeleteModal({
+      isOpen: true,
+      type: "subject",
+      target: sub,
+      subject: sub
+    });
+  };
+
+  const confirmDeleteGrade = (grade, sub = selectedSubject) => {
+    if (!grade || !sub) return;
+    setDeleteModal({
+      isOpen: true,
+      type: "grade",
+      target: grade,
+      subject: sub
+    });
+  };
+
+  const handleExecuteDelete = () => {
+    if (deleteModal.type === "subject") {
+      const subToDelete = deleteModal.target;
+      if (onDeleteSubject) {
+        onDeleteSubject(subToDelete);
+      } else {
+        const updatedSubjects = subjects.filter((s) => s !== subToDelete);
+        const updatedGrades = { ...gradesObj };
+        delete updatedGrades[subToDelete];
+        const updatedSettings = {
+          ...webGeneralSettings,
+          subjects: updatedSubjects,
+          grades: updatedGrades
+        };
+        if (setWebGeneralSettings) setWebGeneralSettings(updatedSettings);
+        try { localStorage.setItem("webGeneralSettings", JSON.stringify(updatedSettings)); } catch (e) {}
+        if (syncToBackend) syncToBackend("webGeneralSettings", updatedSettings);
+        window.dispatchEvent(new Event("storage"));
+      }
+
+      const remaining = subjects.filter((s) => s !== deleteModal.target);
+      if (remaining.length > 0) {
+        const nextSub = remaining[0];
+        setSelectedSubject(nextSub);
+        const nextGrades = (webGeneralSettings?.grades || {})[nextSub] || [];
+        if (setSelectedSessionGrade) {
+          setSelectedSessionGrade(nextGrades.length > 0 ? nextGrades[0] : nextSub);
+        }
+      }
+    } else if (deleteModal.type === "grade") {
+      const gradeToDelete = deleteModal.target;
+      const sub = deleteModal.subject || selectedSubject;
+      if (onDeleteGrade) {
+        onDeleteGrade(sub, gradeToDelete);
+      } else {
+        const existing = gradesObj[sub] || [];
+        const updatedList = existing.filter((g) => g !== gradeToDelete);
+        const updatedGrades = {
+          ...gradesObj,
+          [sub]: updatedList
+        };
+        const updatedSettings = {
+          ...webGeneralSettings,
+          grades: updatedGrades
+        };
+        if (setWebGeneralSettings) setWebGeneralSettings(updatedSettings);
+        try { localStorage.setItem("webGeneralSettings", JSON.stringify(updatedSettings)); } catch (e) {}
+        if (syncToBackend) syncToBackend("webGeneralSettings", updatedSettings);
+        window.dispatchEvent(new Event("storage"));
+      }
+
+      const existing = (webGeneralSettings?.grades || {})[sub] || [];
+      const updatedList = existing.filter((g) => g !== deleteModal.target);
+      if (setSelectedSessionGrade) {
+        setSelectedSessionGrade(updatedList.length > 0 ? updatedList[0] : sub);
+      }
     }
-    const updatedSubjects = subjects.filter((s) => s !== subToDelete);
-    const updatedGrades = { ...gradesObj };
-    delete updatedGrades[subToDelete];
-    const updatedSettings = {
-      ...webGeneralSettings,
-      subjects: updatedSubjects,
-      grades: updatedGrades
-    };
-    if (setWebGeneralSettings) setWebGeneralSettings(updatedSettings);
-    try {
-      localStorage.setItem("webGeneralSettings", JSON.stringify(updatedSettings));
-    } catch (e) {}
-    if (syncToBackend) syncToBackend("webGeneralSettings", updatedSettings);
-    window.dispatchEvent(new Event("storage"));
-    const nextSub = updatedSubjects[0];
-    setSelectedSubject(nextSub);
-    const nextGrades = updatedGrades[nextSub] || [];
-    setSelectedSessionGrade(nextGrades.length > 0 ? nextGrades[0] : nextSub);
-    if (showNotification) {
-      showNotification("Subject Deleted", `"${subToDelete}" removed from system.`, "error");
-    }
+    setDeleteModal({ isOpen: false, type: "subject", target: "", subject: "" });
   };
 
   const submitAddGrade = () => {
@@ -189,33 +252,6 @@ const SessionsTab = ({
     setNewGradeInput("");
     if (showNotification) {
       showNotification("Batch Added", `Class "${trimmed}" added to ${selectedSubject} & synced to Register form!`, "success");
-    }
-  };
-
-  const handleDeleteGrade = (gradeToDelete) => {
-    if (!gradeToDelete) return;
-    if (!window.confirm(`Delete batch "${gradeToDelete}" from ${selectedSubject}?`)) {
-      return;
-    }
-    const existing = gradesObj[selectedSubject] || [];
-    const updatedList = existing.filter((g) => g !== gradeToDelete);
-    const updatedGrades = {
-      ...gradesObj,
-      [selectedSubject]: updatedList
-    };
-    const updatedSettings = {
-      ...webGeneralSettings,
-      grades: updatedGrades
-    };
-    if (setWebGeneralSettings) setWebGeneralSettings(updatedSettings);
-    try {
-      localStorage.setItem("webGeneralSettings", JSON.stringify(updatedSettings));
-    } catch (e) {}
-    if (syncToBackend) syncToBackend("webGeneralSettings", updatedSettings);
-    window.dispatchEvent(new Event("storage"));
-    setSelectedSessionGrade(updatedList.length > 0 ? updatedList[0] : selectedSubject);
-    if (showNotification) {
-      showNotification("Batch Deleted", `Batch "${gradeToDelete}" removed from ${selectedSubject}.`, "error");
     }
   };
 
@@ -346,89 +382,134 @@ const SessionsTab = ({
       <div className="bg-[#0e1424]/90 backdrop-blur-xl p-5 sm:p-6 rounded-3xl border border-slate-800/80 shadow-2xl space-y-4">
         
         {/* ROW 1: SUBJECT / COURSE CONTROLS */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-800/70">
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold shrink-0">
-              <Layers className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                Active Subject / Course
-              </span>
-              <div className="flex items-center gap-2 mt-1">
-                <select
-                  value={selectedSubject}
-                  onChange={(e) => handleSubjectChange(e.target.value)}
-                  className="bg-slate-900 text-white font-black text-sm sm:text-base border border-slate-700/80 rounded-xl px-3.5 py-1.5 outline-none focus:border-indigo-500 cursor-pointer shadow"
-                >
-                  {subjects.map((sub) => (
-                    <option key={sub} value={sub} className="bg-slate-900 text-white font-semibold">
-                      {sub}
-                    </option>
-                  ))}
-                </select>
+        <div className="pb-4 border-b border-slate-800/70 space-y-3">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold shrink-0">
+                <Layers className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                  Active Subject / Course
+                </span>
+                <div className="flex items-center gap-2 mt-1">
+                  <select
+                    value={selectedSubject}
+                    onChange={(e) => handleSubjectChange(e.target.value)}
+                    className="bg-slate-900 text-white font-black text-sm sm:text-base border border-slate-700/80 rounded-xl px-3.5 py-1.5 outline-none focus:border-indigo-500 cursor-pointer shadow"
+                  >
+                    {subjects.map((sub) => (
+                      <option key={sub} value={sub} className="bg-slate-900 text-white font-semibold">
+                        {sub}
+                      </option>
+                    ))}
+                  </select>
 
-                {/* Delete Selected Subject Button */}
+                  {/* Delete Selected Subject Button */}
+                  <button
+                    type="button"
+                    onClick={() => confirmDeleteSubject(selectedSubject)}
+                    className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-rose-500/50 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 transition-all cursor-pointer flex items-center gap-1.5"
+                    title={`Delete subject "${selectedSubject}"`}
+                  >
+                    <Trash2 className="w-4 h-4 text-rose-400" />
+                    <span className="text-[11px] font-bold text-rose-400 hidden sm:inline">Delete Subject</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* ADD SUBJECT BUTTON / FORM */}
+            <div className="flex items-center gap-2">
+              {!isAddingSubject ? (
                 <button
                   type="button"
-                  onClick={() => handleDeleteSubject(selectedSubject)}
-                  className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 transition-all cursor-pointer"
-                  title={`Delete subject "${selectedSubject}"`}
+                  onClick={() => setIsAddingSubject(true)}
+                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-indigo-600/20 transition-all active:scale-95 cursor-pointer"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Add Subject</span>
                 </button>
-              </div>
+              ) : (
+                <div className="flex items-center gap-1.5 bg-slate-900 p-1.5 rounded-xl border border-indigo-500/50 shadow-lg animate-fadeIn">
+                  <input
+                    type="text"
+                    autoFocus
+                    value={newSubjectInput}
+                    onChange={(e) => setNewSubjectInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        submitAddSubject();
+                      } else if (e.key === "Escape") {
+                        setIsAddingSubject(false);
+                      }
+                    }}
+                    placeholder="New Subject name (e.g. Crypto Basic)..."
+                    className="w-48 sm:w-60 bg-slate-950 border-0 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={submitAddSubject}
+                    className="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-500 cursor-pointer"
+                  >
+                    Add
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsAddingSubject(false);
+                      setNewSubjectInput("");
+                    }}
+                    className="px-2 py-1.5 text-slate-400 hover:text-white text-xs cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* ADD SUBJECT BUTTON / FORM */}
-          <div className="flex items-center gap-2">
-            {!isAddingSubject ? (
-              <button
-                type="button"
-                onClick={() => setIsAddingSubject(true)}
-                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-indigo-600/20 transition-all active:scale-95 cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>+ Add Subject</span>
-              </button>
-            ) : (
-              <div className="flex items-center gap-1.5 bg-slate-900 p-1.5 rounded-xl border border-indigo-500/50 shadow-lg animate-fadeIn">
-                <input
-                  type="text"
-                  autoFocus
-                  value={newSubjectInput}
-                  onChange={(e) => setNewSubjectInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      submitAddSubject();
-                    } else if (e.key === "Escape") {
-                      setIsAddingSubject(false);
-                    }
-                  }}
-                  placeholder="New Subject name (e.g. Crypto Basic)..."
-                  className="w-48 sm:w-60 bg-slate-950 border-0 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={submitAddSubject}
-                  className="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-500 cursor-pointer"
+          {/* ACTIVE SUBJECT CHIPS (WITH INDIVIDUAL DELETE BUTTONS) */}
+          <div className="flex flex-wrap items-center gap-1.5 pt-1">
+            <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mr-1">
+              All Subjects:
+            </span>
+            {subjects.map((sub) => {
+              const isSelected = selectedSubject === sub;
+              return (
+                <div
+                  key={sub}
+                  onClick={() => handleSubjectChange(sub)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer select-none ${
+                    isSelected
+                      ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 border border-indigo-400/40"
+                      : "bg-slate-900/90 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-800"
+                  }`}
+                  title={isSelected ? `Current Subject: ${sub}` : `Switch to ${sub}`}
                 >
-                  Add
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsAddingSubject(false);
-                    setNewSubjectInput("");
-                  }}
-                  className="px-2 py-1.5 text-slate-400 hover:text-white text-xs cursor-pointer"
-                >
-                  ✕
-                </button>
-              </div>
-            )}
+                  <Layers className={`w-3 h-3 ${isSelected ? "text-indigo-200" : "text-slate-400"}`} />
+                  <span>{sub}</span>
+                  {subjects.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        confirmDeleteSubject(sub);
+                      }}
+                      className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] transition-all cursor-pointer ${
+                        isSelected
+                          ? "bg-indigo-800/80 hover:bg-rose-500 text-indigo-200 hover:text-white"
+                          : "bg-slate-800 hover:bg-rose-500 text-slate-400 hover:text-white"
+                      }`}
+                      title={`Delete "${sub}" from curriculum & registration`}
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -445,7 +526,7 @@ const SessionsTab = ({
                 <span>Standalone Course (No Grade Levels) — Appears directly in Register Form</span>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <select
                   value={selectedSessionGrade}
                   onChange={(e) => setSelectedSessionGrade(e.target.value)}
@@ -460,12 +541,43 @@ const SessionsTab = ({
 
                 <button
                   type="button"
-                  onClick={() => handleDeleteGrade(selectedSessionGrade)}
-                  className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 text-xs transition-all cursor-pointer"
+                  onClick={() => confirmDeleteGrade(selectedSessionGrade)}
+                  className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-rose-500/50 hover:bg-rose-500/10 text-rose-400 text-xs transition-all cursor-pointer"
                   title={`Delete batch "${selectedSessionGrade}" from ${selectedSubject}`}
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
+
+                {/* Batch Chips with Delete Buttons */}
+                <div className="flex items-center gap-1.5 ml-1">
+                  {currentSubjectGrades.map((g) => {
+                    const isSelected = selectedSessionGrade === g;
+                    return (
+                      <span
+                        key={g}
+                        onClick={() => setSelectedSessionGrade(g)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-all ${
+                          isSelected
+                            ? "bg-teal-500/20 text-teal-300 border border-teal-500/40 shadow-sm"
+                            : "bg-slate-900/60 text-slate-400 hover:text-slate-200 border border-slate-800"
+                        }`}
+                      >
+                        <span>{g}</span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            confirmDeleteGrade(g);
+                          }}
+                          className="w-3.5 h-3.5 rounded-full hover:bg-rose-500 hover:text-white text-slate-500 flex items-center justify-center text-[9px] transition-colors cursor-pointer"
+                          title={`Delete batch "${g}"`}
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
@@ -800,6 +912,56 @@ const SessionsTab = ({
           </div>
         </div>
       )}
+
+      {/* DELETE CONFIRMATION MODAL */}
+      <AnimatePresence>
+        {deleteModal.isOpen && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[120] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.92 }}
+              className="bg-[#0e1424] border border-slate-800 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mx-auto">
+                <Trash2 className="w-6 h-6" />
+              </div>
+
+              <div>
+                <h3 className="text-base font-black text-white">
+                  Delete {deleteModal.type === "subject" ? "Subject" : "Batch"}?
+                </h3>
+                <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                  Are you sure you want to delete{" "}
+                  <strong className="text-white font-bold">"{deleteModal.target}"</strong>?
+                  {deleteModal.type === "subject" && (
+                    <span className="block text-rose-400/90 text-[11px] mt-1 font-medium">
+                      This will also remove it from the Student Registration form.
+                    </span>
+                  )}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setDeleteModal({ isOpen: false, type: "subject", target: "", subject: "" })}
+                  className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleExecuteDelete}
+                  className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-lg shadow-rose-600/30 transition-all cursor-pointer"
+                >
+                  Delete Now
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

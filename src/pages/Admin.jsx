@@ -456,8 +456,10 @@ const Admin = () => {
             whatsappGroup: "https://chat.whatsapp.com",
             instagram: "https://instagram.com"
           },
-          subjects: ["Economics", "Sinhala"],
+          subjects: ["Crypto Basic", "Price Action", "Sinhala", "Economics"],
           grades: {
+            "Crypto Basic": [],
+            "Price Action": [],
             Sinhala: ["Grade 6", "Grade 7", "Grade 8", "Grade 9", "Grade 10", "Grade 11"],
             Economics: ["Grade 12", "Grade 13"]
           },
@@ -478,14 +480,10 @@ const Admin = () => {
     const gradesObj = webGeneralSettings?.grades || {};
     const configuredSubjects = webGeneralSettings?.subjects || [];
     const allConfiguredGrades = Object.values(gradesObj).flat();
-    const existingInSessions = Object.keys(sessions || {});
-    const existingInStudents = (students || []).map((s) => s.grade || s.subject).filter(Boolean);
     const combined = Array.from(
       new Set([
         ...configuredSubjects,
-        ...allConfiguredGrades,
-        ...existingInSessions,
-        ...existingInStudents
+        ...allConfiguredGrades
       ].filter(Boolean))
     );
     return combined.length > 0
@@ -497,7 +495,7 @@ const Admin = () => {
           "Grade 12",
           "Grade 13"
         ];
-  }, [webGeneralSettings, sessions, students]);
+  }, [webGeneralSettings]);
 
   const handleQuickAddClass = (newClassName, targetSubject) => {
     const trimmed = (newClassName || "").trim();
@@ -537,6 +535,59 @@ const Admin = () => {
     window.dispatchEvent(new Event("storage"));
     showNotification("Course / Category Added", `"${trimmed}" is now active in curriculum and registration!`, "success");
     setSelectedSessionGrade(trimmed);
+  };
+
+  const handleDeleteSubject = (subToDelete) => {
+    if (!subToDelete) return;
+    const currentSubjects = webGeneralSettings?.subjects || [];
+    if (currentSubjects.length <= 1) {
+      showNotification("Cannot Delete", "You must keep at least one subject in the system.", "error");
+      return;
+    }
+    const updatedSubjects = currentSubjects.filter((s) => s !== subToDelete);
+    const updatedGrades = { ...(webGeneralSettings?.grades || {}) };
+    delete updatedGrades[subToDelete];
+
+    const updatedGeneral = {
+      ...webGeneralSettings,
+      subjects: updatedSubjects,
+      grades: updatedGrades
+    };
+    setWebGeneralSettings(updatedGeneral);
+    try {
+      localStorage.setItem("webGeneralSettings", JSON.stringify(updatedGeneral));
+    } catch (e) {}
+    syncToBackend("webGeneralSettings", updatedGeneral);
+    window.dispatchEvent(new Event("storage"));
+
+    const nextSub = updatedSubjects[0];
+    const nextGrades = updatedGrades[nextSub] || [];
+    setSelectedSessionGrade(nextGrades.length > 0 ? nextGrades[0] : nextSub);
+    showNotification("Subject Deleted", `"${subToDelete}" removed from curriculum & registration.`, "error");
+  };
+
+  const handleDeleteGrade = (sub, gradeToDelete) => {
+    if (!sub || !gradeToDelete) return;
+    const currentGrades = webGeneralSettings?.grades || {};
+    const existing = currentGrades[sub] || [];
+    const updatedList = existing.filter((g) => g !== gradeToDelete);
+    const updatedGrades = {
+      ...currentGrades,
+      [sub]: updatedList
+    };
+    const updatedGeneral = {
+      ...webGeneralSettings,
+      grades: updatedGrades
+    };
+    setWebGeneralSettings(updatedGeneral);
+    try {
+      localStorage.setItem("webGeneralSettings", JSON.stringify(updatedGeneral));
+    } catch (e) {}
+    syncToBackend("webGeneralSettings", updatedGeneral);
+    window.dispatchEvent(new Event("storage"));
+
+    setSelectedSessionGrade(updatedList.length > 0 ? updatedList[0] : sub);
+    showNotification("Batch Deleted", `Batch "${gradeToDelete}" removed from ${sub}.`, "error");
   };
 
   const [webInstructorProfile, setWebInstructorProfile] = useState(
@@ -1250,6 +1301,8 @@ const Admin = () => {
                 syncToBackend={syncToBackend}
                 showNotification={showNotification}
                 onQuickAddClass={handleQuickAddClass}
+                onDeleteSubject={handleDeleteSubject}
+                onDeleteGrade={handleDeleteGrade}
                 onToggleLock={handleToggleLockSession}
                 onDeleteSession={handleDeleteSession}
                 onOpenDesigner={(idx) => setEditingSessionIndex(idx)}
