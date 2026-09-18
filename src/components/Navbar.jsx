@@ -18,6 +18,7 @@ const Navbar = () => {
 
   const menuItems = [
     { name: "Home", path: "/" },
+    { name: "Mentors", path: "/#mentors" },
     { name: "About", path: "/about" },
     { name: "Courses", path: "/courses" },
     { name: "Resources", path: "/resources" },
@@ -59,6 +60,19 @@ const Navbar = () => {
     window.addEventListener("storage", handleStorage);
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
+
+  const handleNavClick = (path) => {
+    setIsOpen(false);
+    if (path.includes("#")) {
+      const [route, hash] = path.split("#");
+      if (location.pathname === (route || "/")) {
+        const el = document.getElementById(hash);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth" });
+        }
+      }
+    }
+  };
 
   return (
     <nav className="sticky top-0 z-[100] bg-[#070b14]/90 backdrop-blur-2xl border-b border-slate-800/80 transition-all select-none">
@@ -148,6 +162,7 @@ const Navbar = () => {
                 <Link
                   key={item.name}
                   to={item.path}
+                  onClick={() => handleNavClick(item.path)}
                   className={`relative px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${
                     isActive
                       ? "text-white"
@@ -214,7 +229,7 @@ const Navbar = () => {
                 <Link
                   key={item.name}
                   to={item.path}
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => handleNavClick(item.path)}
                   className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all ${
                     location.pathname === item.path
                       ? "bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 shadow-md shadow-indigo-600/10"

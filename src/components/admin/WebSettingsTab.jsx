@@ -201,10 +201,17 @@ const WebSettingsTab = ({
   setWebResources,
   webGeneralSettings = {},
   setWebGeneralSettings,
+  webInstructors = [],
+  setWebInstructors,
   onSaveSetting
 }) => {
   const [editingCourse, setEditingCourse] = useState(null);
   const [isEditCourseOpen, setIsEditCourseOpen] = useState(false);
+
+  // Instructors CMS State
+  const [editingInstructor, setEditingInstructor] = useState(null);
+  const [isEditInstructorOpen, setIsEditInstructorOpen] = useState(false);
+  const [instructorModalTab, setInstructorModalTab] = useState("basic");
 
   // Safe normalized home settings with defaults
   const currentHome = {
@@ -553,6 +560,74 @@ const WebSettingsTab = ({
     window.dispatchEvent(new Event("storage"));
   };
 
+  // Instructors CMS Handlers
+  const handleOpenAddInstructor = () => {
+    setEditingInstructor({
+      id: "inst_" + Date.now(),
+      name: "",
+      role: "",
+      badge: "Trading Mentor",
+      image: "/teacher.jpg",
+      experience: "3+ Years",
+      specialties: ["Order Flow", "Price Action", "Risk Management"],
+      bio: "",
+      education: [],
+      achievements: [],
+      quote: "",
+      socials: { telegram: "", whatsapp: "", email: "" }
+    });
+    setInstructorModalTab("basic");
+    setIsEditInstructorOpen(true);
+  };
+
+  const handleOpenEditInstructor = (inst) => {
+    setEditingInstructor({
+      ...inst,
+      specialties: Array.isArray(inst.specialties) ? [...inst.specialties] : [],
+      education: Array.isArray(inst.education) ? [...inst.education] : [],
+      achievements: Array.isArray(inst.achievements) ? [...inst.achievements] : [],
+      socials: { ...(inst.socials || {}) }
+    });
+    setInstructorModalTab("basic");
+    setIsEditInstructorOpen(true);
+  };
+
+  const handleSaveInstructor = (e) => {
+    e.preventDefault();
+    if (!editingInstructor?.name?.trim()) {
+      alert("Please enter the mentor's name.");
+      return;
+    }
+    const currentList = Array.isArray(webInstructors) ? webInstructors : [];
+    const existingIndex = currentList.findIndex((i) => i.id === editingInstructor.id);
+    let updated;
+    if (existingIndex > -1) {
+      updated = currentList.map((i) => (i.id === editingInstructor.id ? editingInstructor : i));
+    } else {
+      updated = [...currentList, { ...editingInstructor, id: editingInstructor.id || ("inst_" + Date.now()) }];
+    }
+    setWebInstructors(updated);
+    try {
+      localStorage.setItem("webInstructors", JSON.stringify(updated));
+    } catch (err) {}
+    onSaveSetting("webInstructors", updated);
+    window.dispatchEvent(new Event("storage"));
+    setIsEditInstructorOpen(false);
+  };
+
+  const handleDeleteInstructor = (id, name) => {
+    if (window.confirm(`Are you sure you want to remove "${name || "this mentor"}" from the website?`)) {
+      const currentList = Array.isArray(webInstructors) ? webInstructors : [];
+      const updated = currentList.filter((i) => i.id !== id);
+      setWebInstructors(updated);
+      try {
+        localStorage.setItem("webInstructors", JSON.stringify(updated));
+      } catch (err) {}
+      onSaveSetting("webInstructors", updated);
+      window.dispatchEvent(new Event("storage"));
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fadeIn">
       {/* MAIN CMS HEADER */}
@@ -575,6 +650,7 @@ const WebSettingsTab = ({
         <div className="flex items-center gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto">
           {[
             { id: "Home", label: "Home Page", icon: Home },
+            { id: "Instructors", label: "Faculty & Mentors", icon: GraduationCap },
             { id: "About", label: "About Page", icon: Info },
             { id: "Courses", label: "Courses Page", icon: BookOpen },
             { id: "Resources", label: "Resources Page", icon: FolderOpen },
@@ -1751,6 +1827,177 @@ const WebSettingsTab = ({
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* FACULTY & MENTORS CMS SUBTAB (අපගේ ප්‍රවීණ ගුරු මණ්ඩලය)                   */}
+      {/* ========================================================================= */}
+      {webSubTab === "Instructors" && (
+        <div className="space-y-6 animate-fadeIn">
+          {/* TOP ACTION BAR */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#0e1424]/90 backdrop-blur-xl p-5 rounded-2xl border border-slate-800/80 shadow-xl">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+                <GraduationCap className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-white">Faculty & Mentors (අපගේ ප්‍රවීණ ගුරු මණ්ඩලය)</h3>
+                <p className="text-xs text-slate-400">
+                  Manage mentors, credentials, photos, specialties, and contact links displayed across the academy website.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleOpenAddInstructor}
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-black text-xs shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all active:scale-95"
+            >
+              <Plus className="w-4 h-4" />
+              <span>+ Add New Mentor</span>
+            </button>
+          </div>
+
+          {/* INSTRUCTORS GRID */}
+          <div className="bg-[#0e1424]/90 backdrop-blur-xl rounded-3xl border border-slate-800/80 p-6 sm:p-8 shadow-2xl space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-800/80">
+              <div>
+                <h4 className="text-sm font-black text-white flex items-center gap-2">
+                  <UserCheck className="w-4 h-4 text-emerald-400" />
+                  <span>Active Mentors & Instructors ({(webInstructors || []).length})</span>
+                </h4>
+                <p className="text-xs text-slate-400">
+                  Click Edit to update profile details, credentials, or photos. Click Delete to remove from the website.
+                </p>
+              </div>
+              <span className="text-[11px] text-slate-500 font-mono">
+                Auto-synced with Live Website & Database
+              </span>
+            </div>
+
+            {(!webInstructors || webInstructors.length === 0) ? (
+              <div className="text-center py-16 px-4 rounded-2xl border border-dashed border-slate-800 bg-slate-950/50 space-y-4">
+                <GraduationCap className="w-12 h-12 text-slate-600 mx-auto" />
+                <div>
+                  <h4 className="text-sm font-bold text-slate-300">No Mentors Configured</h4>
+                  <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                    Add trading mentors and instructors to showcase their expertise and verified credentials on the website.
+                  </p>
+                </div>
+                <button
+                  onClick={handleOpenAddInstructor}
+                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all"
+                >
+                  + Add First Mentor
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {webInstructors.map((inst, index) => (
+                  <div
+                    key={inst.id || index}
+                    className="group bg-slate-950/80 rounded-2xl border border-slate-800/90 hover:border-indigo-500/50 transition-all p-5 flex flex-col justify-between space-y-5 relative overflow-hidden shadow-lg"
+                  >
+                    {/* TOP BADGE & ACTIONS */}
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-500/15 border border-indigo-500/30 text-indigo-300">
+                        {inst.badge || "Mentor"}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => handleOpenEditInstructor(inst)}
+                          className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-indigo-600/30 hover:border-indigo-500/50 transition-all"
+                          title="Edit Profile"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteInstructor(inst.id, inst.name)}
+                          className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-rose-400 hover:text-rose-300 hover:bg-rose-500/20 hover:border-rose-500/40 transition-all"
+                          title="Delete Instructor"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* MENTOR PHOTO & INFO */}
+                    <div className="flex items-start gap-3.5">
+                      <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-indigo-500/30 shrink-0 bg-slate-900 shadow-md">
+                        <img
+                          src={inst.image || "/teacher.jpg"}
+                          alt={inst.name || "Mentor"}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.src = "/teacher.jpg";
+                          }}
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1 space-y-0.5">
+                        <h4 className="text-sm font-black text-white truncate group-hover:text-indigo-400 transition-colors">
+                          {inst.name || "Unnamed Mentor"}
+                        </h4>
+                        <p className="text-xs text-indigo-300/90 font-medium truncate">
+                          {inst.role || "Trading Coach"}
+                        </p>
+                        {inst.experience && (
+                          <div className="inline-flex items-center gap-1 px-2 py-0.5 mt-1 rounded bg-slate-900 text-[10px] text-slate-400 border border-slate-800">
+                            <Award className="w-3 h-3 text-amber-400" />
+                            <span>{inst.experience}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* SPECIALTIES TAGS */}
+                    {Array.isArray(inst.specialties) && inst.specialties.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {inst.specialties.slice(0, 3).map((spec, sIdx) => (
+                          <span
+                            key={sIdx}
+                            className="px-2 py-0.5 rounded-md bg-slate-900 text-slate-300 text-[10px] font-medium border border-slate-800"
+                          >
+                            {spec}
+                          </span>
+                        ))}
+                        {inst.specialties.length > 3 && (
+                          <span className="px-1.5 py-0.5 rounded-md bg-slate-900 text-slate-400 text-[10px]">
+                            +{inst.specialties.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* BIO PREVIEW */}
+                    {inst.bio && (
+                      <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                        {inst.bio}
+                      </p>
+                    )}
+
+                    {/* STATS / PILLS FOOTER */}
+                    <div className="pt-3 border-t border-slate-900 flex items-center justify-between text-[11px] text-slate-400">
+                      <div className="flex items-center gap-3">
+                        <span title="Education / Certifications">
+                          🎓 {(inst.education || []).length} Certs
+                        </span>
+                        <span title="Key Achievements">
+                          ⭐ {(inst.achievements || []).length} Milestones
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => handleOpenEditInstructor(inst)}
+                        className="text-xs font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors"
+                      >
+                        <span>Edit Details</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -3978,6 +4225,323 @@ const WebSettingsTab = ({
                 >
                   Save Resource Item
                 </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* EDIT INSTRUCTOR / FACULTY MEMBER MODAL                                   */}
+      {/* ========================================================================= */}
+      {isEditInstructorOpen && editingInstructor && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#0e1424] border border-slate-800 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-6 shadow-2xl animate-scaleUp custom-scrollbar">
+            {/* MODAL HEADER */}
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+                  <GraduationCap className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-white">
+                    {editingInstructor.id ? "Configure Faculty & Mentor Profile" : "Add New Faculty Mentor"}
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Profile credentials and details shown in website cards and detailed modal
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsEditInstructorOpen(false)}
+                className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* TAB SELECTOR INSIDE MODAL */}
+            <div className="flex items-center gap-2 bg-slate-950 p-1.5 rounded-2xl border border-slate-800/80">
+              {[
+                { id: "basic", label: "Basic Info & Bio" },
+                { id: "credentials", label: "Credentials & Milestones" },
+                { id: "socials", label: "Contact & Links" }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setInstructorModalTab(tab.id)}
+                  className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
+                    instructorModalTab === tab.id
+                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                      : "text-slate-400 hover:text-white hover:bg-slate-900"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <form onSubmit={handleSaveInstructor} className="space-y-5">
+              {/* TAB 1: BASIC INFO & BIO */}
+              {instructorModalTab === "basic" && (
+                <div className="space-y-4">
+                  {/* PHOTO INPUT WITH DUAL UPLOAD / URL */}
+                  <DualImageInput
+                    label="Mentor Profile Photo"
+                    value={editingInstructor.image || "/teacher.jpg"}
+                    onChange={(val) => setEditingInstructor({ ...editingInstructor, image: val })}
+                    aspectRatio="aspect-square"
+                    recommended="PNG/JPG (Auto-compressed to ~80KB)"
+                    defaultPreset="/teacher.jpg"
+                  />
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-bold text-slate-300 block mb-1.5">
+                        Full Name *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={editingInstructor.name || ""}
+                        onChange={(e) =>
+                          setEditingInstructor({ ...editingInstructor, name: e.target.value })
+                        }
+                        placeholder="e.g. Taizer Lead Trader"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-300 block mb-1.5">
+                        Role / Designation
+                      </label>
+                      <input
+                        type="text"
+                        value={editingInstructor.role || ""}
+                        onChange={(e) =>
+                          setEditingInstructor({ ...editingInstructor, role: e.target.value })
+                        }
+                        placeholder="e.g. Founder & Chief Market Analyst"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-bold text-slate-300 block mb-1.5">
+                        Badge / Tag (Card Top Pill)
+                      </label>
+                      <input
+                        type="text"
+                        value={editingInstructor.badge || ""}
+                        onChange={(e) =>
+                          setEditingInstructor({ ...editingInstructor, badge: e.target.value })
+                        }
+                        placeholder="e.g. Lead Mentor, Derivatives Expert"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-300 block mb-1.5">
+                        Trading Experience
+                      </label>
+                      <input
+                        type="text"
+                        value={editingInstructor.experience || ""}
+                        onChange={(e) =>
+                          setEditingInstructor({ ...editingInstructor, experience: e.target.value })
+                        }
+                        placeholder="e.g. 8+ Years Pro Trading"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* SPECIALTIES */}
+                  <div>
+                    <label className="text-xs font-bold text-slate-300 block mb-1.5">
+                      Specialties / Subject Areas (comma-separated)
+                    </label>
+                    <input
+                      type="text"
+                      value={(editingInstructor.specialties || []).join(", ")}
+                      onChange={(e) =>
+                        setEditingInstructor({
+                          ...editingInstructor,
+                          specialties: e.target.value.split(",").map((s) => s.trim()).filter(Boolean)
+                        })
+                      }
+                      placeholder="Order Flow & DOM, Crypto Microstructure, Volume Profile, Risk Management"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+                    />
+                    <p className="text-[10px] text-slate-500 mt-1">
+                      Separate each specialty with a comma (e.g. "Order Flow, Footprint, Crypto").
+                    </p>
+                  </div>
+
+                  {/* DETAILED BIO */}
+                  <div>
+                    <label className="text-xs font-bold text-slate-300 block mb-1.5">
+                      Professional Biography & Background
+                    </label>
+                    <textarea
+                      rows={4}
+                      value={editingInstructor.bio || ""}
+                      onChange={(e) =>
+                        setEditingInstructor({ ...editingInstructor, bio: e.target.value })
+                      }
+                      placeholder="Comprehensive introduction, trading background, market expertise, and mentoring philosophy..."
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 resize-none leading-relaxed"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 2: CREDENTIALS & PHILOSOPHY */}
+              {instructorModalTab === "credentials" && (
+                <div className="space-y-4">
+                  {/* EDUCATION / CERTIFICATIONS */}
+                  <div>
+                    <label className="text-xs font-bold text-slate-300 block mb-1.5">
+                      Verified Certifications & Academic Credentials (one per line)
+                    </label>
+                    <textarea
+                      rows={4}
+                      value={(editingInstructor.education || []).join("\n")}
+                      onChange={(e) =>
+                        setEditingInstructor({
+                          ...editingInstructor,
+                          education: e.target.value.split("\n").map((s) => s.trim()).filter(Boolean)
+                        })
+                      }
+                      placeholder="Certified Financial Technical Analyst (CFTe) - IFTA&#10;Advanced Order Flow Specialist - GMPI&#10;B.Sc. in Financial Engineering"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 font-mono leading-relaxed"
+                    />
+                    <p className="text-[10px] text-slate-500 mt-1">
+                      Type each certification on a separate line. Displayed with verified checkmarks.
+                    </p>
+                  </div>
+
+                  {/* CAREER MILESTONES & ACHIEVEMENTS */}
+                  <div>
+                    <label className="text-xs font-bold text-slate-300 block mb-1.5">
+                      Key Career Milestones & Achievements (one per line)
+                    </label>
+                    <textarea
+                      rows={4}
+                      value={(editingInstructor.achievements || []).join("\n")}
+                      onChange={(e) =>
+                        setEditingInstructor({
+                          ...editingInstructor,
+                          achievements: e.target.value.split("\n").map((s) => s.trim()).filter(Boolean)
+                        })
+                      }
+                      placeholder="Funded 6-Figure Proprietary Futures & Crypto Trader&#10;Over 2,500+ Active Students Mentored&#10;Developer of Algorithmic CVD Indicators"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 font-mono leading-relaxed"
+                    />
+                    <p className="text-[10px] text-slate-500 mt-1">
+                      Type each milestone on a separate line. Displayed with trophy icons.
+                    </p>
+                  </div>
+
+                  {/* TRADING PHILOSOPHY / QUOTE */}
+                  <div>
+                    <label className="text-xs font-bold text-slate-300 block mb-1.5">
+                      Trading Philosophy / Personal Motto
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={editingInstructor.quote || ""}
+                      onChange={(e) =>
+                        setEditingInstructor({ ...editingInstructor, quote: e.target.value })
+                      }
+                      placeholder="True trading consistency is not about predicting the future; it is executing an edge with mathematical discipline..."
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 resize-none leading-relaxed italic"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3: CONTACT & SOCIALS */}
+              {instructorModalTab === "socials" && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-bold text-slate-300 block mb-1.5">
+                      Telegram Channel or Handle Link
+                    </label>
+                    <input
+                      type="text"
+                      value={editingInstructor.socials?.telegram || ""}
+                      onChange={(e) =>
+                        setEditingInstructor({
+                          ...editingInstructor,
+                          socials: { ...(editingInstructor.socials || {}), telegram: e.target.value }
+                        })
+                      }
+                      placeholder="https://t.me/username"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-slate-300 block mb-1.5">
+                      WhatsApp Contact / Community Link
+                    </label>
+                    <input
+                      type="text"
+                      value={editingInstructor.socials?.whatsapp || ""}
+                      onChange={(e) =>
+                        setEditingInstructor({
+                          ...editingInstructor,
+                          socials: { ...(editingInstructor.socials || {}), whatsapp: e.target.value }
+                        })
+                      }
+                      placeholder="https://wa.me/94771234567"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-slate-300 block mb-1.5">
+                      Direct Email Address
+                    </label>
+                    <input
+                      type="email"
+                      value={editingInstructor.socials?.email || ""}
+                      onChange={(e) =>
+                        setEditingInstructor({
+                          ...editingInstructor,
+                          socials: { ...(editingInstructor.socials || {}), email: e.target.value }
+                        })
+                      }
+                      placeholder="mentor@taizeracademy.com"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* MODAL FOOTER */}
+              <div className="pt-4 flex items-center justify-between border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsEditInstructorOpen(false)}
+                  className="px-5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 text-xs font-bold hover:bg-slate-800 transition-all"
+                >
+                  Cancel
+                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white text-xs font-black shadow-lg shadow-indigo-600/30 transition-all active:scale-95"
+                  >
+                    Save Mentor Profile
+                  </button>
+                </div>
               </div>
             </form>
           </div>

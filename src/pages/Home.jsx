@@ -22,9 +22,22 @@ import {
   MessageSquare
 } from "lucide-react";
 import CandlestickPatternsShowcase from "../components/CandlestickPatternsShowcase";
+import { DEFAULT_INSTRUCTORS } from "../utils/defaultInstructors";
 
 const Home = () => {
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [selectedMentor, setSelectedMentor] = useState(null);
+
+  const [instructors, setInstructors] = useState(() => {
+    try {
+      const saved = localStorage.getItem("webInstructors");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return DEFAULT_INSTRUCTORS;
+  });
 
   const [courses, setCourses] = useState(
     JSON.parse(
@@ -263,6 +276,7 @@ const DEFAULT_HOME_SETTINGS = {
             if (setting.type === "webStats") setStats(setting.data);
             if (setting.type === "webTestimonials") setTestimonials(setting.data);
             if (setting.type === "webInstructorProfile") setInstructorProfile(setting.data);
+            if (setting.type === "webInstructors" && Array.isArray(setting.data)) setInstructors(setting.data);
           });
         }
       } catch (e) {
@@ -294,10 +308,26 @@ const DEFAULT_HOME_SETTINGS = {
           const val = localStorage.getItem("webInstructorProfile");
           if (val) setInstructorProfile(JSON.parse(val));
         }
+        if (!e || !e.key || e.key === "webInstructors") {
+          const val = localStorage.getItem("webInstructors");
+          if (val) setInstructors(JSON.parse(val));
+        }
       } catch (err) {}
     };
     window.addEventListener("storage", handleStorage);
     return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
+  useEffect(() => {
+    if (window.location.hash) {
+      const id = window.location.hash.replace("#", "");
+      const el = document.getElementById(id);
+      if (el) {
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: "smooth" });
+        }, 150);
+      }
+    }
   }, []);
 
   const fadeInUp = {
@@ -548,58 +578,9 @@ const DEFAULT_HOME_SETTINGS = {
       <CandlestickPatternsShowcase />
 
       {/* ========================================================================= */}
-      {/* 2. INSTRUCTOR SHORT SPOTLIGHT                                             */}
+      {/* 2. COURSE OVERVIEW CARDS                                                  */}
       {/* ========================================================================= */}
-      <section className="py-20 border-b border-slate-800/80 relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-[#0e1424]/90 backdrop-blur-xl rounded-3xl border border-slate-800/80 p-8 sm:p-12 shadow-2xl flex flex-col md:flex-row items-center gap-10">
-            <div className="w-44 h-44 sm:w-56 sm:h-56 rounded-2xl overflow-hidden border-2 border-indigo-500/30 shrink-0 shadow-2xl">
-              <img
-                src={currentSettings.instructorSpotlight.image || "/teacher.jpg"}
-                alt="Teacher"
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.target.src = "/teacher.jpg";
-                }}
-              />
-            </div>
-
-            <div className="space-y-4 text-center md:text-left flex-grow">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-xs font-bold border border-indigo-500/20">
-                <Trophy className="w-3.5 h-3.5" />
-                <span>{currentSettings.instructorSpotlight.badge}</span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                {currentSettings.instructorSpotlight.name}
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-400 max-w-2xl leading-relaxed whitespace-pre-line">
-                {currentSettings.instructorSpotlight.quote}
-              </p>
-
-              <div className="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-4">
-                <Link
-                  to={currentSettings.instructorSpotlight.btn1Link || "/instructor-profile"}
-                  className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/20 flex items-center gap-2 transition-all"
-                >
-                  <span>{currentSettings.instructorSpotlight.btn1Text || "View Full Credentials & Bio"}</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </Link>
-                <Link
-                  to={currentSettings.instructorSpotlight.btn2Link || "/about"}
-                  className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold transition-all"
-                >
-                  {currentSettings.instructorSpotlight.btn2Text || "About Our Teaching Methods"}
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 3. COURSE OVERVIEW CARDS                                                  */}
-      {/* ========================================================================= */}
-      <section className="py-24 border-b border-slate-800/80 relative">
+      <section id="courses" className="py-24 border-b border-slate-800/80 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-3 mb-16">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-xs font-bold border border-indigo-500/20">
@@ -663,6 +644,120 @@ const DEFAULT_HOME_SETTINGS = {
                     <span>Enroll In Course</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 3. FACULTY & MENTORS SHOWCASE (අපගේ ප්‍රවීණ ගුරු මණ්ඩලය)                   */}
+      {/* ========================================================================= */}
+      <section id="mentors" className="py-24 border-b border-slate-800/80 relative overflow-hidden">
+        {/* AMBIENT BACKGROUND GLOW */}
+        <div className="absolute top-1/3 -right-40 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute bottom-10 -left-40 w-[500px] h-[500px] bg-teal-600/10 rounded-full blur-[140px] pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          {/* SECTION HEADER */}
+          <div className="text-center space-y-3 mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 text-indigo-400 text-xs font-bold border border-indigo-500/20 shadow-sm">
+              <GraduationCap className="w-3.5 h-3.5" />
+              <span>Our Faculty & Mentors • අපගේ ප්‍රවීණ ගුරු මණ්ඩලය</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight font-display">
+              Learn From Verified Market Professionals
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-400 max-w-2xl mx-auto leading-relaxed">
+              Proprietary funded traders, certified technical analysts, and algorithmic order flow specialists dedicated to mentoring you through real-world market execution.
+            </p>
+          </div>
+
+          {/* MENTORS CARDS GRID */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {instructors.map((inst, idx) => (
+              <motion.div
+                key={inst.id || idx}
+                whileHover={{ y: -8 }}
+                transition={{ duration: 0.3 }}
+                className="bg-[#0e1424]/90 backdrop-blur-xl rounded-3xl border border-slate-800/80 hover:border-indigo-500/50 p-8 shadow-2xl flex flex-col justify-between space-y-6 transition-all group relative overflow-hidden"
+              >
+                {/* AMBIENT TOP ACCENT LINE */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                <div className="space-y-5">
+                  {/* TOP BADGE & EXPERIENCE */}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-500/15 border border-indigo-500/30 text-indigo-300">
+                      {inst.badge || "Faculty Mentor"}
+                    </span>
+                    {inst.experience && (
+                      <span className="text-[11px] font-semibold text-slate-300 flex items-center gap-1.5 bg-slate-900/90 px-3 py-1 rounded-full border border-slate-800">
+                        <Award className="w-3.5 h-3.5 text-amber-400" />
+                        <span>{inst.experience}</span>
+                      </span>
+                    )}
+                  </div>
+
+                  {/* MENTOR PHOTO & INFO */}
+                  <div className="flex items-center gap-4 pt-1">
+                    <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-indigo-500/30 group-hover:border-indigo-500/70 shrink-0 bg-slate-950 shadow-xl transition-all">
+                      <img
+                        src={inst.image || "/teacher.jpg"}
+                        alt={inst.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        onError={(e) => {
+                          e.target.src = "/teacher.jpg";
+                        }}
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-lg font-black text-white group-hover:text-indigo-400 transition-colors truncate">
+                        {inst.name}
+                      </h3>
+                      <p className="text-xs text-indigo-300/80 font-medium line-clamp-2 mt-0.5">
+                        {inst.role}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* SPECIALTIES TAGS */}
+                  {Array.isArray(inst.specialties) && inst.specialties.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {inst.specialties.slice(0, 3).map((spec, sIdx) => (
+                        <span
+                          key={sIdx}
+                          className="px-2.5 py-1 rounded-lg bg-slate-900/90 text-slate-300 text-[11px] font-medium border border-slate-800"
+                        >
+                          {spec}
+                        </span>
+                      ))}
+                      {inst.specialties.length > 3 && (
+                        <span className="px-2 py-1 rounded-lg bg-slate-900/90 text-indigo-400 text-[10px] font-bold border border-slate-800">
+                          +{inst.specialties.length - 3}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* BIO PREVIEW */}
+                  {inst.bio && (
+                    <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed">
+                      {inst.bio}
+                    </p>
+                  )}
+                </div>
+
+                {/* ACTION BUTTON */}
+                <div className="pt-4 border-t border-slate-800/80">
+                  <button
+                    onClick={() => setSelectedMentor(inst)}
+                    className="w-full py-3 rounded-xl bg-slate-900 hover:bg-indigo-600/20 border border-slate-800 hover:border-indigo-500/40 text-slate-200 hover:text-white font-bold text-xs transition-all flex items-center justify-center gap-2 group-hover:shadow-lg group-hover:shadow-indigo-600/10"
+                  >
+                    <span>View Profile & Credentials • විස්තර</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-indigo-400 group-hover:translate-x-0.5 transition-transform" />
+                  </button>
                 </div>
               </motion.div>
             ))}
@@ -917,6 +1012,192 @@ const DEFAULT_HOME_SETTINGS = {
                 >
                   Enroll Now
                 </Link>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ========================================================================= */}
+      {/* MENTOR DETAILS MODAL (විස්තර බලන්න)                                       */}
+      {/* ========================================================================= */}
+      <AnimatePresence>
+        {selectedMentor && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.2 }}
+              className="bg-[#0e1424] border border-slate-800 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-6 shadow-2xl relative custom-scrollbar"
+            >
+              {/* CLOSE BUTTON */}
+              <button
+                onClick={() => setSelectedMentor(null)}
+                className="absolute top-6 right-6 w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition-colors z-10"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* MODAL HEADER WITH PHOTO & BADGES */}
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 pb-6 border-b border-slate-800/80 text-center sm:text-left">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-2 border-indigo-500/40 shrink-0 bg-slate-950 shadow-2xl">
+                  <img
+                    src={selectedMentor.image || "/teacher.jpg"}
+                    alt={selectedMentor.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.src = "/teacher.jpg";
+                    }}
+                  />
+                </div>
+                <div className="space-y-1.5 min-w-0">
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                    <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-500/15 border border-indigo-500/30 text-indigo-300">
+                      {selectedMentor.badge || "Faculty Mentor"}
+                    </span>
+                    {selectedMentor.experience && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-900 border border-slate-800 text-[11px] text-slate-300">
+                        <Award className="w-3 h-3 text-amber-400" />
+                        <span>{selectedMentor.experience}</span>
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-black text-white">
+                    {selectedMentor.name}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-indigo-400/90 font-medium">
+                    {selectedMentor.role}
+                  </p>
+                </div>
+              </div>
+
+              {/* SPECIALTIES TAGS */}
+              {Array.isArray(selectedMentor.specialties) && selectedMentor.specialties.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Core Technical Specialties
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedMentor.specialties.map((spec, sIdx) => (
+                      <span
+                        key={sIdx}
+                        className="px-3 py-1 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 text-xs font-medium"
+                      >
+                        {spec}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* BIOGRAPHY */}
+              {selectedMentor.bio && (
+                <div className="space-y-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Professional Background & Bio
+                  </h4>
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed whitespace-pre-line bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80">
+                    {selectedMentor.bio}
+                  </p>
+                </div>
+              )}
+
+              {/* VERIFIED CREDENTIALS / EDUCATION */}
+              {Array.isArray(selectedMentor.education) && selectedMentor.education.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Verified Certifications & Academic Background</span>
+                  </h4>
+                  <div className="space-y-2">
+                    {selectedMentor.education.map((edu, eIdx) => (
+                      <div
+                        key={eIdx}
+                        className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-950/70 border border-slate-800/80 text-xs text-slate-200"
+                      >
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                        <span>{edu}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* KEY MILESTONES & ACHIEVEMENTS */}
+              {Array.isArray(selectedMentor.achievements) && selectedMentor.achievements.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                    <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Key Milestones & Track Record</span>
+                  </h4>
+                  <div className="space-y-2">
+                    {selectedMentor.achievements.map((ach, aIdx) => (
+                      <div
+                        key={aIdx}
+                        className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-950/70 border border-slate-800/80 text-xs text-slate-200"
+                      >
+                        <Star className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                        <span>{ach}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* TRADING PHILOSOPHY / QUOTE */}
+              {selectedMentor.quote && (
+                <div className="p-4 rounded-2xl bg-indigo-950/20 border border-indigo-500/20 text-slate-300 space-y-1">
+                  <span className="text-indigo-400 text-lg font-serif">❝</span>
+                  <p className="text-xs sm:text-sm italic text-slate-300 leading-relaxed">
+                    {selectedMentor.quote}
+                  </p>
+                </div>
+              )}
+
+              {/* DIRECT CONNECT & ACTION FOOTER */}
+              <div className="pt-4 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  {selectedMentor.socials?.telegram && (
+                    <a
+                      href={selectedMentor.socials.telegram}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3.5 py-2 rounded-xl bg-sky-500/10 border border-sky-500/20 hover:bg-sky-500/20 text-sky-400 text-xs font-bold flex items-center gap-1.5 transition-all"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      <span>Telegram</span>
+                    </a>
+                  )}
+                  {selectedMentor.socials?.whatsapp && (
+                    <a
+                      href={selectedMentor.socials.whatsapp}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3.5 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold flex items-center gap-1.5 transition-all"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      <span>WhatsApp</span>
+                    </a>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <button
+                    onClick={() => setSelectedMentor(null)}
+                    className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 text-xs font-bold hover:bg-slate-800 transition-all"
+                  >
+                    Close
+                  </button>
+                  <Link
+                    to="/register"
+                    onClick={() => setSelectedMentor(null)}
+                    className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-1.5 transition-all"
+                  >
+                    <span>Enroll with Mentor</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
               </div>
             </motion.div>
           </div>

@@ -21,6 +21,7 @@ import {
   ConfirmModal,
   ToastAlert
 } from "../components/admin/AdminModals";
+import { DEFAULT_INSTRUCTORS } from "../utils/defaultInstructors";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -601,6 +602,18 @@ const Admin = () => {
     )
   );
 
+  // FACULTY & MENTORS CMS STATE
+  const [webInstructors, setWebInstructors] = useState(() => {
+    try {
+      const saved = localStorage.getItem("webInstructors");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return DEFAULT_INSTRUCTORS;
+  });
+
   // NOTIFICATION TOAST HELPER
   const showNotification = (title, message, type = "success") => {
     setAlert({ title, message, type });
@@ -723,6 +736,7 @@ const Admin = () => {
             if (setting.type === "webResources") setWebResources(setting.data);
             if (setting.type === "webGeneralSettings") setWebGeneralSettings(setting.data);
             if (setting.type === "webInstructorProfile") setWebInstructorProfile(setting.data);
+            if (setting.type === "webInstructors" && Array.isArray(setting.data)) setWebInstructors(setting.data);
           });
         }
       }
@@ -1394,6 +1408,8 @@ const Admin = () => {
                 setWebResources={setWebResources}
                 webGeneralSettings={webGeneralSettings}
                 setWebGeneralSettings={setWebGeneralSettings}
+                webInstructors={webInstructors}
+                setWebInstructors={setWebInstructors}
                 onSaveSetting={(key, data) => {
                   try {
                     localStorage.setItem(key, JSON.stringify(data));
