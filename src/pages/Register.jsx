@@ -33,7 +33,6 @@ const Register = () => {
     phone: "",
     subject: "Crypto Basic",
     grade: "Crypto Basic",
-    receiptImage: null,
     referralCode: ""
   });
 
@@ -119,31 +118,6 @@ const Register = () => {
     return Math.random().toString(36).slice(-8).toUpperCase();
   };
 
-  const [isCompressingSlip, setIsCompressingSlip] = useState(false);
-
-  const handleSlipUpload = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      try {
-        setIsCompressingSlip(true);
-        const compressed = await compressImageFile(file, {
-          maxWidth: 1200,
-          maxHeight: 1200,
-          quality: 0.82
-        });
-        setFormData((prev) => ({
-          ...prev,
-          receiptImage: compressed,
-          receiptUrl: compressed
-        }));
-      } catch (err) {
-        console.error("Slip compression error:", err);
-      } finally {
-        setIsCompressingSlip(false);
-      }
-    }
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
@@ -199,9 +173,9 @@ const Register = () => {
         studentId: studentId,
         password: generatedPass,
         status: "Pending",
-        paymentStatus: formData.receiptImage ? "Uploaded" : "Pending",
-        receiptUrl: formData.receiptUrl || formData.receiptImage || "",
-        receiptImage: formData.receiptImage || "",
+        paymentStatus: "Pending",
+        receiptUrl: "",
+        receiptImage: "",
         referredBy: formData.referralCode ? formData.referralCode.trim() : "",
         joined: new Date().toLocaleString()
       };
@@ -376,43 +350,6 @@ const Register = () => {
                 );
               })()}
 
-              {/* PAYMENT SLIP UPLOAD (OPTIONAL) */}
-              <div>
-                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                  Deposit Receipt Slip (Optional)
-                </label>
-                <div className="p-3 bg-slate-900/60 border border-dashed border-slate-800 rounded-xl text-center">
-                  {formData.receiptImage ? (
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-emerald-400 font-bold flex items-center gap-1.5">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>Slip Attached</span>
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setFormData({ ...formData, receiptImage: null })
-                        }
-                        className="text-[10px] text-rose-400 font-bold hover:underline"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ) : (
-                    <label className="cursor-pointer flex items-center justify-center gap-2 text-xs text-slate-400 hover:text-white">
-                      <Upload className="w-4 h-4 text-indigo-400" />
-                      <span>Upload Bank Slip Image</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleSlipUpload}
-                        className="hidden"
-                      />
-                    </label>
-                  )}
-                </div>
-              </div>
-
               {/* REFERRAL CODE (OPTIONAL) */}
               <div>
                 <div className="flex items-center justify-between mb-1">
@@ -499,6 +436,12 @@ const Register = () => {
                   {tempPassword}
                 </p>
               </div>
+            </div>
+
+            <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-3 text-left">
+              <p className="text-[11px] text-indigo-300 leading-relaxed font-medium">
+                💡 <strong>Payment Details:</strong> You can log in to your Student LMS Portal anytime to view banking details and submit your payment slip for account verification.
+              </p>
             </div>
 
             <button

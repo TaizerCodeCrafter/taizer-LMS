@@ -1245,6 +1245,10 @@ const Admin = () => {
                 selectedSessionGrade={selectedSessionGrade}
                 setSelectedSessionGrade={setSelectedSessionGrade}
                 availableGrades={availableGrades}
+                webGeneralSettings={webGeneralSettings}
+                setWebGeneralSettings={setWebGeneralSettings}
+                syncToBackend={syncToBackend}
+                showNotification={showNotification}
                 onQuickAddClass={handleQuickAddClass}
                 onToggleLock={handleToggleLockSession}
                 onDeleteSession={handleDeleteSession}

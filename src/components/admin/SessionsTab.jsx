@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   BookOpen,
   Plus,
@@ -13,7 +13,8 @@ import {
   UploadCloud,
   Globe,
   Loader2,
-  CheckCircle2
+  CheckCircle2,
+  Tag
 } from "lucide-react";
 import { showAppToast } from "../GlobalAlert";
 
@@ -35,6 +36,10 @@ const SessionsTab = ({
   selectedSessionGrade,
   setSelectedSessionGrade,
   availableGrades = [],
+  webGeneralSettings = {},
+  setWebGeneralSettings,
+  syncToBackend,
+  showNotification,
   onQuickAddClass,
   onToggleLock,
   onDeleteSession,
@@ -42,11 +47,178 @@ const SessionsTab = ({
   onSaveNewSession
 }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isQuickAddClassOpen, setIsQuickAddClassOpen] = useState(false);
-  const [newClassNameInput, setNewClassNameInput] = useState("");
   const [videoSourceMode, setVideoSourceMode] = useState("url");
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
+
+  // Master Subject & Grade Management State
+  const subjects =
+    webGeneralSettings?.subjects && webGeneralSettings.subjects.length > 0
+      ? webGeneralSettings.subjects
+      : ["Crypto Basic", "Price Action", "Sinhala", "Economics"];
+  const gradesObj = webGeneralSettings?.grades || {};
+
+  const getSubjectForGrade = (grade) => {
+    if (!grade) return subjects[0] || "Crypto Basic";
+    if (subjects.includes(grade)) return grade;
+    for (const sub of subjects) {
+      if ((gradesObj[sub] || []).includes(grade)) return sub;
+    }
+    return subjects[0] || "Crypto Basic";
+  };
+
+  const [selectedSubject, setSelectedSubject] = useState(() =>
+    getSubjectForGrade(selectedSessionGrade)
+  );
+
+  useEffect(() => {
+    const sub = getSubjectForGrade(selectedSessionGrade);
+    setSelectedSubject(sub);
+  }, [selectedSessionGrade, webGeneralSettings]);
+
+  const currentSubjectGrades = gradesObj[selectedSubject] || [];
+  const hasGrades = Array.isArray(currentSubjectGrades) && currentSubjectGrades.length > 0;
+
+  // Add / Delete Subject States
+  const [isAddingSubject, setIsAddingSubject] = useState(false);
+  const [newSubjectInput, setNewSubjectInput] = useState("");
+
+  // Add / Delete Grade States
+  const [isAddingGrade, setIsAddingGrade] = useState(false);
+  const [newGradeInput, setNewGradeInput] = useState("");
+
+  const handleSubjectChange = (newSub) => {
+    setSelectedSubject(newSub);
+    const subGrades = gradesObj[newSub] || [];
+    if (subGrades.length > 0) {
+      setSelectedSessionGrade(subGrades[0]);
+    } else {
+      setSelectedSessionGrade(newSub);
+    }
+  };
+
+  const submitAddSubject = () => {
+    const trimmed = (newSubjectInput || "").trim();
+    if (!trimmed) return;
+    if (subjects.includes(trimmed)) {
+      if (showNotification) showNotification("Subject Exists", `"${trimmed}" is already added.`, "info");
+      setIsAddingSubject(false);
+      setNewSubjectInput("");
+      return;
+    }
+    const updatedSubjects = [...subjects, trimmed];
+    const updatedGrades = { ...gradesObj, [trimmed]: [] };
+    const updatedSettings = {
+      ...webGeneralSettings,
+      subjects: updatedSubjects,
+      grades: updatedGrades
+    };
+    if (setWebGeneralSettings) setWebGeneralSettings(updatedSettings);
+    try {
+      localStorage.setItem("webGeneralSettings", JSON.stringify(updatedSettings));
+    } catch (e) {}
+    if (syncToBackend) syncToBackend("webGeneralSettings", updatedSettings);
+    window.dispatchEvent(new Event("storage"));
+    setSelectedSubject(trimmed);
+    setSelectedSessionGrade(trimmed);
+    setIsAddingSubject(false);
+    setNewSubjectInput("");
+    if (showNotification) {
+      showNotification("Subject Added", `"${trimmed}" is now active in Register form & Curriculum!`, "success");
+    }
+  };
+
+  const handleDeleteSubject = (subToDelete) => {
+    if (!subToDelete) return;
+    if (subjects.length <= 1) {
+      if (showNotification) showNotification("Cannot Delete", "You must keep at least one subject.", "error");
+      return;
+    }
+    if (!window.confirm(`Are you sure you want to delete "${subToDelete}"? This will also remove it from the student registration form.`)) {
+      return;
+    }
+    const updatedSubjects = subjects.filter((s) => s !== subToDelete);
+    const updatedGrades = { ...gradesObj };
+    delete updatedGrades[subToDelete];
+    const updatedSettings = {
+      ...webGeneralSettings,
+      subjects: updatedSubjects,
+      grades: updatedGrades
+    };
+    if (setWebGeneralSettings) setWebGeneralSettings(updatedSettings);
+    try {
+      localStorage.setItem("webGeneralSettings", JSON.stringify(updatedSettings));
+    } catch (e) {}
+    if (syncToBackend) syncToBackend("webGeneralSettings", updatedSettings);
+    window.dispatchEvent(new Event("storage"));
+    const nextSub = updatedSubjects[0];
+    setSelectedSubject(nextSub);
+    const nextGrades = updatedGrades[nextSub] || [];
+    setSelectedSessionGrade(nextGrades.length > 0 ? nextGrades[0] : nextSub);
+    if (showNotification) {
+      showNotification("Subject Deleted", `"${subToDelete}" removed from system.`, "error");
+    }
+  };
+
+  const submitAddGrade = () => {
+    const trimmed = (newGradeInput || "").trim();
+    if (!trimmed) return;
+    const existing = gradesObj[selectedSubject] || [];
+    if (existing.includes(trimmed)) {
+      if (showNotification) showNotification("Batch Exists", `"${trimmed}" is already in ${selectedSubject}.`, "info");
+      setIsAddingGrade(false);
+      setNewGradeInput("");
+      return;
+    }
+    const updatedGrades = {
+      ...gradesObj,
+      [selectedSubject]: [...existing, trimmed]
+    };
+    const updatedSettings = {
+      ...webGeneralSettings,
+      grades: updatedGrades
+    };
+    if (setWebGeneralSettings) setWebGeneralSettings(updatedSettings);
+    try {
+      localStorage.setItem("webGeneralSettings", JSON.stringify(updatedSettings));
+    } catch (e) {}
+    if (syncToBackend) syncToBackend("webGeneralSettings", updatedSettings);
+    window.dispatchEvent(new Event("storage"));
+    setSelectedSessionGrade(trimmed);
+    setIsAddingGrade(false);
+    setNewGradeInput("");
+    if (showNotification) {
+      showNotification("Batch Added", `Class "${trimmed}" added to ${selectedSubject} & synced to Register form!`, "success");
+    }
+  };
+
+  const handleDeleteGrade = (gradeToDelete) => {
+    if (!gradeToDelete) return;
+    if (!window.confirm(`Delete batch "${gradeToDelete}" from ${selectedSubject}?`)) {
+      return;
+    }
+    const existing = gradesObj[selectedSubject] || [];
+    const updatedList = existing.filter((g) => g !== gradeToDelete);
+    const updatedGrades = {
+      ...gradesObj,
+      [selectedSubject]: updatedList
+    };
+    const updatedSettings = {
+      ...webGeneralSettings,
+      grades: updatedGrades
+    };
+    if (setWebGeneralSettings) setWebGeneralSettings(updatedSettings);
+    try {
+      localStorage.setItem("webGeneralSettings", JSON.stringify(updatedSettings));
+    } catch (e) {}
+    if (syncToBackend) syncToBackend("webGeneralSettings", updatedSettings);
+    window.dispatchEvent(new Event("storage"));
+    setSelectedSessionGrade(updatedList.length > 0 ? updatedList[0] : selectedSubject);
+    if (showNotification) {
+      showNotification("Batch Deleted", `Batch "${gradeToDelete}" removed from ${selectedSubject}.`, "error");
+    }
+  };
+
   const [newSessionForm, setNewSessionForm] = useState({
     title: "",
     titleSi: "",
@@ -154,105 +326,202 @@ const SessionsTab = ({
               Course Curriculum Management
             </h2>
             <p className="text-xs text-slate-400">
-              Manage weekly sessions, video lessons, notes, and interactive quizzes
+              Manage subjects, class batches, weekly video lessons, and curriculum
             </p>
           </div>
         </div>
 
-        {/* GRADE / CLASS PICKER & QUICK ADD & ADD BUTTON */}
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <div className="flex items-center gap-2 bg-slate-900/90 px-3 py-2 rounded-xl border border-slate-800">
-            <label className="text-xs font-bold text-slate-400">Course / Category:</label>
-            <select
-              value={selectedSessionGrade}
-              onChange={(e) => setSelectedSessionGrade(e.target.value)}
-              className="bg-transparent text-xs font-black text-emerald-400 outline-none cursor-pointer max-w-[180px] sm:max-w-[220px]"
-            >
-              {(availableGrades.length > 0
-                ? availableGrades
-                : [
-                    "Crypto Basic",
-                    "Price Action",
-                    "Technical Analysis",
-                    "Grade 12",
-                    "Grade 13"
-                  ]
-              ).map((g) => (
-                <option key={g} value={g} className="bg-slate-900 text-slate-200">
-                  {g}
-                </option>
-              ))}
-            </select>
-          </div>
+        <button
+          onClick={() => setIsAddModalOpen(true)}
+          className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/20 flex items-center gap-2 transition-all active:scale-95 ml-auto sm:ml-0 cursor-pointer"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Create Session</span>
+        </button>
+      </div>
 
-          {/* QUICK ADD NEW CLASS / COURSE BUTTON */}
-          {onQuickAddClass && (
+      {/* ========================================================================= */}
+      {/* MASTER SUBJECT & GRADE / BATCH CONTROLLER BAR                             */}
+      {/* ========================================================================= */}
+      <div className="bg-[#0e1424]/90 backdrop-blur-xl p-5 sm:p-6 rounded-3xl border border-slate-800/80 shadow-2xl space-y-4">
+        
+        {/* ROW 1: SUBJECT / COURSE CONTROLS */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-800/70">
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold shrink-0">
+              <Layers className="w-5 h-5" />
+            </div>
             <div>
-              {!isQuickAddClassOpen ? (
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                Active Subject / Course
+              </span>
+              <div className="flex items-center gap-2 mt-1">
+                <select
+                  value={selectedSubject}
+                  onChange={(e) => handleSubjectChange(e.target.value)}
+                  className="bg-slate-900 text-white font-black text-sm sm:text-base border border-slate-700/80 rounded-xl px-3.5 py-1.5 outline-none focus:border-indigo-500 cursor-pointer shadow"
+                >
+                  {subjects.map((sub) => (
+                    <option key={sub} value={sub} className="bg-slate-900 text-white font-semibold">
+                      {sub}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Delete Selected Subject Button */}
                 <button
                   type="button"
-                  onClick={() => setIsQuickAddClassOpen(true)}
-                  className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-teal-300 hover:text-white border border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95"
-                  title="Add new course category or batch"
+                  onClick={() => handleDeleteSubject(selectedSubject)}
+                  className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 transition-all cursor-pointer"
+                  title={`Delete subject "${selectedSubject}"`}
                 >
-                  <Plus className="w-3.5 h-3.5 text-teal-400" />
-                  <span className="hidden sm:inline">Add Course</span>
+                  <Trash2 className="w-4 h-4" />
                 </button>
-              ) : (
-                <div className="flex items-center gap-1.5 bg-slate-900 p-1 rounded-xl border border-teal-500/50 shadow-lg animate-fadeIn">
-                  <input
-                    type="text"
-                    autoFocus
-                    value={newClassNameInput}
-                    onChange={(e) => setNewClassNameInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        if (newClassNameInput.trim()) {
-                          onQuickAddClass(newClassNameInput.trim());
-                          setNewClassNameInput("");
-                          setIsQuickAddClassOpen(false);
-                        }
-                      } else if (e.key === "Escape") {
-                        setIsQuickAddClassOpen(false);
-                      }
-                    }}
-                    placeholder="Course name (e.g. Crypto Basic)..."
-                    className="w-36 sm:w-44 bg-slate-950 border-0 rounded-lg px-2.5 py-1 text-xs text-white placeholder-slate-500 focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (newClassNameInput.trim()) {
-                        onQuickAddClass(newClassNameInput.trim());
-                        setNewClassNameInput("");
-                        setIsQuickAddClassOpen(false);
-                      }
-                    }}
-                    className="px-2.5 py-1 rounded-lg bg-teal-600 text-white text-xs font-bold hover:bg-teal-500"
-                  >
-                    Save
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsQuickAddClassOpen(false)}
-                    className="px-1.5 py-1 text-slate-400 hover:text-white text-xs"
-                  >
-                    ✕
-                  </button>
-                </div>
-              )}
+              </div>
             </div>
-          )}
+          </div>
 
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/20 flex items-center gap-2 transition-all active:scale-95 ml-auto sm:ml-0"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Create Session</span>
-          </button>
+          {/* ADD SUBJECT BUTTON / FORM */}
+          <div className="flex items-center gap-2">
+            {!isAddingSubject ? (
+              <button
+                type="button"
+                onClick={() => setIsAddingSubject(true)}
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-indigo-600/20 transition-all active:scale-95 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>+ Add Subject</span>
+              </button>
+            ) : (
+              <div className="flex items-center gap-1.5 bg-slate-900 p-1.5 rounded-xl border border-indigo-500/50 shadow-lg animate-fadeIn">
+                <input
+                  type="text"
+                  autoFocus
+                  value={newSubjectInput}
+                  onChange={(e) => setNewSubjectInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      submitAddSubject();
+                    } else if (e.key === "Escape") {
+                      setIsAddingSubject(false);
+                    }
+                  }}
+                  placeholder="New Subject name (e.g. Crypto Basic)..."
+                  className="w-48 sm:w-60 bg-slate-950 border-0 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={submitAddSubject}
+                  className="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-500 cursor-pointer"
+                >
+                  Add
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAddingSubject(false);
+                    setNewSubjectInput("");
+                  }}
+                  className="px-2 py-1.5 text-slate-400 hover:text-white text-xs cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* ROW 2: GRADE / BATCH CONTROLS FOR SELECTED SUBJECT */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              Classes / Batches:
+            </span>
+
+            {!hasGrades ? (
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>Standalone Course (No Grade Levels) — Appears directly in Register Form</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <select
+                  value={selectedSessionGrade}
+                  onChange={(e) => setSelectedSessionGrade(e.target.value)}
+                  className="bg-slate-900 text-teal-300 font-bold text-xs border border-slate-700 rounded-xl px-3 py-1.5 outline-none cursor-pointer"
+                >
+                  {currentSubjectGrades.map((g) => (
+                    <option key={g} value={g} className="bg-slate-900 text-white">
+                      {g}
+                    </option>
+                  ))}
+                </select>
+
+                <button
+                  type="button"
+                  onClick={() => handleDeleteGrade(selectedSessionGrade)}
+                  className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 text-xs transition-all cursor-pointer"
+                  title={`Delete batch "${selectedSessionGrade}" from ${selectedSubject}`}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* ADD BATCH / GRADE BUTTON */}
+          <div className="flex items-center gap-2">
+            {!isAddingGrade ? (
+              <button
+                type="button"
+                onClick={() => setIsAddingGrade(true)}
+                className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-teal-300 hover:text-white border border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+                title={`Add sub-batch or cohort to ${selectedSubject}`}
+              >
+                <Plus className="w-3.5 h-3.5 text-teal-400" />
+                <span>+ Add Batch / Grade</span>
+              </button>
+            ) : (
+              <div className="flex items-center gap-1.5 bg-slate-900 p-1.5 rounded-xl border border-teal-500/50 shadow-lg animate-fadeIn">
+                <input
+                  type="text"
+                  autoFocus
+                  value={newGradeInput}
+                  onChange={(e) => setNewGradeInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      submitAddGrade();
+                    } else if (e.key === "Escape") {
+                      setIsAddingGrade(false);
+                    }
+                  }}
+                  placeholder={`New batch for ${selectedSubject} (e.g. Batch 01)...`}
+                  className="w-48 sm:w-56 bg-slate-950 border-0 rounded-lg px-2.5 py-1 text-xs text-white placeholder-slate-500 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={submitAddGrade}
+                  className="px-2.5 py-1 rounded-lg bg-teal-600 text-white text-xs font-bold hover:bg-teal-500 cursor-pointer"
+                >
+                  Add
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAddingGrade(false);
+                    setNewGradeInput("");
+                  }}
+                  className="px-1.5 py-1 text-slate-400 hover:text-white text-xs cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
       </div>
 
       {/* SESSIONS LIST */}
