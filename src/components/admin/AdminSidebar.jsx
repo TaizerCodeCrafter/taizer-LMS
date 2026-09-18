@@ -37,7 +37,7 @@ const AdminSidebar = ({
   pendingPaymentsCount = 0,
   adminProfile,
   brandingLogo = "/logo.png",
-  brandingName = "EconoAcademy",
+  brandingName = "Taizer LMS",
   onQuickUpdateLogo,
   onLogout
 }) => {

@@ -161,6 +161,11 @@ const DEFAULT_HOME_SETTINGS = {
     primaryBtnLink: "/register",
     secondaryBtnText: "Contact via WhatsApp",
     secondaryBtnLink: "https://wa.me/"
+  },
+  branding: {
+    logo: "/logo.png",
+    siteName: "Taizer LMS",
+    siteTagline: "Crypto & Forex Trading Academy"
   }
 };
 

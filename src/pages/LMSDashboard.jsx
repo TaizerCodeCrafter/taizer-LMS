@@ -283,9 +283,9 @@ const LMSDashboard = () => {
    const [branding, setBranding] = useState(() => {
       try {
          const home = JSON.parse(localStorage.getItem("webHomeSettings") || "{}");
-         return home?.branding || { logo: "/logo.png", siteName: "EconoAcademy" };
+         return home?.branding || { logo: "/logo.png", siteName: "TaizerLMS" };
       } catch {
-         return { logo: "/logo.png", siteName: "EconoAcademy" };
+         return { logo: "/logo.png", siteName: "TaizerLMS" };
       }
    });
 

@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   GraduationCap,
+  TrendingUp,
   LogIn,
   UserPlus,
   Menu,
@@ -106,12 +107,12 @@ const Navbar = () => {
                   {!logoError ? (
                     <img
                       src={branding.logo || "/logo.png"}
-                      alt="Logo"
+                      alt="Taizer Logo"
                       className="w-full h-full object-contain"
                       onError={() => setLogoError(true)}
                     />
                   ) : (
-                    <GraduationCap className="w-4 sm:w-5 h-4 sm:h-5 text-indigo-400" />
+                    <TrendingUp className="w-4 sm:w-5 h-4 sm:h-5 text-emerald-400" />
                   )}
                 </div>
               </div>
@@ -125,16 +126,16 @@ const Navbar = () => {
                     branding.siteName
                   ) : (
                     <>
-                      Econo<span className="bg-gradient-to-r from-indigo-400 to-blue-400 bg-clip-text text-transparent">Academy</span>
+                      Taizer<span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-indigo-400 bg-clip-text text-transparent">LMS</span>
                     </>
                   )}
                 </span>
-                <span className="hidden sm:inline-block px-1.5 py-0.2 rounded text-[9px] font-black bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                  LK
+                <span className="hidden sm:inline-block px-1.5 py-0.2 rounded text-[9px] font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  PRO
                 </span>
               </div>
               <p className="text-[9px] sm:text-[10px] text-slate-500 font-semibold tracking-wider uppercase -mt-0.5 truncate hidden sm:block">
-                {branding.siteTagline || "Economics & Sinhala LMS"}
+                {branding.siteTagline || "Crypto & Forex Trading LMS"}
               </p>
             </div>
           </Link>

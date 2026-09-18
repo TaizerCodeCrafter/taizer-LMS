@@ -111,8 +111,8 @@ const DEFAULT_HOME_SETTINGS = {
   },
   branding: {
     logo: "/logo.png",
-    siteName: "EconoAcademy",
-    siteTagline: "Economics & Sinhala LMS"
+    siteName: "Taizer LMS",
+    siteTagline: "Crypto & Forex Trading Academy"
   }
 };
 

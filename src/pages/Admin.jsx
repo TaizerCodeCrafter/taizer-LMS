@@ -297,8 +297,8 @@ const Admin = () => {
           },
           branding: {
             logo: "/logo.png",
-            siteName: "EconoAcademy",
-            siteTagline: "Economics & Sinhala LMS"
+            siteName: "Taizer LMS",
+            siteTagline: "Crypto & Forex Trading Academy"
           }
         })
     )
@@ -1096,7 +1096,7 @@ const Admin = () => {
         pendingPaymentsCount={pendingPaymentsCount}
         adminProfile={adminProfile}
         brandingLogo={webHomeSettings?.branding?.logo || "/logo.png"}
-        brandingName={webHomeSettings?.branding?.siteName || "EconoAcademy"}
+        brandingName={webHomeSettings?.branding?.siteName || "Taizer LMS"}
         onQuickUpdateLogo={(newLogo) => {
           const updatedHome = {
             ...webHomeSettings,

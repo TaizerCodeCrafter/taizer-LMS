@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   GraduationCap,
+  TrendingUp,
   Mail,
   Phone,
   MessageCircle,
@@ -64,12 +65,12 @@ const Footer = () => {
                   {!logoError ? (
                     <img
                       src={branding.logo || "/logo.png"}
-                      alt="Logo"
+                      alt="Taizer Logo"
                       className="w-full h-full object-contain"
                       onError={() => setLogoError(true)}
                     />
                   ) : (
-                    <GraduationCap className="w-5 h-5 text-indigo-400" />
+                    <TrendingUp className="w-5 h-5 text-emerald-400" />
                   )}
                 </div>
               </div>
@@ -79,19 +80,19 @@ const Footer = () => {
                     branding.siteName
                   ) : (
                     <>
-                      Econo<span className="text-indigo-400">Academy</span> LK
+                      Taizer<span className="text-emerald-400">LMS</span>
                     </>
                   )}
                 </h3>
                 <p className="text-[10px] text-slate-500 font-semibold tracking-wider uppercase">
-                  {branding.siteTagline || "Excellence in Economics & Sinhala"}
+                  {branding.siteTagline || "Crypto & Forex Trading Academy"}
                 </p>
               </div>
             </Link>
 
             <p className="text-xs text-slate-400 max-w-sm leading-relaxed mx-auto md:mx-0">
               {generalSettings.footerNotice ||
-                '"සරලව සහ නිවැරදිව විෂය කරුණු ඉගෙන ගෙන විශිෂ්ඨ සාමාර්ථයක් කරා යමු." Empowering students across Sri Lanka with specialized A/L Economics and Sinhala Language coaching.'}
+                'Empowering traders with institutional price action, smart money concepts, and high-probability market execution.'}
             </p>
 
             {/* CONTACT & SOCIAL CHANNELS */}
