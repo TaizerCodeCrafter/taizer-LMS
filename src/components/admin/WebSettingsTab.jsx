@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   Globe,
   Home,
@@ -42,7 +42,12 @@ import {
   Download,
   Megaphone,
   X,
-  MessageCircle
+  MessageCircle,
+  Lock,
+  Unlock,
+  Upload,
+  Check,
+  Loader2
 } from "lucide-react";
 import DualImageInput from "./DualImageInput";
 
@@ -381,6 +386,10 @@ const WebSettingsTab = ({
   const [isEditResourceOpen, setIsEditResourceOpen] = useState(false);
   const [newSubjectInput, setNewSubjectInput] = useState("");
   const [newGradeInputs, setNewGradeInputs] = useState({});
+  const [resourceFileMode, setResourceFileMode] = useState("file"); // "file" or "url"
+  const [isUploadingResourceFile, setIsUploadingResourceFile] = useState(false);
+  const [resourceUploadStatus, setResourceUploadStatus] = useState(null);
+  const resourceFileInputRef = useRef(null);
 
   const currentResourcesSettings = {
     ...DEFAULT_RESOURCES_SETTINGS,
@@ -408,6 +417,14 @@ const WebSettingsTab = ({
     onSaveSetting("webResources", updated);
   };
 
+  const handleToggleResourceLock = (id) => {
+    const updated = webResources.map((r) =>
+      r.id === id ? { ...r, isLocked: !r.isLocked } : r
+    );
+    setWebResources(updated);
+    onSaveSetting("webResources", updated);
+  };
+
   const handleDuplicateResource = (item) => {
     const duplicated = {
       ...item,
@@ -419,18 +436,112 @@ const WebSettingsTab = ({
     onSaveSetting("webResources", updated);
   };
 
+  const handleResourceFileSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Auto calculate readable file size
+    const bytes = file.size;
+    let formattedSize = "1.0 MB";
+    if (bytes < 1024 * 1024) {
+      formattedSize = `${(bytes / 1024).toFixed(1)} KB`;
+    } else {
+      formattedSize = `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    }
+
+    // Auto detect file type
+    const lowerName = file.name.toLowerCase();
+    let detectedType = "PDF Document";
+    if (lowerName.endsWith(".zip") || lowerName.endsWith(".rar")) {
+      detectedType = "Zip Archive";
+    } else if (lowerName.endsWith(".mp4") || lowerName.endsWith(".mkv") || lowerName.endsWith(".webm")) {
+      detectedType = "Video Lecture Link";
+    } else if (lowerName.endsWith(".doc") || lowerName.endsWith(".docx")) {
+      detectedType = "Word Document";
+    }
+
+    // Auto title if currently blank
+    const defaultTitle = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+
+    setIsUploadingResourceFile(true);
+    setResourceUploadStatus("Reading file...");
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const base64Data = event.target.result;
+      
+      // Update local editing state immediately with base64 fallback
+      setEditingResource((prev) => ({
+        ...prev,
+        title: prev?.title?.trim() ? prev.title : defaultTitle,
+        size: formattedSize,
+        type: prev?.type || detectedType,
+        url: base64Data,
+        uploadedFileName: file.name
+      }));
+
+      // Try uploading to backend file upload API
+      try {
+        setResourceUploadStatus("Uploading to server...");
+        const res = await fetch("http://localhost:5000/api/upload-file", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fileData: base64Data,
+            fileName: file.name,
+            fileType: file.type
+          })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.url) {
+            setEditingResource((prev) => ({
+              ...prev,
+              url: data.url,
+              uploadedFileName: file.name
+            }));
+            setResourceUploadStatus(`Uploaded successfully (${formattedSize})`);
+          } else {
+            setResourceUploadStatus(`Ready (${formattedSize})`);
+          }
+        } else {
+          setResourceUploadStatus(`Embedded as local file (${formattedSize})`);
+        }
+      } catch (err) {
+        console.warn("Backend upload failed, using direct data format:", err);
+        setResourceUploadStatus(`Ready (${formattedSize})`);
+      } finally {
+        setIsUploadingResourceFile(false);
+      }
+    };
+
+    reader.onerror = () => {
+      setIsUploadingResourceFile(false);
+      setResourceUploadStatus("Failed to read file");
+    };
+
+    reader.readAsDataURL(file);
+  };
+
   const handleSaveResourceItem = (e) => {
     e.preventDefault();
+    const itemToSave = {
+      ...editingResource,
+      isLocked: !!editingResource.isLocked,
+      price: editingResource.isLocked ? (editingResource.price || "1000") : "0"
+    };
     let updated;
-    const existingIndex = webResources.findIndex((r) => r.id === editingResource.id);
+    const existingIndex = webResources.findIndex((r) => r.id === itemToSave.id);
     if (existingIndex > -1) {
-      updated = webResources.map((r) => (r.id === editingResource.id ? editingResource : r));
+      updated = webResources.map((r) => (r.id === itemToSave.id ? itemToSave : r));
     } else {
-      updated = [...webResources, { ...editingResource, id: editingResource.id || Date.now() }];
+      updated = [...webResources, { ...itemToSave, id: itemToSave.id || Date.now() }];
     }
     setWebResources(updated);
     onSaveSetting("webResources", updated);
     setIsEditResourceOpen(false);
+    setResourceUploadStatus(null);
   };
 
   const handleDeleteResourceItem = (id) => {
@@ -2821,13 +2932,17 @@ const WebSettingsTab = ({
                         title: "",
                         category: (currentGeneralSettings.subjects && currentGeneralSettings.subjects[0]) || "Crypto Basic",
                         type: "PDF Document",
-                        size: "2.5 MB",
+                        size: "",
                         badge: "New",
                         url: "",
                         downloadCount: "0",
                         description: "",
-                        isHidden: false
+                        isHidden: false,
+                        isLocked: false,
+                        price: "0"
                       });
+                      setResourceFileMode("file");
+                      setResourceUploadStatus(null);
                       setIsEditResourceOpen(true);
                     }}
                     className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-indigo-600/25 transition-all"
@@ -2862,6 +2977,17 @@ const WebSettingsTab = ({
                             </div>
                             <div className="min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
+                                {item.isLocked ? (
+                                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                                    <Lock className="w-3 h-3 text-amber-400" />
+                                    <span>Paid: Rs. {Number(item.price || 0).toLocaleString()}</span>
+                                  </span>
+                                ) : (
+                                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                                    <Unlock className="w-3 h-3 text-emerald-400" />
+                                    <span>Free Download</span>
+                                  </span>
+                                )}
                                 {item.badge && (
                                   <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
                                     {item.badge}
@@ -2897,9 +3023,35 @@ const WebSettingsTab = ({
 
                           {/* ACTIONS */}
                           <div className="flex items-center gap-1 shrink-0">
+                            {/* 1-CLICK LOCK / UNLOCK TOGGLE */}
+                            <button
+                              onClick={() => handleToggleResourceLock(item.id)}
+                              className={`p-1.5 rounded-lg border transition-all ${
+                                item.isLocked
+                                  ? "bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20"
+                                  : "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20"
+                              }`}
+                              title={
+                                item.isLocked
+                                  ? "Resource is Locked (Click to Unlock / Make Free)"
+                                  : "Resource is Free (Click to Lock / Require Payment)"
+                              }
+                            >
+                              {item.isLocked ? (
+                                <Lock className="w-3.5 h-3.5" />
+                              ) : (
+                                <Unlock className="w-3.5 h-3.5" />
+                              )}
+                            </button>
                             <button
                               onClick={() => {
                                 setEditingResource({ ...item });
+                                setResourceFileMode(
+                                  item.url && item.url.startsWith("http") && !item.url.includes("uploads/files")
+                                    ? "url"
+                                    : "file"
+                                );
+                                setResourceUploadStatus(null);
                                 setIsEditResourceOpen(true);
                               }}
                               className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700"
@@ -4159,20 +4311,240 @@ const WebSettingsTab = ({
                 </div>
               </div>
 
-              {/* DOWNLOAD URL / FILE LINK */}
-              <div>
-                <label className="text-xs font-bold text-slate-300 block mb-1.5">
-                  Download URL / Resource Link (Direct PDF or Google Drive Link)
-                </label>
-                <input
-                  type="text"
-                  value={editingResource.url || ""}
-                  onChange={(e) =>
-                    setEditingResource({ ...editingResource, url: e.target.value })
-                  }
-                  placeholder="https://example.com/file.pdf or Google Drive download link"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
-                />
+              {/* ACCESS CONTROL & PRICING (FREE VS LOCKED) */}
+              <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                      {editingResource.isLocked ? (
+                        <Lock className="w-3.5 h-3.5 text-amber-400" />
+                      ) : (
+                        <Unlock className="w-3.5 h-3.5 text-emerald-400" />
+                      )}
+                      <span>Resource Access & Pricing</span>
+                    </label>
+                    <p className="text-[11px] text-slate-400">
+                      Set whether students can download this resource freely or must purchase it.
+                    </p>
+                  </div>
+                  <div className="flex items-center bg-slate-900 p-1 rounded-xl border border-slate-800 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEditingResource({ ...editingResource, isLocked: false, price: "0" })
+                      }
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                        !editingResource.isLocked
+                          ? "bg-emerald-600 text-white shadow"
+                          : "text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      <Unlock className="w-3 h-3" />
+                      <span>Free</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEditingResource({
+                          ...editingResource,
+                          isLocked: true,
+                          price: editingResource.price && editingResource.price !== "0" ? editingResource.price : "1000"
+                        })
+                      }
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                        editingResource.isLocked
+                          ? "bg-amber-600 text-white shadow"
+                          : "text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      <Lock className="w-3 h-3" />
+                      <span>Paid / Locked</span>
+                    </button>
+                  </div>
+                </div>
+
+                {editingResource.isLocked && (
+                  <div className="pt-2 border-t border-slate-800/80 space-y-2.5 animate-fadeIn">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <span className="text-xs font-bold text-amber-300 block">
+                          Resource Price (LKR / Rs.)
+                        </span>
+                        <span className="text-[10px] text-slate-500">
+                          Amount students need to pay to unlock and download
+                        </span>
+                      </div>
+                      <div className="relative w-full sm:w-44">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-400">
+                          Rs.
+                        </span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="50"
+                          value={editingResource.price || ""}
+                          onChange={(e) =>
+                            setEditingResource({ ...editingResource, price: e.target.value })
+                          }
+                          placeholder="1000"
+                          className="w-full bg-slate-900 border border-amber-500/30 focus:border-amber-500 rounded-xl pl-10 pr-3 py-2 text-xs font-bold text-white focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    {/* QUICK PRESET BUTTONS */}
+                    <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                      <span className="text-[10px] text-slate-500 font-medium mr-1">Quick Presets:</span>
+                      {["500", "1000", "1500", "2000", "2500", "5000"].map((preset) => (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() => setEditingResource({ ...editingResource, price: preset })}
+                          className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border transition-all ${
+                            String(editingResource.price) === preset
+                              ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                              : "bg-slate-900 text-slate-400 border-slate-800 hover:text-white"
+                          }`}
+                        >
+                          Rs. {Number(preset).toLocaleString()}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* DOCUMENT / PDF FILE SOURCE (BROWSER UPLOAD OR URL) */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-300 block">
+                    Resource File (PDF / Document) *
+                  </label>
+                  <div className="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => setResourceFileMode("file")}
+                      className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all flex items-center gap-1 ${
+                        resourceFileMode === "file"
+                          ? "bg-indigo-600 text-white shadow"
+                          : "text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      <Upload className="w-3 h-3" />
+                      <span>Upload from Device</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setResourceFileMode("url")}
+                      className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all flex items-center gap-1 ${
+                        resourceFileMode === "url"
+                          ? "bg-indigo-600 text-white shadow"
+                          : "text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      <span>Direct URL</span>
+                    </button>
+                  </div>
+                </div>
+
+                {resourceFileMode === "file" ? (
+                  <div className="p-4 rounded-2xl bg-slate-950 border border-dashed border-slate-800 hover:border-indigo-500/50 transition-all text-center space-y-3">
+                    <input
+                      type="file"
+                      ref={resourceFileInputRef}
+                      onChange={handleResourceFileSelect}
+                      accept=".pdf,.doc,.docx,.ppt,.pptx,.zip,.rar,.txt,.xlsx,.mp4"
+                      className="hidden"
+                    />
+
+                    {editingResource.url ? (
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 rounded-xl bg-slate-900 border border-slate-800 text-left">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
+                            <FileText className="w-5 h-5" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-white truncate max-w-xs">
+                              {editingResource.uploadedFileName ||
+                                (editingResource.url.startsWith("http")
+                                  ? editingResource.url.split("/").pop()
+                                  : `${editingResource.title || "Uploaded Resource"}.pdf`)}
+                            </p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+                                <Check className="w-3 h-3" /> Attached
+                              </span>
+                              {editingResource.size && (
+                                <span className="text-[10px] text-slate-400 font-medium">
+                                  • {editingResource.size}
+                                </span>
+                              )}
+                              {resourceUploadStatus && (
+                                <span className="text-[10px] text-slate-500 truncate">
+                                  ({resourceUploadStatus})
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => resourceFileInputRef.current?.click()}
+                          disabled={isUploadingResourceFile}
+                          className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
+                        >
+                          {isUploadingResourceFile ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-400" />
+                              <span>Uploading...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="w-3.5 h-3.5" />
+                              <span>Change File</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    ) : (
+                      <div
+                        onClick={() => resourceFileInputRef.current?.click()}
+                        className="cursor-pointer py-4 flex flex-col items-center justify-center group"
+                      >
+                        <div className="w-12 h-12 rounded-2xl bg-indigo-600/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:scale-110 group-hover:bg-indigo-600/20 transition-all mb-2">
+                          {isUploadingResourceFile ? (
+                            <Loader2 className="w-6 h-6 animate-spin" />
+                          ) : (
+                            <Upload className="w-6 h-6" />
+                          )}
+                        </div>
+                        <p className="text-xs font-bold text-white group-hover:text-indigo-400 transition-colors">
+                          {isUploadingResourceFile ? "Processing File..." : "Click to select PDF or Document from computer"}
+                        </p>
+                        <p className="text-[11px] text-slate-500 mt-0.5">
+                          PDF, Word, Zip, PowerPoint (automatically detects file size and format)
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <input
+                      type="text"
+                      value={editingResource.url || ""}
+                      onChange={(e) =>
+                        setEditingResource({ ...editingResource, url: e.target.value })
+                      }
+                      placeholder="https://example.com/file.pdf or Google Drive / Cloud Link"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+                    />
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      Provide a direct downloadable link or a public cloud drive link (Google Drive, OneDrive, Dropbox).
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* DESCRIPTION */}
@@ -4206,7 +4578,7 @@ const WebSettingsTab = ({
                   htmlFor="resourceVisibleCheckbox"
                   className="text-xs text-slate-300 cursor-pointer select-none"
                 >
-                  Publish on Website (display in Free Study Library)
+                  Publish on Website (display in Study Resources Library)
                 </label>
               </div>
 
