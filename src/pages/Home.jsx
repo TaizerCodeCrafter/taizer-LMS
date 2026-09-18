@@ -21,7 +21,7 @@ import {
   Award,
   MessageSquare
 } from "lucide-react";
-import CandlestickDivider from "../components/CandlestickDivider";
+import CandlestickPatternsShowcase from "../components/CandlestickPatternsShowcase";
 
 const Home = () => {
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -553,9 +553,9 @@ const DEFAULT_HOME_SETTINGS = {
       </section>
 
       {/* ========================================================================= */}
-      {/* 1.5 DYNAMIC CANDLESTICK CHART DIVIDER                                     */}
+      {/* 1.5 DYNAMIC CANDLESTICK PATTERNS SHOWCASE (BULLISH / BEARISH / NEUTRAL)   */}
       {/* ========================================================================= */}
-      <CandlestickDivider />
+      <CandlestickPatternsShowcase />
 
       {/* ========================================================================= */}
       {/* 2. INSTRUCTOR SHORT SPOTLIGHT                                             */}
