@@ -1,0 +1,180 @@
+Build a modern, responsive educational website for an Economics teacher in Sri Lanka. The website should serve as a teacher portfolio, student acquisition funnel, and future LMS platform.
+
+## 🎯 Main Goal
+
+Attract students (Grade 6–13), build trust with parents, and convert visitors into paid class enrollments via WhatsApp and future LMS.
+
+---
+
+## 🏠 Pages Required
+
+### 1. Home Page (Landing Page)
+
+Sections:
+
+* Hero Section with teacher image, title: “Economics Classes Grade 6–13”
+
+* Tagline: “සරලව Economics ඉගෙන ගමු”
+
+* CTA buttons: “Join Now” and “Free Class” (link to WhatsApp)
+
+* About Teacher (short intro with qualifications and experience)
+
+* Courses Overview (Grade 6–9, O/L, A/L with cards)
+
+* Results / Achievements (student success)
+
+* Sample Lesson (embedded YouTube video)
+
+* Testimonials (students/parents)
+
+* Final CTA (Join WhatsApp Class)
+
+---
+
+### 2. About Page
+
+* Full teacher biography
+* Academic qualifications (Economics degree)
+* Teaching experience
+* Mission and teaching philosophy
+* Professional images
+
+---
+
+### 3. Courses Page
+
+Display structured course categories:
+
+* Grade 6–9 (foundation)
+* O/L Economics (exam-focused)
+* A/L Economics (theory + past papers)
+
+Each course should include:
+
+* Description
+* Price
+* Schedule
+* “Enroll Now” button
+
+---
+
+### 4. Course Details Page (Dynamic)
+
+* Course title
+* Full syllabus breakdown
+* Lesson format (online/live via Zoom)
+* Duration and schedule
+* Pricing
+* CTA: Enroll / Join WhatsApp
+
+---
+
+### 5. Free Resources Page
+
+* Free notes (PDF downloads)
+* Short educational videos
+* Exam tips
+* Designed for SEO and lead generation
+
+---
+
+### 6. Results / Testimonials Page
+
+* Student reviews
+* Exam results (A/L, O/L)
+* Parent feedback
+
+---
+
+### 7. Contact Page
+
+* Phone number
+* WhatsApp button
+* Email
+* Contact form
+
+---
+
+### 8. Login / Student Portal (Future LMS)
+
+* User authentication (login/signup)
+* Student dashboard
+* Course access (locked for now, scalable later)
+
+---
+
+## 🎨 Design Requirements
+
+* Clean, modern UI
+
+* Education-focused style
+
+* Color palette:
+
+  * Primary: Blue
+  * Secondary: White
+  * Accent: Yellow or Orange (for CTA)
+
+* Typography:
+
+  * Bold headings
+  * Simple readable body text
+
+* Layout:
+
+  * Card-based sections
+  * Sticky navigation bar
+  * Footer with contact links
+
+* Fully responsive (mobile-first design)
+
+---
+
+## ⚙️ Features
+
+* WhatsApp integration for quick contact
+* YouTube video embedding
+* Simple form handling (contact/enrollment)
+* SEO-friendly structure
+* Fast loading performance
+
+---
+
+## 🚀 Future LMS (Scalable Architecture)
+
+Prepare structure for:
+
+* Video lessons
+* Notes downloads
+* Quizzes
+* Progress tracking
+* Payment integration
+
+---
+
+## 🧠 User Flow
+
+Visitor → Home Page → Views Teacher → Watches Sample Video → Clicks WhatsApp → Joins Class
+
+---
+
+## 💡 Branding
+
+Suggest a clean, professional name such as:
+
+* EconMaster LK
+* SmartEcon Academy
+* Econ Path
+
+---
+
+## 🛠️ Tech Stack Suggestion
+
+* Frontend: React / Next.js
+* Backend: Firebase or Node.js
+* Alternative: WordPress (for faster launch)
+
+---
+
+Generate full UI layout, components, and page structure with clean modern styling. Optimize for conversions and student trust.

@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Production build
+dist/
+build/
+.vite/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+server/.env
+
+# WhatsApp Web session and cache data
+.wwebjs_auth/
+.wwebjs_cache/
+server/.wwebjs_auth/
+server/.wwebjs_cache/
+
+# Uploads
+server/uploads/videos/*
+!server/uploads/videos/.gitkeep
+server/uploads/files/*
+!server/uploads/files/.gitkeep
+
+# Logs and temporary recovery files
+*.log
+log_*.txt
+recovery_*.txt
+scratch/
+server/scratch/
+
+# OS and Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
