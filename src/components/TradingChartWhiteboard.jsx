@@ -21,7 +21,9 @@ import {
   Layers,
   Sparkles,
   HelpCircle,
-  Check
+  Check,
+  Move,
+  Hand
 } from "lucide-react";
 
 // Standard popular symbols for quick selection
@@ -91,14 +93,19 @@ export default function TradingChartWhiteboard({
   const [imageUrl, setImageUrl] = useState(chartConfig.imageUrl || "");
 
   // Whiteboard drawing tool state
-  const [interactMode, setInteractMode] = useState(false); // true: chart interaction, false: drawing mode
-  const [activeTool, setActiveTool] = useState("pen"); // 'pen' | 'line' | 'hline' | 'rect' | 'highlighter' | 'text' | 'eraser'
+  // interactMode: false = Whiteboard Drawing Layer Active, true = TradingView Direct Interactivity (drawing inside TradingView & panning market)
+  const [interactMode, setInteractMode] = useState(false);
+  const [activeTool, setActiveTool] = useState("select"); // 'select' | 'pen' | 'line' | 'hline' | 'rect' | 'highlighter' | 'text' | 'eraser'
   const [activeColor, setActiveColor] = useState("#10b981");
   const [strokeWidth, setStrokeWidth] = useState(3);
   const [elements, setElements] = useState(Array.isArray(drawings) ? drawings : []);
   const [history, setHistory] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Drag & Move state
+  const [selectedElementId, setSelectedElementId] = useState(null);
+  const [dragItem, setDragItem] = useState(null); // { id, startX, startY, initial }
 
   // Text tool modal / input state
   const [textModalOpen, setTextModalOpen] = useState(false);
@@ -126,6 +133,24 @@ export default function TradingChartWhiteboard({
       if (chartConfig.imageUrl !== undefined) setImageUrl(chartConfig.imageUrl);
     }
   }, [chartConfig]);
+
+  // Keyboard shortcut to delete selected element
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!selectedElementId) return;
+      if (e.key === "Delete" || e.key === "Backspace") {
+        // Prevent deleting if user is typing in an input
+        if (["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName)) return;
+        e.preventDefault();
+        setHistory((prev) => [...prev, elements]);
+        setRedoStack([]);
+        notifyDrawingsChange(elements.filter((el) => el.id !== selectedElementId));
+        setSelectedElementId(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedElementId, elements]);
 
   // Sync config changes upward
   const notifyConfigChange = useCallback((newConfig) => {
@@ -155,10 +180,41 @@ export default function TradingChartWhiteboard({
     };
   };
 
-  // Pointer Down (Start Drawing or Text Placement)
+  // Pointer Down on a specific element (for Move/Drag and Eraser)
+  const handleElementPointerDown = (el, e) => {
+    if (interactMode) return;
+
+    if (activeTool === "eraser") {
+      e.stopPropagation();
+      handleEraseElement(el.id, e);
+      return;
+    }
+
+    if (activeTool === "select") {
+      e.stopPropagation();
+      const coords = getSvgCoordinates(e);
+      setSelectedElementId(el.id);
+      setDragItem({
+        id: el.id,
+        startX: coords.x,
+        startY: coords.y,
+        initial: JSON.parse(JSON.stringify(el))
+      });
+      setHistory((prev) => [...prev, elements]);
+      setRedoStack([]);
+    }
+  };
+
+  // Pointer Down on background SVG Canvas (Start Drawing or Text Placement)
   const handlePointerDown = (e) => {
     if (interactMode) return;
     const coords = getSvgCoordinates(e);
+
+    if (activeTool === "select") {
+      // Clicked on empty space: deselect
+      setSelectedElementId(null);
+      return;
+    }
 
     if (activeTool === "text") {
       setPendingTextPos(coords);
@@ -197,7 +253,6 @@ export default function TradingChartWhiteboard({
         strokeWidth: strokeWidth
       });
     } else if (activeTool === "hline") {
-      // Instant horizontal line across full width
       const hlineElement = {
         id: newId,
         type: "hline",
@@ -224,9 +279,69 @@ export default function TradingChartWhiteboard({
     }
   };
 
-  // Pointer Move (Update In-Progress Shape)
+  // Pointer Move (Update Active Stroke OR Drag/Move Element)
   const handlePointerMove = (e) => {
-    if (interactMode || !currentStroke) return;
+    if (interactMode) return;
+
+    // 1. DRAGGING / MOVING AN EXISTING ELEMENT
+    if (dragItem) {
+      const coords = getSvgCoordinates(e);
+      const dx = coords.x - dragItem.startX;
+      const dy = coords.y - dragItem.startY;
+      const initial = dragItem.initial;
+
+      setElements((prev) =>
+        prev.map((item) => {
+          if (item.id !== dragItem.id) return item;
+
+          if (item.type === "text") {
+            return {
+              ...item,
+              x: Math.round(initial.x + dx),
+              y: Math.round(initial.y + dy)
+            };
+          }
+          if (item.type === "rect") {
+            return {
+              ...item,
+              x: Math.round(initial.x + dx),
+              y: Math.round(initial.y + dy),
+              startX: Math.round((initial.startX || initial.x) + dx),
+              startY: Math.round((initial.startY || initial.y) + dy)
+            };
+          }
+          if (item.type === "line") {
+            return {
+              ...item,
+              x1: Math.round(initial.x1 + dx),
+              y1: Math.round(initial.y1 + dy),
+              x2: Math.round(initial.x2 + dx),
+              y2: Math.round(initial.y2 + dy)
+            };
+          }
+          if (item.type === "hline") {
+            return {
+              ...item,
+              y: Math.round(initial.y + dy)
+            };
+          }
+          if (item.type === "pen" || item.type === "highlighter") {
+            return {
+              ...item,
+              points: (initial.points || []).map((p) => ({
+                x: Math.round(p.x + dx),
+                y: Math.round(p.y + dy)
+              }))
+            };
+          }
+          return item;
+        })
+      );
+      return;
+    }
+
+    // 2. DRAWING A NEW SHAPE
+    if (!currentStroke) return;
     const coords = getSvgCoordinates(e);
 
     if (currentStroke.type === "pen" || currentStroke.type === "highlighter") {
@@ -256,9 +371,17 @@ export default function TradingChartWhiteboard({
     }
   };
 
-  // Pointer Up (Commit Shape)
+  // Pointer Up (Commit Drawing Shape or Finalize Drag)
   const handlePointerUp = () => {
-    if (interactMode || !currentStroke) return;
+    if (interactMode) return;
+
+    if (dragItem) {
+      notifyDrawingsChange(elements);
+      setDragItem(null);
+      return;
+    }
+
+    if (!currentStroke) return;
     if (
       (currentStroke.type === "pen" || currentStroke.type === "highlighter") &&
       currentStroke.points.length > 1
@@ -298,18 +421,23 @@ export default function TradingChartWhiteboard({
       fontSize: 14 + strokeWidth * 2
     };
 
-    notifyDrawingsChange([...elements, newTextEl]);
+    const updated = [...elements, newTextEl];
+    notifyDrawingsChange(updated);
+    setSelectedElementId(newTextEl.id);
+    setActiveTool("select"); // Auto-switch to Move tool so user can immediately reposition the text!
     setCustomText("");
     setTextModalOpen(false);
   };
 
   // Eraser Tool action on an element
   const handleEraseElement = (elId, e) => {
-    if (activeTool !== "eraser" || interactMode) return;
-    e.stopPropagation();
+    e?.stopPropagation();
     setHistory((prev) => [...prev, elements]);
     setRedoStack([]);
     notifyDrawingsChange(elements.filter((el) => el.id !== elId));
+    if (selectedElementId === elId) {
+      setSelectedElementId(null);
+    }
   };
 
   // Undo
@@ -337,6 +465,7 @@ export default function TradingChartWhiteboard({
       setHistory((prev) => [...prev, elements]);
       setRedoStack([]);
       notifyDrawingsChange([]);
+      setSelectedElementId(null);
     }
   };
 
@@ -393,10 +522,25 @@ export default function TradingChartWhiteboard({
     return d;
   };
 
-  // TradingView Widget URL
-  const tradingViewUrl = `https://s.tradingview.com/widgetembed/?frameElementId=tradingview_widget&symbol=${encodeURIComponent(
-    symbol
-  )}&interval=${timeframe}&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=0b0f19&studies=[]&theme=dark&style=1&timezone=exchange&studies_overrides={}&overrides={}&enabled_features=[]&disabled_features=[]&locale=en&utm_source=localhost`;
+  // Official TradingView Advanced Real-Time Chart widget URL with side toolbar enabled
+  // This enables TradingView's left drawing sidebar where all drawings lock to candlesticks when panning!
+  const tradingViewUrl = `https://www.tradingview-widget.com/embed-widget/advanced-chart/?locale=en#${encodeURIComponent(
+    JSON.stringify({
+      autosize: true,
+      symbol: symbol,
+      interval: timeframe,
+      timezone: "Etc/UTC",
+      theme: "dark",
+      style: "1",
+      locale: "en",
+      enable_publishing: false,
+      hide_side_toolbar: false, // Left toolbar enabled: drawings move with market!
+      allow_symbol_change: true,
+      save_image: true,
+      calendar: false,
+      support_host: "https://www.tradingview.com"
+    })
+  )}`;
 
   return (
     <div
@@ -407,7 +551,7 @@ export default function TradingChartWhiteboard({
       style={{ height: isFullscreen ? "100vh" : height }}
     >
       {/* ========================================================================= */}
-      {/* TOP HEADER: CHART CONFIG & MODE CONTROLS */}
+      {/* TOP HEADER: CHART CONFIG & DUAL-MODE CONTROLS */}
       {/* ========================================================================= */}
       <div className="bg-[#0b1120] border-b border-slate-800/90 px-4 py-2.5 flex flex-wrap items-center justify-between gap-2.5 z-20 shrink-0 text-slate-300">
         {/* LEFT: Mode Selector & Symbol Info */}
@@ -580,35 +724,38 @@ export default function TradingChartWhiteboard({
           )}
         </div>
 
-        {/* RIGHT: Interaction Mode Toggle & Fullscreen */}
+        {/* RIGHT: Dual Mode Switcher (In-Chart Tools vs Whiteboard Overlay) */}
         <div className="flex items-center gap-2">
-          {/* Toggle: Draw Mode vs Interact with TradingView */}
-          <button
-            type="button"
-            onClick={() => setInteractMode(!interactMode)}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
-              interactMode
-                ? "bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/30 font-black"
-                : "bg-indigo-600/20 text-indigo-300 border border-indigo-500/40 hover:bg-indigo-600/30"
-            }`}
-            title={
-              interactMode
-                ? "Currently in Chart Zoom/Pan mode. Click to resume Drawing."
-                : "Switch to Chart Interaction (zoom, pan, click candles on TradingView)."
-            }
-          >
-            {interactMode ? (
-              <>
-                <MousePointer className="w-3.5 h-3.5" />
-                <span>Interact Mode Active</span>
-              </>
-            ) : (
-              <>
-                <Edit3 className="w-3.5 h-3.5" />
-                <span>✏️ Draw / Annotate</span>
-              </>
-            )}
-          </button>
+          {/* Direct Dual Mode Tabs */}
+          <div className="flex items-center bg-slate-900/95 p-1 rounded-xl border border-slate-800 gap-1">
+            <button
+              type="button"
+              onClick={() => setInteractMode(true)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                interactMode
+                  ? "bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/30"
+                  : "text-slate-400 hover:text-white"
+              }`}
+              title="Pan market freely and use TradingView's left drawing toolbar (drawings move together with candlesticks)"
+            >
+              <MousePointer className="w-3.5 h-3.5" />
+              <span>📊 Pan Market & In-Chart Tools</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setInteractMode(false)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                !interactMode
+                  ? "bg-indigo-600 text-white font-black shadow-md shadow-indigo-600/30"
+                  : "text-slate-400 hover:text-white"
+              }`}
+              title="Draw freehand sketches, highlighter, order blocks, and drag labels with Move tool"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>✏️ Whiteboard Overlay</span>
+            </button>
+          </div>
 
           {/* Fullscreen Button */}
           <button
@@ -625,13 +772,54 @@ export default function TradingChartWhiteboard({
             <button
               type="button"
               onClick={() => onSave({ chartConfig: { mode: chartMode, symbol, timeframe, imageUrl }, drawings: elements })}
-              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-600/20"
+              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-600/20 cursor-pointer"
             >
               <Save className="w-3.5 h-3.5" />
               <span>Save Chart</span>
             </button>
           )}
         </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* HELPFUL BANNER TIP */}
+      {/* ========================================================================= */}
+      <div className="bg-[#090e1c] border-b border-slate-800/80 px-4 py-1.5 flex items-center justify-between text-[11px] text-slate-400">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+          {interactMode ? (
+            <span className="text-amber-300 font-medium">
+              💡 <b>In-Chart Mode:</b> Click & drag the chart to pan the market. Use TradingView's left drawing sidebar to add lines & boxes that <b>move together with the candles</b>.
+            </span>
+          ) : (
+            <span className="text-indigo-300 font-medium">
+              💡 <b>Whiteboard Mode:</b> Use the <b>🖐️ Move Tool</b> in the bottom toolbar to click & drag any text or drawing anywhere on screen.
+            </span>
+          )}
+        </div>
+
+        {selectedElementId && !interactMode && (
+          <div className="flex items-center gap-2">
+            <span className="text-cyan-300 font-bold flex items-center gap-1">
+              <Move className="w-3 h-3" />
+              <span>Element Selected (Drag to move or press Del to erase)</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => handleEraseElement(selectedElementId)}
+              className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 hover:bg-rose-500/40 text-[10px] font-bold transition-colors"
+            >
+              Delete
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedElementId(null)}
+              className="text-slate-400 hover:text-white text-[10px] font-bold"
+            >
+              ✕
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ========================================================================= */}
@@ -645,7 +833,7 @@ export default function TradingChartWhiteboard({
               key={`${symbol}-${timeframe}`}
               src={tradingViewUrl}
               className="w-full h-full border-0"
-              title="TradingView Live Chart"
+              title="TradingView Live Chart with Native Drawing Tools"
               allowFullScreen
             />
           )}
@@ -713,8 +901,12 @@ export default function TradingChartWhiteboard({
           className={`absolute inset-0 w-full h-full z-10 touch-none ${
             interactMode
               ? "pointer-events-none opacity-90"
+              : activeTool === "select"
+              ? dragItem
+                ? "cursor-grabbing pointer-events-auto"
+                : "cursor-default pointer-events-auto"
               : activeTool === "eraser"
-              ? "cursor-crosshair pointer-events-auto"
+              ? "cursor-pointer pointer-events-auto"
               : "cursor-crosshair pointer-events-auto"
           }`}
         >
@@ -735,30 +927,52 @@ export default function TradingChartWhiteboard({
 
           {/* RENDER COMMITTED DRAWINGS */}
           {elements.map((el) => {
+            const isSelected = selectedElementId === el.id;
             const isClickableEraser = activeTool === "eraser" && !interactMode;
+            const isMovable = activeTool === "select" && !interactMode;
 
             if (el.type === "pen" || el.type === "highlighter") {
               return (
-                <path
-                  key={el.id}
-                  d={renderPointsPath(el.points)}
-                  stroke={el.color}
-                  strokeWidth={el.strokeWidth}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  fill="none"
-                  opacity={el.opacity || 1}
-                  onPointerDown={(e) => handleEraseElement(el.id, e)}
-                  className={`transition-opacity ${
-                    isClickableEraser ? "hover:stroke-rose-500 hover:opacity-100 cursor-pointer" : ""
-                  }`}
-                />
+                <g key={el.id} onPointerDown={(e) => handleElementPointerDown(el, e)}>
+                  <path
+                    d={renderPointsPath(el.points)}
+                    stroke={el.color}
+                    strokeWidth={el.strokeWidth}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
+                    opacity={el.opacity || 1}
+                    className={`transition-opacity ${
+                      isClickableEraser
+                        ? "hover:stroke-rose-500 hover:opacity-100 cursor-pointer"
+                        : isMovable
+                        ? "cursor-grab hover:opacity-90"
+                        : ""
+                    }`}
+                  />
+                  {isSelected && (
+                    <path
+                      d={renderPointsPath(el.points)}
+                      stroke="#06b6d4"
+                      strokeWidth={Number(el.strokeWidth) + 4}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      fill="none"
+                      opacity="0.6"
+                      strokeDasharray="4 4"
+                    />
+                  )}
+                </g>
               );
             }
 
             if (el.type === "line") {
               return (
-                <g key={el.id} onPointerDown={(e) => handleEraseElement(el.id, e)}>
+                <g
+                  key={el.id}
+                  onPointerDown={(e) => handleElementPointerDown(el, e)}
+                  className={isMovable ? "cursor-grab" : isClickableEraser ? "cursor-pointer" : ""}
+                >
                   <line
                     x1={el.x1}
                     y1={el.y1}
@@ -767,18 +981,36 @@ export default function TradingChartWhiteboard({
                     stroke={el.color}
                     strokeWidth={el.strokeWidth}
                     strokeLinecap="round"
-                    className={isClickableEraser ? "hover:stroke-rose-500 cursor-pointer" : ""}
+                    className={isClickableEraser ? "hover:stroke-rose-500" : ""}
                   />
                   {/* Endpoint dots */}
-                  <circle cx={el.x1} cy={el.y1} r={el.strokeWidth * 1.2} fill={el.color} />
-                  <circle cx={el.x2} cy={el.y2} r={el.strokeWidth * 1.2} fill={el.color} />
+                  <circle cx={el.x1} cy={el.y1} r={el.strokeWidth * 1.3} fill={el.color} />
+                  <circle cx={el.x2} cy={el.y2} r={el.strokeWidth * 1.3} fill={el.color} />
+
+                  {isSelected && (
+                    <line
+                      x1={el.x1}
+                      y1={el.y1}
+                      x2={el.x2}
+                      y2={el.y2}
+                      stroke="#06b6d4"
+                      strokeWidth={Number(el.strokeWidth) + 6}
+                      strokeLinecap="round"
+                      opacity="0.5"
+                      strokeDasharray="4 4"
+                    />
+                  )}
                 </g>
               );
             }
 
             if (el.type === "hline") {
               return (
-                <g key={el.id} onPointerDown={(e) => handleEraseElement(el.id, e)}>
+                <g
+                  key={el.id}
+                  onPointerDown={(e) => handleElementPointerDown(el, e)}
+                  className={isMovable ? "cursor-grab" : isClickableEraser ? "cursor-pointer" : ""}
+                >
                   <line
                     x1="0"
                     y1={el.y}
@@ -787,20 +1019,20 @@ export default function TradingChartWhiteboard({
                     stroke={el.color}
                     strokeWidth={el.strokeWidth}
                     strokeDasharray="6 4"
-                    className={isClickableEraser ? "hover:stroke-rose-500 cursor-pointer" : ""}
+                    className={isClickableEraser ? "hover:stroke-rose-500" : ""}
                   />
                   <rect
-                    x="900"
+                    x="890"
                     y={el.y - 12}
-                    width="95"
+                    width="105"
                     height="24"
                     rx="6"
                     fill="#0f172a"
-                    stroke={el.color}
+                    stroke={isSelected ? "#06b6d4" : el.color}
                     strokeWidth="1.5"
                   />
                   <text
-                    x="947"
+                    x="942"
                     y={el.y + 4}
                     textAnchor="middle"
                     fill={el.color}
@@ -810,13 +1042,29 @@ export default function TradingChartWhiteboard({
                   >
                     LEVEL
                   </text>
+                  {isSelected && (
+                    <line
+                      x1="0"
+                      y1={el.y}
+                      x2="1000"
+                      y2={el.y}
+                      stroke="#06b6d4"
+                      strokeWidth={Number(el.strokeWidth) + 4}
+                      opacity="0.5"
+                      strokeDasharray="2 2"
+                    />
+                  )}
                 </g>
               );
             }
 
             if (el.type === "rect") {
               return (
-                <g key={el.id} onPointerDown={(e) => handleEraseElement(el.id, e)}>
+                <g
+                  key={el.id}
+                  onPointerDown={(e) => handleElementPointerDown(el, e)}
+                  className={isMovable ? "cursor-grab" : isClickableEraser ? "cursor-pointer" : ""}
+                >
                   <rect
                     x={el.x}
                     y={el.y}
@@ -824,40 +1072,71 @@ export default function TradingChartWhiteboard({
                     height={el.height}
                     rx="4"
                     fill={el.fillColor || el.color + "26"}
-                    stroke={el.color}
+                    stroke={isSelected ? "#06b6d4" : el.color}
                     strokeWidth={el.strokeWidth}
-                    className={isClickableEraser ? "hover:stroke-rose-500 cursor-pointer" : ""}
+                    className={isClickableEraser ? "hover:stroke-rose-500" : ""}
                   />
+                  {isSelected && (
+                    <rect
+                      x={el.x - 3}
+                      y={el.y - 3}
+                      width={el.width + 6}
+                      height={el.height + 6}
+                      rx="6"
+                      fill="none"
+                      stroke="#06b6d4"
+                      strokeWidth="2"
+                      strokeDasharray="4 3"
+                    />
+                  )}
                 </g>
               );
             }
 
             if (el.type === "text") {
-              const textWidth = Math.max(80, (el.text.length * (el.fontSize || 16)) * 0.65 + 24);
+              const textWidth = Math.max(70, el.text.length * (el.fontSize || 16) * 0.62 + 24);
               return (
                 <g
                   key={el.id}
                   transform={`translate(${el.x}, ${el.y})`}
-                  onPointerDown={(e) => handleEraseElement(el.id, e)}
-                  className={isClickableEraser ? "hover:opacity-50 cursor-pointer" : ""}
+                  onPointerDown={(e) => handleElementPointerDown(el, e)}
+                  className={isMovable ? "cursor-grab" : isClickableEraser ? "cursor-pointer hover:opacity-50" : ""}
                 >
+                  {/* Background container */}
                   <rect
                     x="-8"
                     y="-20"
                     width={textWidth}
-                    height={30}
+                    height={32}
                     rx="6"
                     fill="#0b101de6"
-                    stroke={el.color}
-                    strokeWidth="1.5"
+                    stroke={isSelected ? "#06b6d4" : el.color}
+                    strokeWidth={isSelected ? 2 : 1.5}
                   />
+
+                  {/* Selected drag outline */}
+                  {isSelected && (
+                    <rect
+                      x="-12"
+                      y="-24"
+                      width={textWidth + 8}
+                      height={40}
+                      rx="8"
+                      fill="none"
+                      stroke="#06b6d4"
+                      strokeWidth="2"
+                      strokeDasharray="4 3"
+                    />
+                  )}
+
                   <text
                     x="4"
-                    y="0"
+                    y="2"
                     fill={el.color}
                     fontSize={el.fontSize || 15}
                     fontWeight="bold"
                     fontFamily="sans-serif"
+                    className="select-none pointer-events-none"
                   >
                     {el.text}
                   </text>
@@ -915,6 +1194,7 @@ export default function TradingChartWhiteboard({
             {/* TOOL SELECTORS */}
             <div className="flex items-center gap-1 border-r border-slate-700/80 pr-2">
               {[
+                { id: "select", label: "🖐️ Move & Reposition (Drag labels/drawings)", icon: Move },
                 { id: "pen", label: "Pen", icon: Edit3 },
                 { id: "line", label: "Trendline", icon: TrendingUp },
                 { id: "hline", label: "Price Level", icon: Minus },
@@ -929,7 +1209,12 @@ export default function TradingChartWhiteboard({
                   <button
                     key={tool.id}
                     type="button"
-                    onClick={() => setActiveTool(tool.id)}
+                    onClick={() => {
+                      setActiveTool(tool.id);
+                      if (tool.id !== "select") {
+                        setSelectedElementId(null);
+                      }
+                    }}
                     title={tool.label}
                     className={`p-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center ${
                       isSelected
@@ -1035,7 +1320,7 @@ export default function TradingChartWhiteboard({
               {/* Quick Preset Badges */}
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold text-slate-400 block">
-                  Quick Trading Concepts:
+                  Quick Trading Concepts (Click to place & drag):
                 </label>
                 <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto custom-scrollbar">
                   {QUICK_TEXT_TAGS.map((tag) => (
@@ -1043,7 +1328,7 @@ export default function TradingChartWhiteboard({
                       key={tag}
                       type="button"
                       onClick={() => handleAddText(tag)}
-                      className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-indigo-600/30 hover:border-indigo-500 border border-slate-800 text-[11px] font-semibold text-slate-300 hover:text-white transition-all"
+                      className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-indigo-600/30 hover:border-indigo-500 border border-slate-800 text-[11px] font-semibold text-slate-300 hover:text-white transition-all cursor-pointer"
                     >
                       {tag}
                     </button>
@@ -1071,7 +1356,7 @@ export default function TradingChartWhiteboard({
                   <button
                     type="button"
                     onClick={() => handleAddText(customText)}
-                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-600/30"
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-600/30 cursor-pointer"
                   >
                     Place
                   </button>
