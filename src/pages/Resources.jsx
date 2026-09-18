@@ -29,50 +29,50 @@ const DEFAULT_RESOURCES_SETTINGS = {
 const DEFAULT_RESOURCES = [
   {
     id: 1,
-    title: "2024 A/L Economics Prototype Model Paper",
-    category: "Economics",
+    title: "Crypto Market Terminology & Beginner Handbook",
+    category: "Crypto Basic",
     type: "PDF Document",
     size: "2.4 MB",
-    badge: "Must Read",
+    badge: "Essential",
     url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
     downloadCount: "1,420",
-    description: "Full question paper with marking scheme guidelines prepared according to the new syllabus.",
+    description: "Complete guide to blockchain mechanics, wallets, order types, exchanges, and crypto risk rules.",
     isHidden: false
   },
   {
     id: 2,
-    title: "Macroeconomics Key Formulas & Graphs Summary Sheet",
-    category: "Economics",
+    title: "Price Action Candlestick Patterns CheatSheet",
+    category: "Price Action",
     type: "PDF CheatSheet",
     size: "1.1 MB",
     badge: "Quick Revision",
     url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
     downloadCount: "2,890",
-    description: "Concise formula handbook covering inflation, GDP calculation, money supply, and fiscal balance.",
+    description: "High-probability bullish, bearish, and neutral candlestick patterns with entry/exit triggers.",
     isHidden: false
   },
   {
     id: 3,
-    title: "Grade 11 Sinhala Literature Essay Structures & Notes",
-    category: "Sinhala",
+    title: "Technical Analysis & Chart Indicators Master Guide",
+    category: "Technical Analysis",
     type: "PDF Document",
-    size: "950 KB",
-    badge: "O/L Exam",
+    size: "1.8 MB",
+    badge: "Pro Trader",
     url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
     downloadCount: "3,150",
-    description: "Prescribed texts and poetry analysis with high-scoring essay outlines for O/L students.",
+    description: "In-depth breakdown of RSI, MACD, Moving Averages, Support/Resistance zones, and Trendlines.",
     isHidden: false
   },
   {
     id: 4,
-    title: "Market Elasticity Calculation & Analysis Guide",
-    category: "Economics",
+    title: "Forex & Futures Position Sizing and Risk Model",
+    category: "Forex & Futures",
     type: "PDF Document",
-    size: "1.8 MB",
-    badge: "Specialized",
+    size: "1.5 MB",
+    badge: "Risk Control",
     url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
     downloadCount: "980",
-    description: "Step-by-step mathematical examples for price elasticity of demand and supply with graphs.",
+    description: "Calculations for 1% risk rule, risk-to-reward ratio formulas, and margin leverage safety guidelines.",
     isHidden: false
   }
 ];
@@ -102,6 +102,14 @@ const Resources = () => {
     }
   });
 
+  const [generalSettings, setGeneralSettings] = useState(() => {
+    try {
+      const saved = localStorage.getItem("webGeneralSettings");
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return { subjects: ["Crypto Basic", "Price Action", "Sinhala", "Economics"] };
+  });
+
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [downloadToast, setDownloadToast] = useState(null);
@@ -120,6 +128,11 @@ const Resources = () => {
           const resTarget = data.find((s) => s.type === "webResources");
           if (resTarget && Array.isArray(resTarget.data) && resTarget.data.length > 0) {
             setResources(resTarget.data.filter((r) => !r.isHidden));
+          }
+
+          const genTarget = data.find((s) => s.type === "webGeneralSettings");
+          if (genTarget && genTarget.data) {
+            setGeneralSettings(genTarget.data);
           }
         }
       } catch (e) {
@@ -146,6 +159,12 @@ const Resources = () => {
           }
         } catch (err) {}
       }
+      if (!e || !e.key || e.key === "webGeneralSettings") {
+        try {
+          const saved = localStorage.getItem("webGeneralSettings");
+          if (saved) setGeneralSettings(JSON.parse(saved));
+        } catch (err) {}
+      }
     };
     window.addEventListener("storage", handleStorage);
     return () => window.removeEventListener("storage", handleStorage);
@@ -158,7 +177,12 @@ const Resources = () => {
 
   const categories = [
     "All",
-    ...new Set(resources.map((r) => r.category).filter(Boolean))
+    ...Array.from(
+      new Set([
+        ...(generalSettings.subjects || []),
+        ...resources.map((r) => r.category).filter(Boolean)
+      ])
+    )
   ];
 
   const filteredResources = resources.filter((item) => {

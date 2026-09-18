@@ -149,50 +149,50 @@ const DEFAULT_RESOURCES_SETTINGS = {
 const DEFAULT_RESOURCES = [
   {
     id: 1,
-    title: "2024 A/L Economics Prototype Model Paper",
-    category: "Economics",
+    title: "Crypto Market Terminology & Beginner Handbook",
+    category: "Crypto Basic",
     type: "PDF Document",
     size: "2.4 MB",
-    badge: "Must Read",
+    badge: "Essential",
     url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
     downloadCount: "1,420",
-    description: "Full question paper with marking scheme guidelines prepared according to the new syllabus.",
+    description: "Complete guide to blockchain mechanics, wallets, order types, exchanges, and crypto risk rules.",
     isHidden: false
   },
   {
     id: 2,
-    title: "Macroeconomics Key Formulas & Graphs Summary Sheet",
-    category: "Economics",
+    title: "Price Action Candlestick Patterns CheatSheet",
+    category: "Price Action",
     type: "PDF CheatSheet",
     size: "1.1 MB",
     badge: "Quick Revision",
     url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
     downloadCount: "2,890",
-    description: "Concise formula handbook covering inflation, GDP calculation, money supply, and fiscal balance.",
+    description: "High-probability bullish, bearish, and neutral candlestick patterns with entry/exit triggers.",
     isHidden: false
   },
   {
     id: 3,
-    title: "Grade 11 Sinhala Literature Essay Structures & Notes",
-    category: "Sinhala",
+    title: "Technical Analysis & Chart Indicators Master Guide",
+    category: "Technical Analysis",
     type: "PDF Document",
-    size: "950 KB",
-    badge: "O/L Exam",
+    size: "1.8 MB",
+    badge: "Pro Trader",
     url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
     downloadCount: "3,150",
-    description: "Prescribed texts and poetry analysis with high-scoring essay outlines for O/L students.",
+    description: "In-depth breakdown of RSI, MACD, Moving Averages, Support/Resistance zones, and Trendlines.",
     isHidden: false
   },
   {
     id: 4,
-    title: "Market Elasticity Calculation & Analysis Guide",
-    category: "Economics",
+    title: "Forex & Futures Position Sizing and Risk Model",
+    category: "Forex & Futures",
     type: "PDF Document",
-    size: "1.8 MB",
-    badge: "Specialized",
+    size: "1.5 MB",
+    badge: "Risk Control",
     url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
     downloadCount: "980",
-    description: "Step-by-step mathematical examples for price elasticity of demand and supply with graphs.",
+    description: "Calculations for 1% risk rule, risk-to-reward ratio formulas, and margin leverage safety guidelines.",
     isHidden: false
   }
 ];
@@ -2281,7 +2281,7 @@ const WebSettingsTab = ({
                       setEditingCourse({
                         id: Date.now(),
                         title: "",
-                        category: "Economics",
+                        category: (currentGeneralSettings.subjects && currentGeneralSettings.subjects[0]) || "Crypto Basic",
                         badge: "Active Program",
                         desc: "",
                         schedule: "Weekly Live Zoom Lectures",
@@ -2623,7 +2623,7 @@ const WebSettingsTab = ({
                       setEditingResource({
                         id: Date.now(),
                         title: "",
-                        category: "Economics",
+                        category: (currentGeneralSettings.subjects && currentGeneralSettings.subjects[0]) || "Crypto Basic",
                         type: "PDF Document",
                         size: "2.5 MB",
                         badge: "New",
@@ -2884,7 +2884,7 @@ const WebSettingsTab = ({
 
                   {/* CATEGORIES PILLS PREVIEW */}
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    {["All", "Economics", "Sinhala"].map((cat, i) => (
+                    {["All", ...(currentGeneralSettings.subjects || [])].map((cat, i) => (
                       <span
                         key={cat}
                         className={`px-2 py-0.5 rounded-lg text-[10px] font-bold ${
@@ -3596,15 +3596,20 @@ const WebSettingsTab = ({
                   <label className="text-xs font-bold text-slate-300 block mb-1.5">
                     Category / Subject
                   </label>
-                  <input
-                    type="text"
-                    value={editingCourse.category || ""}
+                  <select
+                    value={editingCourse.category || (currentGeneralSettings.subjects && currentGeneralSettings.subjects[0]) || "Crypto Basic"}
                     onChange={(e) =>
                       setEditingCourse({ ...editingCourse, category: e.target.value })
                     }
-                    placeholder="e.g. Economics or Sinhala"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
-                  />
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
+                  >
+                    {(currentGeneralSettings.subjects || []).map((sub) => (
+                      <option key={sub} value={sub}>
+                        {sub}
+                      </option>
+                    ))}
+                    <option value="General">General / All</option>
+                  </select>
                 </div>
               </div>
 
@@ -3878,14 +3883,17 @@ const WebSettingsTab = ({
                     Category / Subject
                   </label>
                   <select
-                    value={editingResource.category || "Economics"}
+                    value={editingResource.category || (currentGeneralSettings.subjects && currentGeneralSettings.subjects[0]) || "Crypto Basic"}
                     onChange={(e) =>
                       setEditingResource({ ...editingResource, category: e.target.value })
                     }
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
                   >
-                    <option value="Economics">Economics</option>
-                    <option value="Sinhala">Sinhala</option>
+                    {(currentGeneralSettings.subjects || []).map((sub) => (
+                      <option key={sub} value={sub}>
+                        {sub}
+                      </option>
+                    ))}
                     <option value="General">General / All</option>
                   </select>
                 </div>

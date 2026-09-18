@@ -109,6 +109,14 @@ const Courses = () => {
     }
   });
 
+  const [generalSettings, setGeneralSettings] = useState(() => {
+    try {
+      const saved = localStorage.getItem("webGeneralSettings");
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return { subjects: ["Crypto Basic", "Price Action", "Sinhala", "Economics"] };
+  });
+
   const [activeCategory, setActiveCategory] = useState("All");
   const [selectedCourse, setSelectedCourse] = useState(null);
 
@@ -126,6 +134,11 @@ const Courses = () => {
           const coursesTarget = data.find((s) => s.type === "webCourses");
           if (coursesTarget && Array.isArray(coursesTarget.data) && coursesTarget.data.length > 0) {
             setCourses(coursesTarget.data.filter((c) => !c.isHidden));
+          }
+
+          const genTarget = data.find((s) => s.type === "webGeneralSettings");
+          if (genTarget && genTarget.data) {
+            setGeneralSettings(genTarget.data);
           }
         }
       } catch (e) {
@@ -152,6 +165,12 @@ const Courses = () => {
           }
         } catch (err) {}
       }
+      if (!e || !e.key || e.key === "webGeneralSettings") {
+        try {
+          const saved = localStorage.getItem("webGeneralSettings");
+          if (saved) setGeneralSettings(JSON.parse(saved));
+        } catch (err) {}
+      }
     };
     window.addEventListener("storage", handleStorage);
     return () => window.removeEventListener("storage", handleStorage);
@@ -164,7 +183,12 @@ const Courses = () => {
 
   const categories = [
     "All",
-    ...new Set(courses.map((c) => c.category).filter(Boolean))
+    ...Array.from(
+      new Set([
+        ...(generalSettings.subjects || []),
+        ...courses.map((c) => c.category).filter(Boolean)
+      ])
+    )
   ];
 
   const displayedCourses =
