@@ -926,12 +926,12 @@ const DEFAULT_HOME_SETTINGS = {
       {/* ========================================================================= */}
       <AnimatePresence>
         {selectedCourse && (
-          <div className="fixed inset-0 z-[110] bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[200] overflow-y-auto bg-black/85 backdrop-blur-md p-4 sm:p-6 flex items-start sm:items-center justify-center">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#0e1424] border border-slate-800 rounded-3xl max-w-2xl w-full p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto"
+              className="bg-[#0e1424] border border-slate-800 rounded-3xl max-w-2xl w-full p-8 shadow-2xl space-y-6 max-h-[88vh] overflow-y-auto my-auto"
             >
               <div className="flex items-center justify-between border-b border-slate-800 pb-4">
                 <div className="flex items-center gap-3">
@@ -1023,18 +1023,18 @@ const DEFAULT_HOME_SETTINGS = {
       {/* ========================================================================= */}
       <AnimatePresence>
         {selectedMentor && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+          <div className="fixed inset-0 z-[200] overflow-y-auto bg-black/85 backdrop-blur-md p-4 sm:p-6 flex items-start sm:items-center justify-center">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ duration: 0.2 }}
-              className="bg-[#0e1424] border border-slate-800 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-6 shadow-2xl relative custom-scrollbar"
+              className="bg-[#0e1424] border border-slate-800 rounded-3xl max-w-2xl w-full max-h-[88vh] overflow-y-auto p-6 sm:p-8 space-y-6 shadow-2xl relative custom-scrollbar my-auto"
             >
               {/* CLOSE BUTTON */}
               <button
                 onClick={() => setSelectedMentor(null)}
-                className="absolute top-6 right-6 w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition-colors z-10"
+                className="absolute top-5 right-5 sm:top-6 sm:right-6 w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition-colors z-20 shadow-md"
               >
                 <X className="w-4 h-4" />
               </button>

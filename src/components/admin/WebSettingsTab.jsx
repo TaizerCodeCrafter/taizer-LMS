@@ -3755,8 +3755,8 @@ const WebSettingsTab = ({
       {/* ENHANCED EDIT COURSE CARD MODAL                                           */}
       {/* ========================================================================= */}
       {isEditCourseOpen && editingCourse && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#0e1424] border border-slate-800 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-5 shadow-2xl animate-scaleUp custom-scrollbar">
+        <div className="fixed inset-0 z-[200] overflow-y-auto bg-black/85 backdrop-blur-md p-4 sm:p-6 flex items-start sm:items-center justify-center">
+          <div className="bg-[#0e1424] border border-slate-800 rounded-3xl max-w-2xl w-full max-h-[88vh] overflow-y-auto p-6 sm:p-8 space-y-5 shadow-2xl animate-scaleUp custom-scrollbar my-auto">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div className="flex items-center gap-2.5">
                 <BookOpen className="w-5 h-5 text-indigo-400" />
@@ -4038,8 +4038,8 @@ const WebSettingsTab = ({
       {/* EDIT RESOURCE ITEM MODAL                                                 */}
       {/* ========================================================================= */}
       {isEditResourceOpen && editingResource && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#0e1424] border border-slate-800 rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-5 shadow-2xl animate-scaleUp custom-scrollbar">
+        <div className="fixed inset-0 z-[200] overflow-y-auto bg-black/85 backdrop-blur-md p-4 sm:p-6 flex items-start sm:items-center justify-center">
+          <div className="bg-[#0e1424] border border-slate-800 rounded-3xl max-w-xl w-full max-h-[88vh] overflow-y-auto p-6 sm:p-8 space-y-5 shadow-2xl animate-scaleUp custom-scrollbar my-auto">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div className="flex items-center gap-2.5">
                 <FolderDown className="w-5 h-5 text-indigo-400" />
@@ -4235,8 +4235,8 @@ const WebSettingsTab = ({
       {/* EDIT INSTRUCTOR / FACULTY MEMBER MODAL                                   */}
       {/* ========================================================================= */}
       {isEditInstructorOpen && editingInstructor && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#0e1424] border border-slate-800 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-6 shadow-2xl animate-scaleUp custom-scrollbar">
+        <div className="fixed inset-0 z-[200] overflow-y-auto bg-black/85 backdrop-blur-md p-4 sm:p-6 flex items-start sm:items-center justify-center">
+          <div className="bg-[#0e1424] border border-slate-800 rounded-3xl max-w-2xl w-full max-h-[88vh] overflow-y-auto p-6 sm:p-8 space-y-6 shadow-2xl animate-scaleUp custom-scrollbar my-auto">
             {/* MODAL HEADER */}
             <div className="flex items-center justify-between pb-4 border-b border-slate-800">
               <div className="flex items-center gap-3">
